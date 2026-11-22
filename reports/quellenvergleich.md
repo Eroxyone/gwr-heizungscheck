@@ -168,7 +168,7 @@ abwickelt und den Kanal eingerichtet hat, entsteht der Rückstand gar nicht erst
 mit EVEN oder eBAU, und ist der GWR-Kanal eingerichtet?» in jedes erste Gespräch - eine
 Gemeinde, die mit Ja antwortet, braucht die Liste für den Zuwachs nicht mehr, sondern nur
 noch für den Altbestand. Zweitens bestätigt es den eigenen Kernbefund: Das hier ist eine
-**einmalige Bereinigung des Altbestands**, kein Abonnement.
+**einmalige Bereinigung des Altbestands**, kein Dauerbetrieb.
 
 ---
 

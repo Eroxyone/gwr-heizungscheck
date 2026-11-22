@@ -243,9 +243,9 @@ als zusätzliches Merkmal in einem Score brauchbar.
 
 ### 2.6 Test 5 - Erdwärmesonden gegen den Registerstand
 
-Dieser Test kam nach der ersten Auswertung dazu und ist der schärfste. Fünf Kantone
-veröffentlichen ihre bewilligten Anlagen zur Wärmenutzung des Untergrunds: Zürich, Bern,
-Thurgau, Schaffhausen und Uri. Zusammen **{t5_anlagen_total} Anlagen**, davon {t5_gebaut}
+Dieser Test kam nach der ersten Auswertung dazu und ist der schärfste. Er begann mit fünf
+Kantonen (Zürich, Bern, Thurgau, Schaffhausen, Uri) und umfasst inzwischen alle, die ihre
+bewilligten Anlagen zur Wärmenutzung des Untergrunds offen veröffentlichen. Zusammen **{t5_anlagen_total} Anlagen**, davon {t5_gebaut}
 nachweislich gebaut.
 
 {t5_anlagen}

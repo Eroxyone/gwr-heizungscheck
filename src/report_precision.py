@@ -185,8 +185,8 @@ def main(argv: list[str] | None = None) -> int:
         "Beleg, den es in allen 26 Kantonen gibt.",
         "3. **Der Registerwiderspruch liegt in beiden Kantonen über der Grundrate**, "
         "beruht dort aber auf wenigen geprüften Fällen. Wichtiger ist eine Einschränkung, "
-        "die man leicht übersieht: Der Untertyp, der im Score mit 45 von 100 Punkten am "
-        "höchsten gewichtet ist - Wärmeerzeuger \"Wärmepumpe\" bei Energieträger "
+        "die man leicht übersieht: Der Untertyp, der im Score damals am "
+        "höchsten gewichtet war - Wärmeerzeuger \"Wärmepumpe\" bei Energieträger "
         "\"Heizöl\" - **kommt in Genf und Zug kein einziges Mal vor**. Gemessen wurden "
         "nur die schwächeren Untertypen Fernwärme, Erdwärme und Luft. Über die 45 Punkte "
         "sagt diese Messung also nichts. Sie bleiben unbelegt, nicht widerlegt.",

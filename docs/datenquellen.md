@@ -96,6 +96,12 @@ gespeichert wird, kann auch nicht versehentlich in einen Bericht geraten. Das Te
 Formular wird ausserdem auf seine Sachfelder reduziert (`Genere dell'opera`,
 `Destinazione`, `N. di mappa`).
 
+Für den Titel gilt das nicht: Schaffhausen und Wallis stellen die Bauherrschaft vor den
+Objektbeschrieb in den Titel. Der Titel wird roh abgelegt und erst im Silver-Layer
+bereinigt (`titel_anonym` in `sql/silver_baugesuche_ch.sql`); eine Prüfung in `checks.py`
+stellt sicher, dass kein Belegtext der Liste das Namensmuster trägt. Der rohe Abzug
+bleibt lokal und gehört nicht ins Git.
+
 **Zürich ist standardmässig ausgeschaltet.** Der Kanton publiziert dieselben Baugesuche
 als offenen Datensatz des Statistischen Amts - mit Parzellenpolygonen, täglich
 aktualisiert, in einer Tabelle. Der Portalabzug wäre die schlechtere Kopie und kostet

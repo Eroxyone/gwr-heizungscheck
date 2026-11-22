@@ -165,8 +165,9 @@ docker run --rm -v gwr-daten:/data gwr-heizungscheck src/ingest.py
 docker run --rm -v gwr-daten:/data gwr-heizungscheck src/pipeline.py ch
 ```
 
-Ohne Container legt die Umgebungsvariable `GWR_DATA_DIR` das Datenverzeichnis fest; Standard
-ist `data/` im Repo.
+Berichte schreibt der Container nach `/app/reports`; wer sie behalten will, bindet den Ordner
+ein (`-v "$PWD/reports:/app/reports"`). Ohne Container legt die Umgebungsvariable
+`GWR_DATA_DIR` das Datenverzeichnis fest; Standard ist `data/` im Repo.
 
 ### Tests und Lint
 
@@ -223,7 +224,7 @@ src/                      Python: Ingest, Steuerung, Berichte, Evaluation
   config.py               Pfade, Kantone, Quellen und ihre Lizenzen an einem Ort
   ingest.py               Bronze: GWR je Kanton laden, als Parquet-Snapshot ablegen
   download.py             Bronze: Baugesuche ZH, Solaranlagen, kantonale Register
-  ingest_baugesuche.py    Bronze: Baugesuche aus dem Amtsblattportal, anonymisiert beim Einlesen
+  ingest_baugesuche.py    Bronze: Baugesuche aus dem Amtsblattportal, Beschrieb beim Einlesen anonymisiert
   build_db.py             Bronze: Rohdateien für den ZH-Strang nach DuckDB
   pipeline.py             führt die SQL-Schritte in der richtigen Reihenfolge aus
   checks.py               85 Datenqualitäts- und Regressionsprüfungen auf den echten Daten
@@ -331,8 +332,10 @@ Adressen, Layer, Abruffallen und die geprüften, aber verworfenen Quellen stehen
 - Rohdaten und Snapshots kommen nie ins Git.
 - Gebäudegenaue Ergebnisse werden nicht veröffentlicht. Verdachts- und Prüflisten entstehen
   unter `data/processed/` und damit ausserhalb des Git.
-- Keine Personendaten verarbeiten. Was in einer Quelle an Namen steht, wird beim Einlesen
-  entfernt, nicht erst bei der Auswertung.
+- Keine Personendaten in Listen und Berichten. Namen im Projektbeschrieb werden beim
+  Einlesen entfernt. Schaffhausen und Wallis nennen die Bauherrschaft im Titel der
+  Publikation; der Titel liegt roh im lokalen Abzug und wird im Silver-Layer bereinigt,
+  bevor ein Text weiterverwendet wird.
 - Codes und Kataloge stammen aus den Originaldateien, nicht aus dem Gedächtnis.
 - Annahmen und Unsicherheiten gehören in den Report, nicht in eine Fussnote.
 - Zahlen in den Berichtstabellen kommen aus der Pipeline. Erläuternde Sätze in den
