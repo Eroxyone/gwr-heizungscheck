@@ -1,0 +1,89 @@
+Ergebnis von `python src/checks.py -v` auf dem Datenstand der Studie (Registerstand 16.11.2026).
+
+  [ok  ] alle 26 Kantone geladen                                                                                        gemessen 26, erwartet 26
+  [ok  ] Gemeindezahl plausibel (BFS: rund 2100)                                                                        gemessen 2110, erwartet 2000 bis 2200
+  [ok  ] Gebaeudezahl CH plausibel                                                                                      gemessen 3179827, erwartet 2800000 bis 3600000
+  [ok  ] EGID ist eindeutig                                                                                             gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Gebaeude ohne EGID                                                                                        gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Gebaeude ohne Gemeindenummer                                                                              gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Koordinaten liegen in der Schweiz (LV95)                                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Baujahr ist plausibel                                                                                          gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Aktualisierungsdatum in der Zukunft - Erfassungsfehler der Quelle                                              gemessen 11 Faelle, erwartet hoechstens 25
+  [ok  ] Prozentwerte bleiben im Bereich 0 bis 100                                                                      gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Gebaeude mit Wohnnutzung hat eine Gebaeudekategorie                                                            gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Anteil Wohngebaeude an allen Gebaeuden plausibel                                                               gemessen 56.9, erwartet 45 bis 70
+  [ok  ] Anteil fossil beheizter Wohngebaeude plausibel                                                                 gemessen 48.9, erwartet 35 bis 65
+  [ok  ] jeder Energietraeger-Code ist im Katalog                                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] jeder Quellen-Code ist im Katalog                                                                              gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Energietraeger faellt in die Klasse ohne_angabe, obwohl ein Code da ist                                   gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Gemeindesummen ergeben die Kantonssumme                                                                        gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Teilmengen ueberschreiten die Gesamtmenge nicht                                                                gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Kandidaten sind eine Teilmenge der fossil beheizten Gebaeude                                                   gemessen 0 Verstoesse, erwartet 0
+  [ok  ] je Kanton und Stand genau eine Snapshot-Datei                                                                  gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Snapshot-Datum passt zum Exportdatum im Datensatz                                                              gemessen 0 Verstoesse, erwartet 0
+  [ok  ] ZH: bestehende Gebaeude wie in der Detailauswertung                                                            gemessen 367385, erwartet 367385
+  [ok  ] ZH: Wohngebaeude wie in der Detailauswertung                                                                   gemessen 228968, erwartet 228968
+  [ok  ] ZH: alter Silver-Layer zaehlt wie der Snapshot seines Stands                                                   gemessen 0, erwartet 0
+  [ok  ] Gold-Layer steht auf demselben Stand wie der Silver-Layer                                                      gemessen True, erwartet True
+  [ok  ] Verdachtsliste enthaelt keinen im aktuellen Stand schon korrigierten Fall                                      gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Archiv der Verdachtsliste: je Stand hoechstens ein Eintrag je Gebaeude                                         gemessen 0 Verstoesse, erwartet 0
+  [ok  ] ZH: Baugesuch-Zuordnung trifft nur existierende Gebaeude                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] ZH: je Vorhaben genau eine Erstpublikation                                                                     gemessen 0 Verstoesse, erwartet 0
+  [ok  ] ZH: Test 3 zaehlt kein Gebaeude doppelt zum selben Vorhaben                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] ZH: Anteil Mehrfachpublikationen plausibel                                                                     gemessen 22.4, erwartet 15 bis 30
+  [ok  ] Waermenutzungsanlagen liegen in der Schweiz                                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Waermenutzung: Anlage und zugeordnetes Gebaeude im selben Kanton                                               gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Waermenutzung: Zuordnung haelt den Radius ein                                                                  gemessen 0 Verstoesse, erwartet 0
+  [ok  ] BE: jede ausgefuehrte Anlage in Test 6 hat ein Bewilligungsdatum                                               gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Kaskade verliert keinen Fall, wenn kein LLM-Urteil vorliegt                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Kaskade erfindet keinen Fall ohne Regeltreffer                                                                 gemessen 0 Verstoesse, erwartet 0
+  [ok  ] LLM-Urteil ist je Beschrieb eindeutig                                                                          gemessen 0 Verstoesse, erwartet 0
+  [ok  ] gemeldeter Energietraeger ist ein bekannter Wert                                                               gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Verdachtsfall mit laufender fossiler Feuerung                                                             gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Gegenbeleg greift bei einem plausiblen Teil der Kandidaten                                                     gemessen 58.0, erwartet 5 bis 60
+  [ok  ] Verdachtsfall hat immer mindestens einen echten Beleg                                                          gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Verdachtsfaelle sind fossil eingetragene Wohngebaeude                                                          gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Score bleibt zwischen 0 und 100                                                                                gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Verdachtsliste fuehrt nur die vier dokumentierten Stufen                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Registerwiderspruch nur bei fossil eingetragenen Gebaeuden                                                     gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Widerspruchsart ist immer gesetzt, wenn der Beleg greift                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Erzeuger-Widerspruch ist wirklich Waermepumpe mit Heizoel                                                      gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Verdachtsfaelle decken fast alle Kantone ab                                                                    gemessen 26, erwartet 20 bis 26
+  [ok  ] jeder Verdachtsfall traegt einen Belegtext                                                                     gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Gemeindesummen des Verdachts-Layers stimmen                                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] BE, TG und SH messen aehnliche Werte                                                                           gemessen 8.8, erwartet 0 bis 15
+  [ok  ] ZH: Waermepumpen-Anteil neben Anlagen faellt nicht unter den Ausgangsstand                                     gemessen 67.4, erwartet 45 bis 100
+  [ok  ] Genfer Sonderfall bleibt erklaerbar: viel "unbestimmt" im Umkreis                                              gemessen 49.2, erwartet 30 bis 70
+  [ok  ] jede Anlage liegt im Kanton, dem sie zugeordnet ist                                                            gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Anlagendatum ausserhalb des Moeglichen                                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Anlagendatum leicht in der Zukunft - Erfassungsfehler der Quelle                                               gemessen 0 Faelle, erwartet hoechstens 10
+  [ok  ] Luft-Wasser-Waermepumpen zaehlen nicht als Ausfuehrungsnachweis                                                gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Anlagenkoordinaten tragen Information ueber das Gebaeude                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Zuordnung trifft Zugs amtliche EGID wie gemessen                                                               gemessen 73.9, erwartet 65 bis 85
+  [ok  ] Label ist nie gleichzeitig richtig und falsch                                                                  gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Genfer Fehlerquote bleibt im gemessenen Bereich                                                                gemessen 5.4, erwartet 4 bis 12
+  [ok  ] Score-Sicht ist nicht mit der Listensicht identisch                                                            gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Personenname im Belegtext der Liste                                                                       gemessen 0 Verstoesse, erwartet 0
+  [ok  ] auf der Verdachtsliste steht kein Fall ohne Heizungsbeleg                                                      gemessen 0 Verstoesse, erwartet 0
+  [ok  ] jeder Code im Korrekturvorschlag stimmt mit dem Merkmalskatalog überein                                        gemessen 0 Verstoesse, erwartet 0
+  [ok  ] die vorgeschlagene Informationsquelle passt zur Herkunft des Belegs                                            gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein Fall, dessen Beleg aelter ist als der Registereintrag                                                     gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Stufe 'reihenfolge belegt' heisst wirklich datiert und juenger                                                 gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Stufe 'reihenfolge plausibel' heisst undatiert und Laufnummer ueber der Schwelle                               gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Laufnummer-Stufe nur dort, wo der Kanton Laufnummern vergibt                                                   gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Laufnummer-Schwellen steigen mit dem Jahr                                                                      gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Laufnummer-Kalibrierung beruht auf genug Neubauten je Jahr                                                     gemessen 132, erwartet 50 bis 100000
+  [ok  ] Laufnummer-Kalibrierung deckt die juengsten Eintragsjahre ab                                                   gemessen 2026, erwartet 2025 bis 2100
+  [ok  ] 'im Nachlauf' heisst Beleg juenger als 18 Monate am Tag des Abzugs                                             gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Ressourceneinstufung gilt nicht als Anlagenbeleg                                                               gemessen 0 Verstoesse, erwartet 0
+  [ok  ] die Verdachtsliste ist gegen echte Labels gemessen                                                             gemessen 77, erwartet 50 bis 100000
+  [ok  ] keine Personenangaben im Zuercher Beschrieb                                                                    gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Baugesuch-Zuordnung trifft nur existierende Gebaeude                                                           gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Baugesuch und zugeordnetes Gebaeude im selben Kanton                                                           gemessen 0 Verstoesse, erwartet 0
+  [ok  ] je Vorhaben genau eine Erstpublikation                                                                         gemessen 0 Verstoesse, erwartet 0
+  [ok  ] wo die Bauherrschaft stehen koennte, wurde geschnitten                                                         gemessen 0 Verstoesse, erwartet 0
+  [ok  ] kein namensfoermiger Titelabschnitt in der Arbeitsmappe - zwei Obwaldner Objektbeschriebe, von Hand geprueft   gemessen 2 Faelle, erwartet hoechstens 2
+  [ok  ] keine Personenangaben im Beschrieb                                                                             gemessen 0 Verstoesse, erwartet 0
+  [ok  ] Adresszuordnung greift bei einem brauchbaren Teil der Baugesuche                                               gemessen 54.8, erwartet 20 bis 100
+
+85 von 85 Pruefungen bestanden

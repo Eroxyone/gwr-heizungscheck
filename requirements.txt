@@ -1,0 +1,12 @@
+# Laufzeit-Abhaengigkeiten der Pipeline und der Berichte.
+# Getestet mit Python 3.11 bis 3.13; die Versionen sind die, mit denen die Zahlen in
+# reports/ gerechnet wurden.
+duckdb~=1.5.2          # Datenbank, Spatial-Extension wird beim ersten Lauf nachgeladen
+pandas~=3.0.1
+tabulate~=0.10.0       # Markdown-Tabellen der Berichte (pandas.to_markdown)
+matplotlib~=3.10.1     # reports/zeitreihe.png
+openpyxl~=3.1.5        # Prueflisten als Excel-Mappe
+numpy~=2.2
+scikit-learn~=1.8.0    # Kalibrierung der Gewichte gegen den Genfer Feuerungskataster
+pydantic~=2.11         # Schema der LLM-Extraktion
+truststore~=0.10.4     # Zertifikatsspeicher des Systems, siehe src/config.py

@@ -1,0 +1,4 @@
+# Nur fuer src/extract_llm.py mit dem Backend "anthropic". Das lokale Backend (Ollama)
+# spricht die HTTP-Schnittstelle direkt an und braucht kein zusaetzliches Paket.
+-r requirements.txt
+anthropic>=1.5

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "Wer diese Arbeit verwendet, kann sie so zitieren."
+type: software
+title: "GWR-Heizungscheck: Veraltete Heizungsangaben im Gebäude- und Wohnungsregister aus offenen Daten erkennen"
+abstract: >-
+  Validierungsstudie zum eidgenössischen Gebäude- und Wohnungsregister (GWR). Eine
+  DuckDB-Pipeline über 3,17 Mio Gebäude in allen 26 Kantonen gleicht das Register mit
+  kantonalen Wärmenutzungsregistern, Baugesuchen und Photovoltaikanlagen ab und misst über
+  wöchentliche Snapshots, wie schnell die Einträge nachgeführt werden.
+authors:
+  - family-names: Knezevic
+    given-names: Ivan
+date-released: "2026-11-22"
+license: MIT
+repository-code: "https://github.com/Eroxyone/gwr-heizungscheck"
+keywords:
+  - GWR
+  - Gebäuderegister
+  - Datenqualität
+  - open government data
+  - DuckDB
+  - data engineering

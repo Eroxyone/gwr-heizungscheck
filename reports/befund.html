@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veraltete Heizungsdaten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --grund:        #F6F8FA;
+  --flaeche:      #FFFFFF;
+  --flaeche-2:    #EDF1F5;
+  --linie:        #D6DEE7;
+  --linie-stark:  #B4C0CD;
+  --text:         #161A21;
+  --text-leise:   #5C6878;
+  --text-still:   #838F9E;
+  --akzent:       #0F6E78;
+  --akzent-flach: #E2EFF0;
+  --stufe-a:      #2D6FB5;
+  --stufe-b:      #4E9BB8;
+  --stufe-c:      #C39B1F;
+  --stufe-d:      #D2762F;
+  --stufe-e:      #B8412C;
+  --stufe-a-weich:#DEEAF6;
+  --stufe-b-weich:#E0EFF3;
+  --stufe-c-weich:#F6EED5;
+  --stufe-d-weich:#F8E6D6;
+  --stufe-e-weich:#F7DFDA;
+  --radius: 4px;
+  --breite: 980px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund: #11141A; --flaeche: #181C24; --flaeche-2: #21262F;
+    --linie: #2C333E; --linie-stark: #3E4753;
+    --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #737F8D;
+    --akzent: #3FB3BF; --akzent-flach: #163236;
+    --stufe-a: #5892D6; --stufe-b: #62B2CD; --stufe-c: #D9B33C;
+    --stufe-d: #E28F4C; --stufe-e: #D4614B;
+    --stufe-a-weich:#1B2A3D; --stufe-b-weich:#162C35; --stufe-c-weich:#332C14;
+    --stufe-d-weich:#352415; --stufe-e-weich:#361B17;
+  }
+}
+:root[data-theme="dark"] {
+  --grund: #11141A; --flaeche: #181C24; --flaeche-2: #21262F;
+  --linie: #2C333E; --linie-stark: #3E4753;
+  --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #737F8D;
+  --akzent: #3FB3BF; --akzent-flach: #163236;
+  --stufe-a: #5892D6; --stufe-b: #62B2CD; --stufe-c: #D9B33C;
+  --stufe-d: #E28F4C; --stufe-e: #D4614B;
+  --stufe-a-weich:#1B2A3D; --stufe-b-weich:#162C35; --stufe-c-weich:#332C14;
+  --stufe-d-weich:#352415; --stufe-e-weich:#361B17;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--grund); color: var(--text);
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px; line-height: 1.62; -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: Archivo, ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.75rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.15; }
+h2 { font-size: 1.32rem; margin-top: 2.6rem; }
+h3 { font-size: 1rem; margin-top: 1.5rem; }
+p { margin: 0 0 1rem; max-width: 68ch; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.huelle { max-width: var(--breite); margin: 0 auto; padding: 0 24px; }
+
+.kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); padding: 34px 0 28px; }
+.eyebrow { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .7rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--akzent); margin: 0 0 8px; }
+.kopf p.lead { font-size: 1.08rem; color: var(--text-leise); margin-top: 12px; }
+.stand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+  color: var(--text-still); margin-top: 16px; }
+
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 22px 0 0; }
+nav.toc a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .72rem;
+  color: var(--text-leise); text-decoration: none; padding: 3px 9px;
+  border: 1px solid var(--linie); border-radius: 2px; background: var(--flaeche); }
+nav.toc a:hover { color: var(--akzent); border-color: var(--akzent); }
+
+.kennzahlen { display: grid; gap: 1px; background: var(--linie);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border: 1px solid var(--linie); border-radius: var(--radius);
+  overflow: hidden; margin: 26px 0; }
+.kz { background: var(--flaeche); padding: 14px 16px 15px; }
+.kz-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  font-size: 1.5rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
+.kz-label { font-size: .78rem; color: var(--text-leise); margin-top: 4px; }
+
+/* Sicherheitsstufen: das Herzstück der Seite */
+.stufen { display: flex; flex-direction: column; gap: 10px; margin: 22px 0; }
+.stufe { border: 1px solid var(--linie); border-left-width: 4px;
+  border-radius: var(--radius); background: var(--flaeche); padding: 15px 18px; }
+.stufe-1 { border-left-color: var(--stufe-e); }
+.stufe-2 { border-left-color: var(--stufe-d); }
+.stufe-3 { border-left-color: var(--stufe-c); }
+.stufe-4 { border-left-color: var(--stufe-b); }
+.stufe-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.stufe-zahl { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  font-size: 1.72rem; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+.stufe-1 .stufe-zahl { color: var(--stufe-e); }
+.stufe-2 .stufe-zahl { color: var(--stufe-d); }
+.stufe-3 .stufe-zahl { color: var(--stufe-c); }
+.stufe-4 .stufe-zahl { color: var(--stufe-b); }
+.stufe-name { font-family: Archivo, sans-serif; font-weight: 600; font-size: 1rem; }
+.stufe-alt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+  color: var(--text-still); margin-left: auto; }
+.stufe p { margin: 8px 0 0; font-size: .92rem; }
+.stufe .einschraenkung { color: var(--text-leise); font-size: .85rem; margin-top: 6px;
+  padding-left: 13px; border-left: 2px solid var(--linie); }
+
+table { border-collapse: collapse; width: 100%; font-size: .88rem; margin: 14px 0; }
+.t-huelle { overflow-x: auto; border: 1px solid var(--linie);
+  border-radius: var(--radius); background: var(--flaeche); }
+thead th { background: var(--flaeche-2); color: var(--text-leise);
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .68rem;
+  letter-spacing: .05em; text-transform: uppercase; font-weight: 500;
+  text-align: right; padding: 8px 12px; white-space: nowrap;
+  border-bottom: 1px solid var(--linie); }
+thead th:first-child { text-align: left; }
+tbody td { padding: 6px 12px; border-top: 1px solid var(--linie); text-align: right;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  white-space: nowrap; }
+tbody td:first-child { text-align: left; font-family: "Source Sans 3", sans-serif; white-space: normal; }
+tbody tr:hover { background: var(--flaeche-2); }
+
+.balken-zelle { position: relative; }
+.balken { position: absolute; left: 0; top: 3px; bottom: 3px; opacity: .2; border-radius: 2px; }
+
+.karte { border: 1px solid var(--linie); border-radius: var(--radius);
+  background: var(--flaeche); padding: 18px 20px; margin: 16px 0; }
+.karte h3 { margin-top: 0; }
+.karte p:last-child { margin-bottom: 0; }
+.warnung { border-left: 3px solid var(--stufe-d); }
+.gut { border-left: 3px solid var(--stufe-a); }
+
+.quelle { border: 1px solid var(--linie); border-radius: var(--radius);
+  background: var(--flaeche); padding: 14px 18px; margin-bottom: 10px; }
+.quelle-kopf { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.quelle-name { font-family: Archivo, sans-serif; font-weight: 600; font-size: .97rem; }
+.quelle-herkunft { font-size: .8rem; color: var(--text-still); }
+.quelle a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+  color: var(--akzent); word-break: break-all; }
+.quelle p { font-size: .87rem; color: var(--text-leise); margin: 7px 0 0; }
+.chip { display: inline-block; font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: .68rem; padding: 2px 7px; border-radius: 2px; background: var(--flaeche-2);
+  color: var(--text-leise); border: 1px solid var(--linie-stark); }
+
+ol.schritte { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; }
+ol.schritte li { counter-increment: s; position: relative; padding-left: 34px;
+  margin-bottom: 12px; max-width: 68ch; }
+ol.schritte li::before { content: counter(s); position: absolute; left: 0; top: 1px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem; font-weight: 600;
+  color: var(--akzent); background: var(--akzent-flach); width: 22px; height: 22px;
+  display: grid; place-items: center; border-radius: 2px; }
+
+.fuss { border-top: 1px solid var(--linie); margin-top: 48px; padding: 22px 0 40px;
+  font-size: .82rem; color: var(--text-still); }
+section { scroll-margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="kopf">
+  <div class="huelle">
+    <p class="eyebrow">Gebäude- und Wohnungsregister · Befund</p>
+    <h1>Wie viele Heizungseinträge im GWR sind veraltet?</h1>
+    <p class="lead">Eine Prüfung mit offenen Daten: 3,17 Millionen Gebäude, sechs Tests,
+      und die Frage, bei wie vielen Gebäuden mit Ölheizung im Register in Wirklichkeit
+      längst etwas anderes steht.</p>
+    <p class="stand" id="stand"></p>
+    <nav class="toc">
+      <a href="#antwort">Die Antwort</a>
+      <a href="#sicherheit">Sicherheitsstufen</a>
+      <a href="#basis">Datenbasis</a>
+      <a href="#tests">Die sechs Tests</a>
+      <a href="#kantone">Kantone</a>
+      <a href="#qualitaet">Qualität</a>
+      <a href="#quellen">Quellen</a>
+      <a href="#grenzen">Grenzen</a>
+      <a href="#fazit">Fazit</a>
+    </nav>
+  </div>
+</header>
+
+<main class="huelle">
+
+  <section id="antwort">
+    <h2>Die kurze Antwort</h2>
+    <div class="kennzahlen" id="kzHeader"></div>
+    <p>Das Problem existiert, und es ist messbar. Aber es verteilt sich ungleich: Ein paar
+      Dutzend Fälle sind praktisch sicher, einige tausend sind wahrscheinlich, und der grosse
+      Rest ist ein Indiz. Wie belastbar ein Fall ist, hängt allein davon ab, welcher Beleg
+      dahintersteht.</p>
+    <div class="karte warnung">
+      <h3>Was diese Seite nicht kann</h3>
+      <p>Die Tabellen unten ordnen nach <strong>Beleglage</strong>, sie schätzen keine
+        Wahrscheinlichkeit: "nahezu sicher" heisst hier, dass der Beleg stark ist, nicht dass
+        es nachgemessen wurde. Diese Seite hält den Stand vom 14.09.2026 fest. Gemessen wurde
+        die Trefferquote erst danach, gegen den Zuger Tankkataster und an den Korrekturen, die
+        das Register später selbst vornahm (<a href="belegwirkung.md">belegwirkung.md</a>,
+        <a href="zeitreihe.md">zeitreihe.md</a>).</p>
+    </div>
+  </section>
+
+  <section id="sicherheit">
+    <h2>Gebäude mit Ölheizung im Register: wie sicher ist der Verdacht?</h2>
+    <p id="oelEinleitung"></p>
+    <div class="stufen" id="stufen"></div>
+    <p class="mono" style="font-size:.82rem;color:var(--text-still)">
+      Die Stufen überschneiden sich nicht. Ein Gebäude erscheint immer nur in der stärksten
+      Kategorie, für die es qualifiziert.</p>
+  </section>
+
+  <section id="basis">
+    <h2>Worauf das beruht</h2>
+    <div class="kennzahlen" id="kzBasis"></div>
+    <p>Alle Belege zusammen ergeben <strong id="belegSumme"></strong> Verdachtsfälle über
+      alle Energieträger. Ein Gebäude kommt nur auf die Liste, wenn mindestens ein echter
+      Beleg vorliegt. Ein alter Registereintrag allein zählt ausdrücklich nicht als Beleg:</p>
+    <div class="t-huelle"><table id="tBelege"></table></div>
+  </section>
+
+  <section id="tests">
+    <h2>Die sechs Tests</h2>
+
+    <h3>Test 1 · Wie alt sind die Einträge?</h3>
+    <p>Verteilung der Informationsquelle über alle Schweizer Wohngebäude. Quelle 860 heisst
+      nicht falsch, sondern ungeprüft: Der Eintrag stammt aus der Volkszählung 2000 und wurde
+      seither nie bestätigt.</p>
+    <div class="t-huelle"><table id="tTest1"></table></div>
+
+    <h3>Test 2 · Gibt es genug Belege pro Gemeinde?</h3>
+    <p id="test2Text"></p>
+    <div class="t-huelle"><table id="tTest2"></table></div>
+    <div class="karte warnung">
+      <p style="margin:0"><strong>Das ist das Stop-Signal.</strong> Die mittlere Gemeinde hat
+        weniger als zwei Heizungs-Baugesuche pro Jahr. Für einen Bericht, der die Mühe lohnt,
+        reicht das nicht.</p>
+    </div>
+
+    <h3>Test 3 · Werden Baugesuche nachgeführt?</h3>
+    <p>Heizungs-Baugesuche, die mindestens sechs Monate zurückliegen und eindeutig einem
+      Gebäude zugeordnet sind, gegen den heutigen Registerstand.</p>
+    <div class="t-huelle"><table id="tTest3"></table></div>
+    <p>Der naheliegende Einwand lautet: Sechs Monate sind zu kurz, gebaut wird später.
+      Deshalb dieselbe Auswertung nach Alter des Gesuchs:</p>
+    <div class="t-huelle"><table id="tTest3Alter"></table></div>
+
+    <h3>Test 4 · Photovoltaik, als einziger Beleg in allen 26 Kantonen</h3>
+    <p>Gebäude mit registrierter Solaranlage, fossilem Heizungseintrag und Quelle 860. Ein
+      schwaches Indiz: Eine PV-Anlage sagt nichts über die Heizung, sie zeigt nur, dass die
+      Eigentümerschaft investiert hat. Ihr Wert liegt woanders: <strong>Sie ist der einzige
+      externe Beleg, den es überall gibt.</strong> Für die 13 Kantone ohne offene
+      Anlagendaten ist sie die einzige mögliche Gegenprobe.</p>
+    <div class="kennzahlen" id="kzSolar"></div>
+    <div class="t-huelle"><table id="tSolarKantone"></table></div>
+    <div class="karte gut">
+      <p style="margin:0">Die Zuordnung läuft über zwei getrennte Wege: über die
+        EGID-Spalte des BFE-Datensatzes und über einen 20-m-Umkreis. Wo beide greifen,
+        nennen sie fast immer dasselbe Gebäude. Der Grund ist banal und trotzdem leicht zu
+        übersehen: <strong>Eine Solaranlage liegt auf dem Gebäude, eine Erdsonde
+        daneben.</strong> Derselbe Radius ist beim einen Beleg beinahe exakt und beim
+        anderen eine Nachbarschaftssuche.</p>
+    </div>
+
+    <h3>Test 5 · Erdwärmesonden gegen den Registerstand</h3>
+    <p>Der schärfste Test. Niemand bohrt 250 Meter tief, um eine Ölheizung zu betreiben.
+      Gezeigt wird, wie viele bewilligte Anlagen im Register überhaupt ein Gebäude mit
+      Wärmepumpe im Umkreis von 20 m haben.</p>
+    <div class="t-huelle"><table id="tTest5"></table></div>
+    <div class="karte gut">
+      <p>13 Kantone, 13 Ämter, 13 Datenformate. Zürich, Bern, Thurgau und Schaffhausen
+        messen unabhängig voneinander fast dasselbe. Uri fällt ab, weil dort nur
+        "Konzession erteilt" gemeldet wird: bewilligt, aber nicht nachweislich gebohrt.
+        Genf fällt ab, weil dort bei fast der Hälfte der Gebäude im Umkreis "unbestimmt"
+        als Energieträger steht.</p>
+      <p style="margin-bottom:0"><strong>Am anderen Ende stehen St. Gallen und Appenzell
+        Innerrhoden:</strong> Dort trägt das nächstgelegene Gebäude in 84 bzw. 86 % der
+        Fälle bereits eine Wärmepumpe im GWR, bei kantonalen Hintergrundraten von 30 %.
+        Diese Kantone übertragen ihre Bewilligungsdaten offenbar schon ins Register. Wo
+        das geschieht, bleibt für einen Dienst wie diesen wenig zu tun.</p>
+    </div>
+    <div class="karte warnung">
+      <h3>Luzern ist nicht dabei, und das ist eine Erkenntnis</h3>
+      <p>Luzern liefert den attributreichsten Datensatz der Schweiz. Trotzdem fehlt er in
+        dieser Tabelle. Gemessen an der Entfernung zum nächstgelegenen Gebäude liegen
+        Zürich, Bern und St. Gallen bei einem Median von 8 bis 9 Metern, Luzern bei
+        24 Metern.</p>
+      <p style="margin-bottom:0">Der entscheidende Beleg steht im Ergebnis selbst: In
+        Luzern tragen 18,2 % der Gebäude im Umkreis von 0 bis 5 m eine Wärmepumpe, bei
+        einer kantonalen Hintergrundrate von 21,8 %. Selbst die nächstgelegenen Gebäude
+        sind also <em>seltener</em> Wärmepumpen als ein zufällig gezogenes Luzerner
+        Wohngebäude. Die Koordinate meint die Parzelle, nicht das Gebäude. Ohne diese
+        Korrektur hätte Luzern 3'029 Widerspruchsfälle beigesteuert, die grösstenteils
+        Nachbarn gewesen wären.</p>
+    </div>
+
+    <h3>Test 6 · Neun Kantone, mit Datum</h3>
+    <p>Bern, Solothurn, Thurgau, Genf, Schwyz, Basel-Landschaft, St. Gallen, Appenzell
+      Innerrhoden und Zug führen ein Datum und einen Status, der eine gebaute Anlage von
+      einer bloss bewilligten unterscheidet. Das ist die beste Messgrundlage im Projekt,
+      besser noch als die Baugesuche: Hier steht im Datensatz, dass gebaut wurde.
+      Basel-Landschaft liefert sogar ein Bohrregister - dort meint das Jahr die
+      Ausführung, nicht die Bewilligung.</p>
+    <div class="t-huelle"><table id="tTest6"></table></div>
+    <div class="karte gut">
+      <p style="margin:0"><strong>Die Nachführung wird besser.</strong> Der Rückstand liegt
+        im Altbestand, nicht im laufenden Betrieb. Das spricht für eine einmalige Bereinigung
+        und gegen einen laufenden Abgleich.</p>
+    </div>
+  </section>
+
+  <section id="kantone">
+    <h2>Kantonsvergleich</h2>
+    <p>Der Pflege-Index fasst Vollständigkeit, Aktualität und Herkunft der Heizungsangabe
+      zusammen. Das Pflegemuster sagt, <em>wie</em> gepflegt wird: laufend, durch einen
+      einzelnen Sammelimport, sporadisch, oder gar nicht mehr.</p>
+    <div class="t-huelle"><table id="tKantone"></table></div>
+    <div class="karte warnung">
+      <h3>Der Index misst Pflege, nicht Richtigkeit</h3>
+      <p>Basel-Stadt erreicht 100 Punkte, weil 99,1 % aller Wohngebäude dasselbe
+        Aktualisierungsdatum tragen. Das ist ein einziger Import aus der Feuerungskontrolle,
+        kein Nachweis, dass die Einträge stimmen.</p>
+      <p style="margin-bottom:0">Noch deutlicher zeigt es die Stadt Zürich: null Einträge aus
+        der Volkszählung 2000, also nach Test 1 makellos. In Test 3 verfehlt sie bei rund zwei
+        Dritteln der Heizungs-Baugesuche die Nachführung. Metadaten zählen ersetzt nicht,
+        Ereignisse zu prüfen.</p>
+    </div>
+  </section>
+
+  <section id="qualitaet">
+    <h2>Wie verlässlich ist die Zuordnung?</h2>
+    <div class="kennzahlen" id="kzQualitaet"></div>
+    <p>Baugesuche werden auf zwei unabhängigen Wegen einem Gebäude zugeordnet: über das
+      Parzellenpolygon und über die normalisierte Adresse. Beide dienen sich gegenseitig als
+      Kontrolle. Die Übereinstimmung ist der belastbarste Qualitätswert im Projekt.</p>
+
+    <h3>Textextraktion: Regel gegen Sprachmodell</h3>
+    <p>Heizungsereignisse werden über Stichwörter erkannt. An 150 einzeln gelabelten
+      Baugesuchstexten gemessen:</p>
+    <div class="t-huelle"><table id="tExtraktion"></table></div>
+    <p>Die Schwäche der Regel ist nicht das Finden, sondern das Unterscheiden. Sie erkennt
+      nicht, ob eine Heizung neu gebaut oder nur erwähnt wird ("bestehende Pelletsheizung"),
+      ob eine Wärmepumpe eine Wärmepumpe ersetzt, oder ob die Wärmepumpe zu einem Pool gehört.
+      Das Sprachmodell sortierte alle sieben Fehltreffer korrekt aus, übersah dafür fünf
+      Fälle. <strong>Die Kaskade schlägt beide Einzelverfahren.</strong></p>
+  </section>
+
+  <section id="quellen">
+    <h2>Verwendete Quellen</h2>
+    <p>Alle Daten sind offen zugänglich; die Nutzungsbedingungen je Quelle stehen in
+      <a href="lizenzen.md">lizenzen.md</a>. Keine Personendaten.</p>
+    <div id="quellen"></div>
+  </section>
+
+  <section id="grenzen">
+    <h2>Grenzen</h2>
+    <ol class="schritte">
+      <li><strong>Ein Baugesuch beweist nicht, dass gebaut wurde.</strong> Bewilligungen
+        werden nicht immer umgesetzt. Wie gross dieser Anteil ist, lässt sich aus den Daten
+        nicht bestimmen. Das ist die grösste einzelne Unsicherheit.</li>
+      <li><strong>Erdwärmesonden werden über die Distanz zugeordnet</strong>, nicht über eine
+        Gebäudenummer. In dichter Bebauung kann die Anlage zum Nachbargebäude gehören. Der
+        Suchradius von 20 m wurde über eine Sensitivitätsrechnung gewählt; je nach Radius
+        schwankt der Widerspruchsanteil zwischen 13,7 % und 25,6 %.</li>
+      <li><strong>13 von 26 Kantonen liefern Anlagendaten, 13 nicht.</strong> Verdachtsfälle
+        entstehen dort, wo Daten offen sind, nicht dort, wo das Problem am grössten ist.
+        Aargau ist Schlusslicht beim Pflege-Index und liefert keine Anlagendaten. Seit
+        Test 4 schweizweit läuft, gibt es für jeden Kanton wenigstens den Solar-Beleg -
+        aber der ist der schwächste von allen. <strong>Jede Kantonsrangliste hier ist
+        zuerst eine Rangliste der Datenoffenheit.</strong></li>
+      <li><strong>Die Zuordnung über Koordinaten hat eine gemessene Decke.</strong> Gegen
+        die amtlichen EGID des Kantons Zug getestet, findet der 20-m-Umkreis das richtige
+        Gebäude in rund drei Vierteln der Fälle; auch bei 50 m steigt der Wert nur auf vier
+        Fünftel. Ein grösserer Radius löst das nicht, er kauft nur Nachbarn dazu. Die
+        Fallzahlen sind damit eher Unter- als Obergrenzen.</li>
+      <li><strong>Baugesuche erfassen nur einen Teil der Heizungswechsel</strong>, geschätzt
+        10 bis 20 %. Ein Ersatz im Gebäudeinneren ist vielerorts nicht bewilligungspflichtig.
+        Sichtbar wird vor allem die aussen aufgestellte Wärmepumpe.</li>
+      <li><strong>Der Score ist keine Wahrscheinlichkeit.</strong> Die Gewichte waren zuerst
+        gesetzt und wurden später gegen die Kataster von Zug und Genf gehalten; drei Merkmale
+        fielen dabei auf null (<a href="belegwirkung.md">belegwirkung.md</a>).</li>
+      <li><strong>Ein einzelner Registerstand ist eine Momentaufnahme.</strong> Ob ein Eintrag
+        zwischenzeitlich geändert und wieder überschrieben wurde, ist nicht sichtbar. Dafür
+        werden seit September 2026 wöchentliche Snapshots gesammelt.</li>
+    </ol>
+  </section>
+
+  <section id="fazit">
+    <h2>Fazit</h2>
+    <div class="karte">
+      <h3>Das Problem ist real</h3>
+      <p>Mehrere Kantone bestätigen sich unabhängig voneinander. Über ein Drittel der
+        Heizungs-Baugesuche ist nicht nachgeführt, und rund die Hälfte der bewilligten
+        Erdwärmesonden findet im Register keine Entsprechung.</p>
+    </div>
+    <div class="karte">
+      <h3>Für die einzelne Gemeinde bleibt wenig</h3>
+      <p>Die mittlere Gemeinde hätte weniger als zwei Fälle pro Jahr aus Baugesuchen. Nur
+        6 von 2110 Gemeinden hatten am 14.09.2026 mehr als 50 Fälle auf der Liste; der Median
+        der 526 betroffenen Gemeinden lag bei drei. Dazu kommt: Die
+        Kantone führen bereits im grossen Stil nach, und der Rückstand schrumpft Jahr für
+        Jahr, wie Test 6 zeigt.</p>
+    </div>
+    <div class="karte gut">
+      <h3>Was die Zeitreihe seither zeigt</h3>
+      <p>Bis zum 16.11.2026 hat das Register 697 der 3423 Fälle selbst korrigiert, bei 682
+        mit dem vorgeschlagenen Energieträger. Zürich, Aargau und Basel-Landschaft führen
+        in Wellen nach; die Zahlen dazu stehen in <a href="zeitreihe.md">zeitreihe.md</a>.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="fuss huelle">
+  <p>Erzeugt aus einer DuckDB-Pipeline über offene Daten. <span id="fussChecks"></span>
+     Gebäudegenaue Ergebnisse werden bewusst nicht veröffentlicht, die Verdachtslisten
+     bleiben bei der jeweiligen Gemeinde.</p>
+</footer>
+
+<script src="befund_daten.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.BEFUND;
+  if (!D) { document.body.innerHTML = "<p style='padding:2rem'>Daten nicht geladen.</p>"; return; }
+
+  var nf = new Intl.NumberFormat("de-CH");
+  function n(x) { return x == null ? "–" : nf.format(Math.round(x)); }
+  function p(x) { return x == null ? "–" : String(x).replace(".", ",") + " %"; }
+  function k(x) { return x == null ? "–" : String(x).replace(".", ","); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function kacheln(ziel, items) {
+    document.getElementById(ziel).innerHTML = items.map(function (i) {
+      return '<div class="kz"><div class="kz-wert">' + i[0] +
+             '</div><div class="kz-label">' + i[1] + '</div></div>';
+    }).join("");
+  }
+
+  function tabelle(id, kopf, reihen) {
+    document.getElementById(id).innerHTML =
+      "<thead><tr>" + kopf.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") +
+      "</tr></thead><tbody>" + reihen.map(function (r) {
+        return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody>";
+  }
+
+  document.getElementById("stand").textContent =
+    "Datenstand Register " + D.stand + " · Auswertung " + D.erzeugt +
+    " · " + D.checks + " automatische Datenprüfungen";
+  document.getElementById("fussChecks").textContent =
+    D.checks + " Prüfungen laufen über die Daten, bevor eine Zahl in diesen Bericht wandert.";
+
+  // ------------------------------------------------------------ Kopfzahlen
+  var b = D.basis, kern = D.kern;
+  kacheln("kzHeader", [
+    [n(b.wohngebaeude), "Wohngebäude in der Schweiz"],
+    [p(kern.pct_fossil), "davon fossil beheizt"],
+    [p(kern.pct_vz2000), "Eintrag aus der Volkszählung 2000"],
+    [k(kern.median_alter) + " J.", "Median-Alter der Heizungsangabe"]
+  ]);
+
+  // ------------------------------------------------------------ Sicherheitsstufen
+  var summe = D.oel_stufen.reduce(function (a, s) { return a + s.faelle; }, 0);
+  document.getElementById("oelEinleitung").innerHTML =
+    "In den fünf Kantonen mit verfügbaren Anlagendaten tragen <strong>" + n(D.oel_total) +
+    "</strong> Wohngebäude im Register Heizöl. Bei <strong>" + n(summe) + "</strong> davon " +
+    "gibt es einen Hinweis, dass das nicht mehr stimmt. Nach Belegstärke geordnet:";
+
+  document.getElementById("stufen").innerHTML = D.oel_stufen.map(function (s, i) {
+    return '<div class="stufe stufe-' + (i + 1) + '">' +
+      '<div class="stufe-kopf">' +
+        '<span class="stufe-zahl">' + n(s.faelle) + '</span>' +
+        '<span class="stufe-name">' + esc(s.stufe) + '</span>' +
+        (s.davon_alt != null
+          ? '<span class="stufe-alt">davon ' + n(s.davon_alt) +
+            (i < 2 ? ' älter als 18 Monate' : ' mit Bohrung vor 2021') + '</span>'
+          : '') +
+      '</div>' +
+      '<p>' + esc(s.beschreibung) + '</p>' +
+      '<p class="einschraenkung">' + esc(s.einschraenkung) + '</p></div>';
+  }).join("");
+
+  // ------------------------------------------------------------ Datenbasis
+  kacheln("kzBasis", [
+    [n(b.gebaeude_ch), "bestehende Gebäude, 26 Kantone"],
+    [n(b.gemeinden), "Gemeinden"],
+    [n(b.baugesuche_vorhaben), "Bauvorhaben Kanton Zürich"],
+    [n(b.heizungsgesuche), "davon mit Heizungsbezug"],
+    [n(b.anlagen_gebaut), "gebaute Wärmenutzungsanlagen"],
+    [n(b.pv), "Photovoltaikanlagen"]
+  ]);
+
+  var belegSumme = D.belege.reduce(function (a, x) { return a + x.faelle; }, 0);
+  document.getElementById("belegSumme").textContent = n(belegSumme);
+  var maxBeleg = Math.max.apply(null, D.belege.map(function (x) { return x.faelle; }));
+  tabelle("tBelege", ["Beleglage", "Fälle", "mittlerer Score"],
+    D.belege.map(function (x) {
+      return [esc(x.gruppe),
+              '<span class="balken-zelle">' + n(x.faelle) + "</span>",
+              n(x.score)];
+    }));
+
+  // ------------------------------------------------------------ Tests
+  tabelle("tTest1", ["Informationsquelle", "Code", "Gebäude", "Anteil"],
+    D.test1.map(function (x) { return [esc(x.quelle), esc(x.code), n(x.gebaeude), p(x.pct)]; }));
+
+  var t2 = D.test2[0];
+  document.getElementById("test2Text").innerHTML =
+    "Heizungs-Baugesuche pro Gemeinde und Jahr im Kanton Zürich, über " + n(t2.gemeinden) +
+    " Gemeinden. Die Verteilung ist extrem schief: Zürich und Winterthur zusammen haben mehr " +
+    "als alle übrigen Gemeinden zusammen.";
+  tabelle("tTest2", ["Gemeinden", "Minimum", "25 %", "Median", "75 %", "Maximum"],
+    [[n(t2.gemeinden), k(t2.min), k(t2.q25), "<strong>" + k(t2.median) + "</strong>",
+      k(t2.q75), k(t2.max)]]);
+
+  var statusTxt = {
+    "nachgefuehrt": "nachgeführt (neuer Träger, Datum nach dem Gesuch)",
+    "nicht_nachgefuehrt": "nicht nachgeführt (alter Träger, Datum davor)",
+    "datum_neu_traeger_anders": "angefasst, Energieträger passt nicht",
+    "traeger_passt_datum_alt": "Träger passt, Datum älter als das Gesuch",
+    "quelle_869_nach_gesuch": "angefasst, Quelle Baubewilligung",
+    "unklar": "unklar (keine Angabe im Register)"
+  };
+  tabelle("tTest3", ["Stand im Register", "Fälle", "Anteil"],
+    D.test3.map(function (x) {
+      return [esc(statusTxt[x.status] || x.status), n(x.faelle), p(x.pct)];
+    }));
+
+  tabelle("tTest3Alter", ["Alter des Baugesuchs", "Fälle", "nachgeführt", "Lücke"],
+    D.test3_alter.map(function (x) {
+      return [esc(x.klasse), n(x.faelle), p(x.nachgefuehrt), p(x.luecke)];
+    }));
+
+  var ktName = {
+    ZH: "Zürich", BE: "Bern", LU: "Luzern", UR: "Uri", SZ: "Schwyz", OW: "Obwalden",
+    NW: "Nidwalden", GL: "Glarus", ZG: "Zug", FR: "Freiburg", SO: "Solothurn",
+    BS: "Basel-Stadt", BL: "Basel-Landschaft", SH: "Schaffhausen",
+    AR: "Appenzell A.Rh.", AI: "Appenzell I.Rh.", SG: "St. Gallen", GR: "Graubünden",
+    AG: "Aargau", TG: "Thurgau", TI: "Tessin", VD: "Waadt", VS: "Wallis",
+    NE: "Neuenburg", GE: "Genf", JU: "Jura"
+  };
+  tabelle("tTest5", ["Kanton", "Anlagen mit Gebäude", "mit Wärmepumpe im Register", "Widerspruch"],
+    D.test5.map(function (x) {
+      return [esc(ktName[x.kanton] || x.kanton), n(x.anlagen), p(x.mit_wp), n(x.widerspruch)];
+    }));
+
+  tabelle("tTest6", ["Alter der Bewilligung", "Anlagen", "im Register erfasst"],
+    D.test6.map(function (x) { return [esc(x.klasse), n(x.anlagen), p(x.erfasst)]; }));
+
+  // ------------------------------------------------------------ Solar, schweizweit
+  if (D.solar_ch) {
+    kacheln("kzSolar", [
+      [n(D.solar_ch.anlagen), "Photovoltaikanlagen in allen 26 Kantonen"],
+      [n(D.solar_ch.gebaeude_verdacht), "Gebäude mit Anlage und fossilem Eintrag aus 2000"],
+      [p(D.solar_ch.wege_einig_pct), "Übereinstimmung der beiden Zuordnungswege"]
+    ]);
+    tabelle("tSolarKantone", ["Kanton", "Gebäude mit Verdacht"],
+      D.solar_ch.je_kanton.map(function (x) {
+        return [esc(ktName[x.kanton] || x.kanton), n(x.gebaeude)];
+      }));
+  }
+
+  // ------------------------------------------------------------ Kantone
+  var stufeVon = { A: "a", B: "b", C: "c", D: "d", E: "e" };
+  tabelle("tKantone",
+    ["Kanton", "Note", "Index", "Pflegemuster", "Wohngebäude", "Quelle 860", "Alter", "fossil"],
+    D.kantone.map(function (x) {
+      var farbe = "var(--stufe-" + (stufeVon[x.note] || "e") + ")";
+      return [esc(ktName[x.kanton] || x.kanton),
+              '<span style="color:' + farbe + ';font-weight:600">' + esc(x.note) + "</span>",
+              k(x.idx),
+              '<span class="chip">' +
+                esc(x.muster === "Rueckstand" ? "Rückstand" : x.muster) + "</span>",
+              n(x.wohngebaeude), p(x.pct_vz2000), k(x.alter_med) + " J.", p(x.pct_fossil)];
+    }));
+
+  // ------------------------------------------------------------ Qualität
+  kacheln("kzQualitaet", [
+    [p(D.match.zugeordnet), "Baugesuche einem Gebäude zugeordnet"],
+    [p(D.match.konsistenz), "Übereinstimmung Parzelle gegen Adresse"],
+    [p(D.match.pv_valid), "Übereinstimmung bei Solaranlagen"],
+    [String(D.checks), "automatische Datenprüfungen"]
+  ]);
+
+  tabelle("tExtraktion", ["Verfahren", "Precision", "Recall", "F1"],
+    D.extraktion.map(function (x, i) {
+      var stark = i === 2;
+      var z = function (v) { return stark ? "<strong>" + p(v) + "</strong>" : p(v); };
+      return [(stark ? "<strong>" : "") + esc(x.verfahren) + (stark ? "</strong>" : ""),
+              z(x.precision), p(x.recall), k(x.f1)];
+    }));
+
+  // ------------------------------------------------------------ Quellen
+  var quellen = [
+    { name: "Gebäude- und Wohnungsregister, öffentliche Daten Stufe A",
+      herkunft: "Bundesamt für Statistik",
+      url: "https://public.madd.bfs.admin.ch/zh.zip",
+      text: "Alle 26 Kantone, täglich aktualisiert, rund 910 MB. Liefert Energieträger, " +
+            "Wärmeerzeuger, Informationsquelle und Aktualisierungsdatum je Gebäude. Die " +
+            "Codelisten stammen aus der mitgelieferten Katalogdatei, nicht aus Sekundärquellen." },
+    { name: "Baugesuche im Kanton Zürich",
+      herkunft: "Statistisches Amt des Kantons Zürich",
+      url: "https://opendata.swiss/de/dataset/baugesuche-im-kanton-zurich",
+      text: "Täglich aktualisiert, vollständig gesammelt seit Herbst 2024. Enthält " +
+            "Projektbeschrieb, Standort und Katasternummer; Personendaten sind entfernt. " +
+            "Ab 2025 mit Parzellengeometrie." },
+    { name: "Erdwärmesonden Kanton Bern",
+      herkunft: "Amt für Geoinformation des Kantons Bern",
+      url: "https://geofiles.be.ch/geoportal/pub/download/ERDSOND/erdsond.gpkg.zip",
+      text: "14 661 Bohrungen mit Bewilligungsdatum ab 1980 und Ausführungsstatus. Die " +
+            "einzige Quelle neben Thurgau, die eine gebaute Anlage von einer bloss " +
+            "bewilligten unterscheidet." },
+    { name: "Wärmenutzungsanlagen Kanton Zürich",
+      herkunft: "AWEL, Amt für Abfall, Wasser, Energie und Luft",
+      url: "https://maps.zh.ch/wfs/AwelGSWaermewwwZHWFS",
+      text: "Erdwärmesonden, Erdregister sowie Grundwasser- und Quellfassungen mit " +
+            "Wärmenutzung, zusammen 39 470 Anlagen. Ohne Bohrdatum: 87 % der Anlagennummern " +
+            "beginnen mit \"00\"." },
+    { name: "Erdwärmesondenbohrungen Kanton Thurgau",
+      herkunft: "Kanton Thurgau",
+      url: "https://ows.geo.tg.ch/geofy_access_proxy/erdwaerme",
+      text: "4 532 Bohrungen mit Datum und Status \"ausgebaut, in Nutzung\"." },
+    { name: "Erdwärmesonden Kanton Schaffhausen",
+      herkunft: "Amt für Geoinformation Kanton Schaffhausen",
+      url: "https://wfs.geo.sh.ch/wfs",
+      text: "1 235 Anlagen. Als einziger Kanton in WGS84 statt LV95, die Koordinaten müssen " +
+            "transformiert werden. Braucht WFS 1.1.0, die Version 2.0.0 antwortet mit Fehler." },
+    { name: "Konzessionen Erdsonden Kanton Uri",
+      herkunft: "Lisag AG, Geoinformation Kanton Uri",
+      url: "https://geo.ur.ch/wfs",
+      text: "555 Anlagen, ausschliesslich mit Status \"Konzession erteilt\". Bewilligt heisst " +
+            "hier nicht gebohrt, deshalb aus der datierten Auswertung ausgeschlossen." },
+    { name: "Elektrizitätsproduktionsanlagen",
+      herkunft: "Bundesamt für Energie, Daten aus dem Herkunftsnachweissystem (Pronovo)",
+      url: "https://data.geo.admin.ch/ch.bfe.elektrizitaetsproduktionsanlagen/elektrizitaetsproduktionsanlagen/elektrizitaetsproduktionsanlagen_2056.csv.zip",
+      text: "333 313 Anlagen. Achtung: Der auf opendata.swiss verlinkte Pfad liefert eine auf " +
+            "exakt 100 000 Zeilen gekürzte Datei, die für Zürich nur bis Oktober 2022 reicht." }
+  ];
+  document.getElementById("quellen").innerHTML = quellen.map(function (q) {
+    return '<div class="quelle"><div class="quelle-kopf">' +
+      '<span class="quelle-name">' + esc(q.name) + '</span>' +
+      '<span class="quelle-herkunft">' + esc(q.herkunft) + '</span></div>' +
+      '<a href="' + esc(q.url) + '" target="_blank" rel="noopener">' + esc(q.url) + '</a>' +
+      '<p>' + esc(q.text) + '</p></div>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

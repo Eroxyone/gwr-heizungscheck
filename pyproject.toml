@@ -1,0 +1,32 @@
+# Das Projekt ist eine Sammlung von Skripten und SQL-Dateien, kein installierbares Paket.
+# Hier steht deshalb nur die Konfiguration der Werkzeuge; die Abhaengigkeiten stehen in
+# requirements.txt.
+
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # Importreihenfolge
+    "B",        # bugbear: wahrscheinliche Fehler
+    "UP",       # veraltete Sprachmittel
+    "SIM",      # vereinfachbare Konstrukte
+]
+# Zeilenlaenge wird nicht erzwungen: Die langen Zeilen sind eingebettetes SQL und
+# Markdown-Tabellen, die umbrochen schlechter lesbar waeren.
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+# Die Skripte in src/ importieren einander ohne Paketpraefix.
+known-first-party = [
+    "config", "fmt", "pipeline", "pruefliste", "ingest", "ingest_baugesuche",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

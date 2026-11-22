@@ -1,0 +1,15 @@
+# Daten gehoeren auf das Volume, nicht ins Image
+data/raw/
+data/processed/
+data/snapshots/
+logs/
+
+.git/
+.github/
+.venv/
+venv/
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.duckdb
+*.duckdb.wal

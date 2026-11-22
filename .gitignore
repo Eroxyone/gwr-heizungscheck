@@ -1,0 +1,32 @@
+# Rohdaten nie ins Git
+data/raw/
+data/processed/
+!data/labels/
+*.duckdb
+*.duckdb.wal
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Snapshots und Protokolle
+data/snapshots/
+logs/
+
+# Zwischenprodukt des Dashboard-Exports; die .js-Fassung ist im Git, damit
+# reports/dashboard.html nach dem Klonen sofort funktioniert
+reports/dashboard_data.json
+reports/befund_daten.json
+
+# Werkzeuge
+.pytest_cache/
+.ruff_cache/
