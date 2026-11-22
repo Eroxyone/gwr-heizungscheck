@@ -1,5 +1,6 @@
 # GWR-Heizungscheck
 
+[![CI](https://github.com/Eroxyone/gwr-heizungscheck/actions/workflows/ci.yml/badge.svg)](https://github.com/Eroxyone/gwr-heizungscheck/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB)](requirements.txt)
 [![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-2ea44f)](LICENSE)
 
@@ -11,7 +12,7 @@ schnell die Kantone selbst nachführen. Code und Berichte stehen frei zur Verfü
 Pipeline über **3,17 Mio Gebäude in allen 26 Kantonen**, 13 kantonale Anlagenregister,
 Baugesuche aus dem Amtsblattportal und dem Kanton Zürich, Photovoltaikanlagen des BFE.
 Python und DuckDB, Bronze/Silver/Gold, wöchentliche Snapshot-Zeitreihe, 85 Prüfungen auf den
-echten Daten, 39 Tests auf synthetischen Daten.
+echten Daten, 39 Tests auf synthetischen Daten in der CI.
 
 **Status:** abgeschlossen. Die Frage der Studie ist beantwortet, die Zeitreihe reicht bis zum
 16.11.2026, das Repo wird nicht aktiv weiterentwickelt. Fragen und Hinweise gern als Issue.
@@ -273,7 +274,7 @@ Drei Ebenen, von billig bis aufwendig:
 
 | Ebene | Was sie prüft | Wann |
 |---|---|---|
-| `pytest`, 39 Tests | Vier der 22 SQL-Schritte (Silver und Gold des schweizweiten Strangs, die Stichwortregel) laufen unverändert über ein erfundenes Register mit zwei Snapshot-Ständen und über 150 gelabelte Baugesuchstexte; jede erwartete Zahl lässt sich von Hand nachzählen. Dazu Formatierung, Anonymisierung und der Umgang mit fehlenden Quellen. | ohne Rohdaten, in Sekunden |
+| `pytest`, 39 Tests | Vier der 22 SQL-Schritte (Silver und Gold des schweizweiten Strangs, die Stichwortregel) laufen unverändert über ein erfundenes Register mit zwei Snapshot-Ständen und über 150 gelabelte Baugesuchstexte; jede erwartete Zahl lässt sich von Hand nachzählen. Dazu Formatierung, Anonymisierung und der Umgang mit fehlenden Quellen. | bei jedem Push in der CI, ohne Rohdaten, in Sekunden |
 | `python src/checks.py`, 85 Prüfungen | Behauptungen über die echten Daten, darunter alles zum Verdachts-Layer, den die Tests nicht abdecken: Schlüsseleindeutigkeit, Wertebereiche, Koordinaten innerhalb der Schweiz, Codelisten-Abdeckung, Konsistenz von Gemeinde- und Kantonssummen, Snapshot-Integrität, festgeschriebene Regressionswerte. | nach jedem Pipelinelauf; letzter Stand in [reports/checks_baseline.txt](reports/checks_baseline.txt) |
 | Messung gegen Fremddaten | Zuordnung gegen die amtlichen EGID des Kantons Zug, Verdacht gegen die Kataster von Genf und Zug, Liste gegen die Korrekturen, die das Register später selbst vornahm. | je Bericht |
 
