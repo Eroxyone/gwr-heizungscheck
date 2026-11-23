@@ -153,7 +153,7 @@ SELECT kanton,
             WHEN alter_jahre < 10     THEN '2 5 bis 9 Jahre'
             WHEN alter_jahre < 15     THEN '3 10 bis 14 Jahre'
             WHEN alter_jahre < 20     THEN '4 15 bis 19 Jahre'
-            ELSE                           '5 20 Jahre und aelter' END     AS altersklasse,
+            ELSE                           '5 20 Jahre und älter' END     AS altersklasse,
        count(*)                                                            AS gebaeude,
        round(100.0 * count(*) / sum(count(*)) OVER (PARTITION BY kanton), 1) AS pct
 FROM v_gold_basis GROUP BY 1, 2;

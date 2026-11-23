@@ -7,11 +7,14 @@
       zeigen aber auch, dass mehrere Kantone gerade selbst nachführen, und zwar in Schüben
       von einigen tausend Einträgen.</p>
     <p class="stand">Validierungsstudie zum eidgenössischen Gebäude- und Wohnungsregister (GWR),
-      September bis November 2026, abgeschlossen. Registerstand der Auswertung 14.09.2026,
-      Zeitreihe bis 16.11.2026.</p>
+      September bis November 2026, abgeschlossen. Registerstand 14.09.2026 für die ganze
+      Schweiz und 13.09.2026 für die Zürcher Detailauswertung, Zeitreihe bis 16.11.2026.</p>
 
     <figure class="diagramm treffer-kopf">
       <h2>Wie oft ein Verdacht zutrifft</h2>
+      <p class="erklaerung">Verdacht heisst: Das Register führt eine Ölheizung, aber ein Beleg
+        deutet auf einen Wechsel hin, etwa eine bewilligte Erdwärmesonde neben dem Gebäude.
+        Geprüft ist das an den Gebäuden, zu denen der Kanton Zug einen Tankkataster führt.</p>
       <p class="einheit">Anteil der Öleinträge, zu denen der Kanton Zug keinen Öltank mehr in
         Betrieb führt, Registerstand 14.09.2026</p>
   <div class="balken" role="img"
@@ -90,8 +93,8 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
       <dd>der Verdachtsfälle treffen zu, wenn der Beleg jünger ist als der Registereintrag.
         Liegt der Beleg vor dem Eintrag, sind es 13,3 %, kaum mehr als die Grundrate von 8,8 %.
         <span class="grenze">Gemessen am Öltankkataster eines einzigen Kantons (Zug),
-        Vertrauensbereich 71 bis 88 %. Prüfbar war nur gut die Hälfte der Zuger Listenfälle;
-        siehe Grenzen.</span></dd>
+        Vertrauensbereich 71 bis 88 %. Prüfen liess sich nur gut die Hälfte der Zuger
+        Fälle; siehe Grenzen.</span></dd>
     </div>
     <div>
       <dt>2'000 bis 5'000<small>je Woche, Sept. bis Nov. 2026</small></dt>
@@ -123,15 +126,13 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
   <p>Ein einzelner Snapshot des Registers zeigt nur seinen heutigen Zustand. Aufschlussreicher
     ist die Bewegung, und die lässt sich nachträglich nicht beschaffen. Die Pipeline legt
     deshalb jede Woche einen Snapshot aller 26 Kantone ab und vergleicht ihn mit dem
-    vorherigen. Das Ergebnis: Das Register wird in Wellen nachgeführt.</p>
-    <figure class="diagramm breit">
+    vorherigen. Diese Vergleiche zeigen, dass das Register in Wellen nachgeführt wird.</p>
+    <figure class="diagramm">
       {{ZEITREIHE}}
-      <figcaption>Zürich, Aargau und Basel-Landschaft änderten im Herbst 2026 in einzelnen
-        Wochen mehrere tausend Energieträger. In Zürich stellten diese Wellen in neun Wochen
-        2'720 Wohngebäude von fossil auf nicht fossil um; im Aargau wurden vor allem bisher
-        unbestimmte Energieträger ergänzt. Die übrigen 23 Kantone bewegen zusammen weniger als
-        einen Eintrag je 1'000 Gebäude und Woche. Verglichen sind zehn Wochen-Snapshots des GWR;
-        <a href="reports/zeitreihe.html">alle Werte je Kanton</a>.</figcaption>
+      <figcaption>Zürich, Aargau und Basel-Landschaft änderten in einzelnen Wochen mehrere
+        tausend Energieträger, im Aargau vor allem bisher unbestimmte Einträge. Die übrigen 23
+        Kantone bleiben zusammen unter einem Eintrag je 1'000 Gebäude und Woche.
+        <a href="reports/zeitreihe.html">Alle Werte je Kanton</a>.</figcaption>
     </figure>
   <p>In neun Wochen stellte der Kanton Zürich 2'720 Wohngebäude von fossil auf nicht fossil
     um, Gemeinde für Gemeinde, nach seinem eigenen Leitfaden. 650 davon standen auf der Liste
@@ -213,18 +214,20 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
 <section class="abschnitt" id="grenzen">
   <h2>Grenzen</h2>
   <ul>
-    <li><b>Ein Kanton als Massstab.</b> Die Trefferquote von 80,8 % beruht auf 78 prüfbaren
-      Fällen aus Zug, einem kleinen Kanton mit Tankkataster. Von den 144 Zuger Listenfällen
-      liess sich nur gut die Hälfte prüfen: Gasheizungen kennt der Kataster nicht, und bei
-      einem Teil der Öleinträge führt er keinen Tank. Zählt man die nicht prüfbaren Fälle alle
-      als Fehlschlag oder alle als Treffer, liegt die Trefferquote der Zuger Liste zwischen
-      44 und 90 %.</li>
+    <li><b>Ein Kanton als Massstab.</b> Im Kanton Zug erreichten 144 Gebäude eine Stufe der
+      Verdachtsliste. Prüfen liessen sich 79 davon: Gasheizungen kennt der Tankkataster nicht,
+      und bei einem Teil der Öleinträge führt er keinen Tank. 78 der 79 haben einen Beleg, der
+      jünger ist als der Eintrag; auf ihnen beruhen die 80,8 %. Zählt man die nicht prüfbaren
+      Fälle alle als Fehlschlag oder alle als Treffer, liegt die Trefferquote zwischen 44 und
+      90 %. Wie die Zuger Zahlen zusammenhängen, steht in der
+      <a href="docs/methode.html#die-zuger-fallzahlen">Methode</a>.</li>
     <li><b>Zuordnung über Koordinaten.</b> Liegt nur der Standort einer Anlage vor, enthält ein
       Umkreis von 20 Metern das richtige Gebäude bei 73,8 % der Anlagen, im Schnitt unter 1,87
       Gebäuden. Das nächstgelegene Gebäude ist nur bei 64,7 % das richtige. Gemessen an den
       amtlichen Gebäudenummern des Kantons Zug.</li>
     <li><b>Textauswertung nicht unabhängig geprüft.</b> Die Erkennung von Heizungswechseln in
-      Baugesuchen erreicht eine Trefferquote von 98,7 % (78 von 79), gemessen an 150 Texten, die ein
+      Baugesuchen erreicht eine Precision von 98,7 % (78 von 79 erkannten Fällen richtig) und
+      einen Recall von 94,0 % (78 von 83 tatsächlichen Fällen gefunden), gemessen an 150 Texten, die ein
       Sprachmodell gelabelt hat und an denen auch die Anweisung für das prüfende Modell
       entwickelt wurde. Eine frische, von einer Person gelabelte Stichprobe fehlt.</li>
     <li><b>Keine Prüfung vor Ort.</b> Keine Gemeinde hat eine Stichprobe der Liste am Gebäude

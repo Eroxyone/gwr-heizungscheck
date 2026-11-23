@@ -408,6 +408,8 @@ def html_bericht(pfad: str) -> str:
 
     def umgeschrieben(m: re.Match) -> str:
         ziel = (ROOT / pfad).parent.joinpath(m.group(1)).resolve().relative_to(ROOT).as_posix()
+        if ziel == "README.md":             # im Repository die Übersicht, hier die Startseite
+            return f'<a href="{relativ(pfad, "index.html")}{m.group(2) or ""}">{m.group(3)}</a>'
         if ziel not in BERICHTE:
             raise Baufehler(f"{pfad}: Verweis auf {m.group(1)}, das keine Seite der Website ist")
         linktext = m.group(3)
@@ -545,10 +547,12 @@ def zeitreihe_block() -> str:
             f"Einträge je 1'000 Gebäude und Woche.")
     # Beide Fassungen sind für Screenreader verborgen; die Beschreibung hängt am Rahmen, der
     # immer sichtbar ist, gleich welche Fassung die Bildschirmbreite zeigt.
-    breit = zeitreihe_svg(1000, 400, 13.5, 1).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
+    breit = zeitreihe_svg(1000, 400, 13.5, 1).replace(
+        'role="img" aria-labelledby="zr-titel zr-text"', 'aria-hidden="true" focusable="false"')
     # Auf dem Handy wird das Diagramm auf rund 340 px verkleinert; die Schrift ist so gewählt,
     # dass sie dort mindestens 12 px gross bleibt.
-    schmal = zeitreihe_svg(440, 380, 16.0, 2, absolut=False).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
+    schmal = zeitreihe_svg(440, 380, 16.0, 2, absolut=False).replace(
+        'role="img" aria-labelledby="zr-titel zr-text"', 'aria-hidden="true" focusable="false"')
     return (f'<p class="einheit" id="zr-titel">Geänderte Energieträger je Woche und 1\'000 Gebäude</p>'
             f'<ul class="legende">{legende}</ul>'
             f'<p id="zr-text" hidden>{text}</p>'

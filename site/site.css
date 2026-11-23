@@ -17,7 +17,7 @@
   --reihe-ag:     #2D6FB5;
   --reihe-bl:     #C9631C;
   --reihe-zh:     #15866A;
-  --reihe-rest:   #8792A0;
+  --reihe-rest:   #7D8896;
 
   --radius: 4px;
   --breite: 1120px;
@@ -289,3 +289,13 @@ pre.beispiel { font-size: 0.82rem; margin: 0 0 1em; max-width: var(--spalte);
   .tabelle td:first-child { min-width: 6.5rem; }
   .tabelle td.lang { min-width: 17rem; }
 }
+
+/* Erklaerung ueber dem Balkendiagramm im Kopf */
+.treffer-kopf .erklaerung { max-width: 62ch; margin: 6px 0 4px; }
+
+/* Abbildungen im Fliesstext eines Abschnitts: Abstand nach unten, Legende in der Textspalte */
+.abschnitt > figure.diagramm { margin: 8px 0 28px; }
+.abschnitt > figure.diagramm figcaption { max-width: none; }
+
+/* Graue Linien und Balken mit mindestens 3:1 gegen den Hintergrund */
+.balken .strich { background: var(--reihe-rest); }

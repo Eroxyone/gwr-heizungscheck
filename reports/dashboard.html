@@ -136,8 +136,8 @@ h3 { font-size: 0.97rem; }
 .kopf p { margin: 7px 0 0; color: var(--text-leise); max-width: 62ch; }
 .eyebrow {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: .82rem; letter-spacing: .11em; text-transform: uppercase;
-  color: var(--akzent); margin: 0 0 6px;
+  font-size: .82rem; letter-spacing: 0;
+  color: var(--text-leise); margin: 0 0 6px;
 }
 .stand {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -153,7 +153,7 @@ h3 { font-size: 0.97rem; }
   overflow: hidden; margin: 26px 0 34px;
 }
 .kz { background: var(--flaeche); padding: 15px 17px 16px; }
-.kz-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
+.kz-wert { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums;
   font-size: 1.62rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
 .kz-label { font-size: .82rem; color: var(--text-leise); margin-top: 5px; }
 .kz-fuss { font-size: .82rem; color: var(--text-still); margin-top: 2px; }
@@ -217,9 +217,9 @@ section { margin-bottom: 40px; }
 .detail h3 span { color: var(--text-still); font-weight: 500; font-size: .82rem; margin-left: 6px; }
 .liste { display: flex; flex-direction: column; gap: 6px; }
 .liste-zeile { display: grid; grid-template-columns: 1fr 54px auto; gap: 9px; align-items: center; font-size: .82rem; }
-.liste-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-leise); }
+.liste-name { color: var(--text-leise); line-height: 1.3; }
 .liste-schiene { height: 9px; background: var(--flaeche-2); border-radius: 2px; overflow: hidden; }
-.liste-balken { height: 100%; background: var(--akzent); }
+.liste-balken { display: block; height: 100%; background: var(--akzent); }
 .liste-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
   font-size: .82rem; text-align: right; color: var(--text-leise); white-space: nowrap; min-width: 3.8rem; }
 
@@ -271,7 +271,8 @@ tbody td:first-child { text-align: left; color: var(--text-leise); }
 tbody tr:hover { background: var(--flaeche-2); }
 
 /* ---------------------------------------------------------------- Methodik */
-.methodik { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.methodik { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) { .methodik { grid-template-columns: 1fr; } }
 .karte { border: 1px solid var(--linie); border-radius: var(--radius); background: var(--flaeche); padding: 16px 18px; }
 .karte h3 { margin-bottom: 7px; }
 .karte p { margin: 0 0 9px; font-size: .88rem; color: var(--text-leise); }
@@ -338,7 +339,7 @@ tbody tr:hover { background: var(--flaeche-2); }
   <section>
     <div class="abschnitt-kopf">
       <h2>Womit sich gegenprüfen lässt</h2>
-      <p>Der Index oben braucht nur das GWR. Die Gegenprobe braucht eine zweite Quelle</p>
+      <p>Der Index oben braucht nur das GWR. Die Gegenprobe braucht eine zweite Quelle.</p>
     </div>
     <p class="hinweis">Ein leeres Feld heisst <b>nicht</b>, dass ein Kanton sauber ist. Es
       heisst, dass niemand nachsehen kann. Umgekehrt sieht ein Kanton mit offenen
@@ -347,9 +348,9 @@ tbody tr:hover { background: var(--flaeche-2); }
     <div class="tabellen-huelle">
       <table id="belegTabelle">
         <thead><tr>
-          <th>Kt</th><th>Anlagen</th><th>davon datiert</th>
-          <th>Widerspruch Anlage</th><th>Solaranlage und Quelle 860</th>
-          <th>Heizungs&#8209;Baugesuche</th><th>Prüftiefe</th>
+          <th scope="col">Kt</th><th scope="col">Anlagen</th><th scope="col">davon datiert</th>
+          <th scope="col">Widerspruch Anlage</th><th scope="col">Solaranlage und Quelle 860</th>
+          <th scope="col">Heizungs&#8209;Baugesuche</th><th scope="col">Prüftiefe</th>
         </tr></thead>
         <tbody id="belegKoerper"></tbody>
       </table>
@@ -467,6 +468,8 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
   function tsd(n) { return n == null ? "–" : nf.format(Math.round(n)); }
   function pct(n) { return n == null ? "–" : n.toFixed(1).replace(".", ",") + " %"; }
   function komma(n) { return n == null ? "–" : String(n).replace(".", ","); }
+  function eineStelle(n) { return n == null ? "–" : Number(n).toFixed(1).replace(".", ","); }
+  function jahre(n) { return n == null ? "–" : komma(n) + (Number(n) === 1 ? " Jahr" : " Jahre"); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   // Datum wie in den uebrigen Berichten: TT.MM.JJJJ statt JJJJ-MM-TT
@@ -541,7 +544,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
         '<span class="rang-balken-huelle">' +
           '<span class="rang-schiene"><span class="rang-balken bg-' + n +
             '" style="width:' + k.pflege_index + '%"></span></span>' +
-          '<span class="rang-wert">' + komma(k.pflege_index) + '</span>' +
+          '<span class="rang-wert">' + eineStelle(k.pflege_index) + '</span>' +
         '</span>' +
         '<span class="verstecken-klein"><span class="chip chip-' + esc(k.pflegemuster) + '">' +
           esc(k.pflegemuster === "Rueckstand" ? "Rückstand" : k.pflegemuster) + '</span></span>' +
@@ -583,7 +586,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
          ["Pflegemuster", k.pflegemuster === "Rueckstand" ? "Rückstand" : esc(k.pflegemuster)],
          ["Wohngebäude", tsd(k.wohngebaeude)],
          ["Gemeinden", tsd(k.gemeinden)],
-         ["Median-Alter", komma(k.median_alter_jahre) + " Jahre"],
+         ["Median-Alter", jahre(k.median_alter_jahre)],
          ["fossil beheizt", pct(k.pct_fossil)],
          ["Wärmepumpe", pct(k.pct_waermepumpe)],
          ["Kandidaten", tsd(k.kandidaten) + "  (" + pct(k.pct_kandidaten) + ")"],

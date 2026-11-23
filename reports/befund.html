@@ -73,8 +73,10 @@ p { margin: 0 0 1rem; max-width: 68ch; }
 .huelle { max-width: var(--breite); margin: 0 auto; padding: 0 24px; }
 
 .kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); padding: 34px 0 28px; }
-.eyebrow { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
-  letter-spacing: .12em; text-transform: uppercase; color: var(--akzent); margin: 0 0 8px; }
+.eyebrow { font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif; font-size: .9rem;
+  color: var(--text-leise); margin: 0 0 8px; }
+.archiv { border-left: 3px solid var(--linie-stark); padding: 2px 0 2px 12px; margin-top: 14px;
+  color: var(--text-leise); font-size: .95rem; }
 .kopf p.lead { font-size: 1.08rem; color: var(--text-leise); margin-top: 12px; }
 .stand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   color: var(--text-still); margin-top: 16px; }
@@ -171,11 +173,15 @@ section { scroll-margin-top: 16px; }
 
 <header class="kopf">
   <div class="huelle">
-    <p class="eyebrow">Gebäude- und Wohnungsregister · Befund</p>
+    <p class="eyebrow">Zwischenbericht vom 14.09.2026</p>
     <h1>Wie viele Heizungseinträge im GWR sind veraltet?</h1>
     <p class="lead">Eine Prüfung mit offenen Daten: 3,17 Millionen Gebäude, sechs Tests,
       und die Frage, bei wie vielen Gebäuden mit Ölheizung im Register in Wirklichkeit
       längst etwas anderes steht.</p>
+    <p class="archiv">Diese Seite hält den Stand vom 14.09.2026 fest, vor der Messung der
+      Belegwirkung und vor der Zeitreihe. Zahlen wie die Zahl der Datenprüfungen haben sich
+      seither geändert; die abschliessenden Ergebnisse stehen in der
+      <a href="../README.md">Übersicht</a>.</p>
     <p class="stand" id="stand"></p>
     <nav class="toc">
       <a href="#antwort">Die Antwort</a>
