@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Heizungsregister Schweiz</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/fonten.css">
 
 <style>
 :root {
@@ -37,6 +35,7 @@
   --stufe-c-weich:#F6EED5;
   --stufe-d-weich:#F8E6D6;
   --stufe-e-weich:#F7DFDA;
+  --schrift-a: #25609F; --schrift-b: #2B7189; --schrift-c: #7F6310; --schrift-d: #9A5118; --schrift-e: #A63A27;
 
   --schatten: 0 1px 2px rgba(22, 26, 33, .06), 0 1px 1px rgba(22, 26, 33, .04);
   --radius: 4px;
@@ -66,6 +65,7 @@
     --stufe-c-weich:#332C14;
     --stufe-d-weich:#352415;
     --stufe-e-weich:#361B17;
+    --schrift-a: #7AAAE3; --schrift-b: #62B2CD; --schrift-c: #D9B33C; --schrift-d: #E28F4C; --schrift-e: #E58472;
     --schatten: 0 1px 2px rgba(0, 0, 0, .5);
   }
 }
@@ -91,6 +91,7 @@
   --stufe-c-weich:#332C14;
   --stufe-d-weich:#352415;
   --stufe-e-weich:#361B17;
+    --schrift-a: #7AAAE3; --schrift-b: #62B2CD; --schrift-c: #D9B33C; --schrift-d: #E28F4C; --schrift-e: #E58472;
   --schatten: 0 1px 2px rgba(0, 0, 0, .5);
 }
 
@@ -134,12 +135,12 @@ h3 { font-size: 0.97rem; }
 .kopf p { margin: 7px 0 0; color: var(--text-leise); max-width: 62ch; }
 .eyebrow {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.7rem; letter-spacing: .11em; text-transform: uppercase;
+  font-size: .82rem; letter-spacing: .11em; text-transform: uppercase;
   color: var(--akzent); margin: 0 0 6px;
 }
 .stand {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.74rem; color: var(--text-still); text-align: right; line-height: 1.7;
+  font-size: .82rem; color: var(--text-still); text-align: right; line-height: 1.7;
 }
 .stand b { color: var(--text-leise); font-weight: 500; }
 
@@ -153,8 +154,8 @@ h3 { font-size: 0.97rem; }
 .kz { background: var(--flaeche); padding: 15px 17px 16px; }
 .kz-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
   font-size: 1.62rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
-.kz-label { font-size: 0.79rem; color: var(--text-leise); margin-top: 5px; }
-.kz-fuss { font-size: 0.72rem; color: var(--text-still); margin-top: 2px; }
+.kz-label { font-size: .82rem; color: var(--text-leise); margin-top: 5px; }
+.kz-fuss { font-size: .82rem; color: var(--text-still); margin-top: 2px; }
 
 /* ---------------------------------------------------------------- Abschnitte */
 section { margin-bottom: 40px; }
@@ -176,7 +177,7 @@ section { margin-bottom: 40px; }
 .rang-zeile:hover { background: var(--flaeche-2); }
 .rang-zeile[aria-pressed="true"] { background: var(--akzent-flach); }
 .rang-zeile:focus-visible { outline: 2px solid var(--akzent); outline-offset: -2px; }
-.rang-nr { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem; color: var(--text-still); font-variant-numeric: tabular-nums; }
+.rang-nr { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem; color: var(--text-still); font-variant-numeric: tabular-nums; }
 .rang-kt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .92rem; }
 .rang-balken-huelle { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .rang-schiene { flex: 1; height: 15px; background: var(--flaeche-2); border-radius: 2px; overflow: hidden; min-width: 60px; }
@@ -185,22 +186,22 @@ section { margin-bottom: 40px; }
   font-size: .84rem; font-weight: 600; width: 44px; text-align: right; }
 .rang-name { font-size: .84rem; color: var(--text-leise); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rang-zahl { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  font-size: .8rem; text-align: right; color: var(--text-leise); }
+  font-size: .82rem; text-align: right; color: var(--text-leise); }
 
 .chip {
-  display: inline-block; font-size: .69rem; letter-spacing: .03em;
+  display: inline-block; font-size: .82rem; letter-spacing: .03em;
   padding: 2px 7px; border-radius: 2px; white-space: nowrap;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   border: 1px solid transparent;
 }
-.chip-laufend      { background: var(--stufe-a-weich); color: var(--stufe-a); border-color: var(--stufe-a); }
-.chip-Sammelimport { background: var(--stufe-c-weich); color: var(--stufe-c); border-color: var(--stufe-c); }
-.chip-Rueckstand   { background: var(--stufe-e-weich); color: var(--stufe-e); border-color: var(--stufe-e); }
+.chip-laufend      { background: var(--stufe-a-weich); color: var(--schrift-a); border-color: var(--stufe-a); }
+.chip-Sammelimport { background: var(--stufe-c-weich); color: var(--schrift-c); border-color: var(--stufe-c); }
+.chip-Rueckstand   { background: var(--stufe-e-weich); color: var(--schrift-e); border-color: var(--stufe-e); }
 .chip-sporadisch   { background: var(--flaeche-2); color: var(--text-leise); border-color: var(--linie-stark); }
 
-.note-a { color: var(--stufe-a); } .note-b { color: var(--stufe-b); }
-.note-c { color: var(--stufe-c); } .note-d { color: var(--stufe-d); }
-.note-e { color: var(--stufe-e); }
+.note-a { color: var(--schrift-a); } .note-b { color: var(--schrift-b); }
+.note-c { color: var(--schrift-c); } .note-d { color: var(--schrift-d); }
+.note-e { color: var(--schrift-e); }
 .bg-a { background: var(--stufe-a); } .bg-b { background: var(--stufe-b); }
 .bg-c { background: var(--stufe-c); } .bg-d { background: var(--stufe-d); }
 .bg-e { background: var(--stufe-e); }
@@ -212,14 +213,14 @@ section { margin-bottom: 40px; }
   background: var(--flaeche); padding: 18px; margin-top: 16px;
 }
 .detail h3 { margin-bottom: 10px; }
-.detail h3 span { color: var(--text-still); font-weight: 500; font-size: .8rem; margin-left: 6px; }
+.detail h3 span { color: var(--text-still); font-weight: 500; font-size: .82rem; margin-left: 6px; }
 .liste { display: flex; flex-direction: column; gap: 6px; }
 .liste-zeile { display: grid; grid-template-columns: 1fr 54px 44px; gap: 9px; align-items: center; font-size: .82rem; }
 .liste-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-leise); }
 .liste-schiene { height: 9px; background: var(--flaeche-2); border-radius: 2px; overflow: hidden; }
 .liste-balken { height: 100%; background: var(--akzent); }
 .liste-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  font-size: .78rem; text-align: right; color: var(--text-leise); }
+  font-size: .82rem; text-align: right; color: var(--text-leise); }
 
 /* ---------------------------------------------------------------- Filter + Tabelle */
 .filter { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 14px; }
@@ -230,7 +231,7 @@ input[type="search"], select {
 }
 input[type="search"] { min-width: 210px; }
 input[type="search"]:focus-visible, select:focus-visible { outline: 2px solid var(--akzent); outline-offset: 1px; border-color: var(--akzent); }
-.treffer { font-size: .8rem; color: var(--text-still); font-family: "IBM Plex Mono", ui-monospace, monospace; margin-left: auto; }
+.treffer { font-size: .82rem; color: var(--text-still); font-family: "IBM Plex Mono", ui-monospace, monospace; margin-left: auto; }
 
 .tabellen-huelle { overflow-x: auto; border: 1px solid var(--linie); border-radius: var(--radius); background: var(--flaeche); }
 
@@ -246,18 +247,20 @@ input[type="search"]:focus-visible, select:focus-visible { outline: 2px solid va
 #belegTabelle tbody td:first-child { color: var(--text); font-weight: 600; }
 #belegTabelle tbody td:last-child { text-align: left; white-space: normal; }
 #belegTabelle .leise { color: var(--text-still); }
-#belegTabelle .chip { background: none; border: 0; padding: 0; font-size: .8rem;
+#belegTabelle .chip { background: none; border: 0; padding: 0; font-size: .82rem;
   font-family: "Source Sans 3", sans-serif; color: var(--text-leise); }
 table { border-collapse: collapse; width: 100%; font-size: .85rem; }
 thead th {
   position: sticky; top: 0; z-index: 1;
   background: var(--flaeche-2); color: var(--text-leise);
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; font-weight: 500;
+  font-size: .82rem; letter-spacing: .05em; text-transform: uppercase; font-weight: 500;
   text-align: right; padding: 8px 11px; white-space: nowrap;
   border-bottom: 1px solid var(--linie); cursor: pointer; user-select: none;
 }
 thead th:first-child, thead th:nth-child(2) { text-align: left; }
+.sortieren { all: inherit; display: inline; padding: 0; border: 0; cursor: pointer; }
+.sortieren:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 thead th:hover { color: var(--text); }
 thead th[aria-sort] { color: var(--akzent); }
 tbody td { padding: 6px 11px; border-top: 1px solid var(--linie); text-align: right; white-space: nowrap;
@@ -273,15 +276,15 @@ tbody tr:hover { background: var(--flaeche-2); }
 .karte p { margin: 0 0 9px; font-size: .88rem; color: var(--text-leise); }
 .karte p:last-child { margin-bottom: 0; }
 .warnung { border-left: 3px solid var(--stufe-d); }
-.formel { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .78rem;
+.formel { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   background: var(--flaeche-2); padding: 9px 11px; border-radius: 2px; color: var(--text-leise);
   overflow-x: auto; white-space: pre; }
-.legende { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 10px; font-size: .78rem; color: var(--text-leise); }
+.legende { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 10px; font-size: .82rem; color: var(--text-leise); }
 .legende span { display: inline-flex; align-items: center; gap: 5px; }
 .punkt { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 
 .fuss { border-top: 1px solid var(--linie); margin-top: 44px; padding: 20px 0 34px;
-  font-size: .8rem; color: var(--text-still); }
+  font-size: .82rem; color: var(--text-still); }
 .fuss a { color: var(--akzent); }
 
 @media (max-width: 720px) {
@@ -344,7 +347,7 @@ tbody tr:hover { background: var(--flaeche-2); }
       <table id="belegTabelle">
         <thead><tr>
           <th>Kt</th><th>Anlagen</th><th>davon datiert</th>
-          <th>Widerspruch Anlage</th><th>Verdacht Solar</th>
+          <th>Widerspruch Anlage</th><th>Solaranlage und Quelle 860</th>
           <th>Heizungs&#8209;Baugesuche</th><th>Prüftiefe</th>
         </tr></thead>
         <tbody id="belegKoerper"></tbody>
@@ -361,7 +364,7 @@ tbody tr:hover { background: var(--flaeche-2); }
   <section>
     <div class="abschnitt-kopf">
       <h2>Gemeinden</h2>
-      <p>2110 Gemeinden, sortier- und durchsuchbar</p>
+      <p>2'110 Gemeinden, sortier- und durchsuchbar</p>
     </div>
     <div class="filter">
       <input type="search" id="suche" placeholder="Gemeinde suchen ..." aria-label="Gemeinde suchen">
@@ -614,12 +617,13 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     { s: "median_alter_jahre", t: "Alter", f: function (v) { return komma(v) + " J."; } },
     { s: "pct_fossil", t: "fossil", f: pct },
     { s: "pct_waermepumpe", t: "WP", f: pct },
-    { s: "kandidaten", t: "Verdacht", f: tsd }
+    { s: "kandidaten", t: "Kandidaten", f: tsd }
   ];
   var sortSpalte = "pflege_index", sortAuf = true, MAXZEILEN = 150;
 
   document.getElementById("kopfzeile").innerHTML = SPALTEN.map(function (c) {
-    return '<th data-s="' + c.s + '" scope="col">' + c.t + '</th>';
+    return '<th data-s="' + c.s + '" scope="col"><button type="button" class="sortieren">' +
+      c.t + '</button></th>';
   }).join("");
 
   var ktSelect = document.getElementById("ktFilter");
@@ -667,8 +671,8 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     }).join("");
     document.getElementById("tabellenFuss").textContent = reihen.length > MAXZEILEN
       ? "Angezeigt werden die ersten " + MAXZEILEN + " von " + tsd(reihen.length) +
-        " Treffern. Spaltenkopf klicken zum Sortieren, Filter oben eingrenzen."
-      : "Spaltenkopf klicken zum Sortieren.";
+        " Treffern. Spaltenkopf wählen zum Sortieren, Filter oben eingrenzen."
+      : "Spaltenkopf wählen zum Sortieren.";
     document.querySelectorAll("thead th").forEach(function (th) {
       if (th.getAttribute("data-s") === sortSpalte) {
         th.setAttribute("aria-sort", sortAuf ? "ascending" : "descending");

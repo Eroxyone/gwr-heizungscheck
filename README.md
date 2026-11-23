@@ -6,7 +6,7 @@
 
 **Lassen sich veraltete Heizungsangaben im eidgenössischen Gebäude- und Wohnungsregister
 (GWR) aus offenen Daten erkennen?** Eine Validierungsstudie, September bis November 2026.
-Antwort: Ja, mit messbarer Trefferquote. Die wöchentlichen Abzüge des Registers zeigen
+Antwort: Ja, mit messbarer Trefferquote. Wöchentliche Snapshots des Registers zeigen
 zugleich, dass mehrere Kantone gerade selbst nachführen.
 
 **Ergebnisse, Dashboard und alle Berichte als Website:
@@ -15,7 +15,7 @@ zugleich, dass mehrere Kantone gerade selbst nachführen.
 Pipeline über 3,17 Mio Gebäude in allen 26 Kantonen, 13 kantonale Anlagenregister,
 Baugesuche aus dem Amtsblattportal und dem Kanton Zürich, Photovoltaikanlagen des BFE.
 Python und DuckDB, Bronze/Silver/Gold, wöchentliche Snapshot-Zeitreihe, 85 Prüfungen auf den
-echten Daten, 128 Tests auf synthetischen Daten.
+echten Daten, 132 Tests auf synthetischen Daten.
 
 **Status:** abgeschlossen. Die Zeitreihe reicht bis zum 16.11.2026, das Repo wird nicht
 aktiv weiterentwickelt. Fragen und Hinweise gern als Issue.
@@ -38,7 +38,7 @@ aktiv weiterentwickelt. Fragen und Hinweise gern als Issue.
 | **40,6 %** | der Zürcher Heizungs-Baugesuche, die mindestens sechs Monate zurückliegen, sind im Register nicht nachgeführt (186 von 458); sauber nachgeführt sind 43,2 %. Das erste Abbruchkriterium der Studie (über 80 % nachgeführt) ist klar verfehlt. |
 | **1,6** | Heizungs-Baugesuche je Jahr hat die mittlere Zürcher Gemeinde. Das zweite Abbruchkriterium greift: Baugesuche allein reichen für eine Liste nicht, deshalb kamen 13 kantonale Anlagenregister als Belege dazu. |
 | **80,8 %** | der Verdachtsfälle treffen zu, wenn der Beleg jünger ist als der Registereintrag (63 von 78, Vertrauensbereich 71 bis 88 %). Liegt der Beleg vor dem Eintrag: 13,3 %, kaum über der Grundrate von 8,8 %. Gemessen am Öltankkataster eines einzigen Kantons (Zug). |
-| **2'000 bis 5'000 pro Woche** | Energieträger ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148 Mitte November, Basel-Landschaft 2'329 Ende Oktober; in Zürich vor allem fossile Einträge, im Aargau und in Basel-Landschaft nur zum kleineren Teil. Die übrigen 23 Kantone bewegen zusammen weniger als einen Eintrag je 1'000 Gebäude und Woche. |
+| **2'000 bis 5'000 pro Woche** | Energieträger ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148 Mitte November, Basel-Landschaft 2'329 Ende Oktober. In Zürich stellten diese Wellen in neun Wochen 2'720 Wohngebäude von fossil auf nicht fossil um, im Aargau wurden vor allem bisher unbestimmte Energieträger ergänzt. Die übrigen 23 Kantone bewegen zusammen weniger als einen Eintrag je 1'000 Gebäude und Woche. |
 
 ## Was die Studie zeigt
 
@@ -56,8 +56,8 @@ Faktor 6 zwischen den beiden Gruppen.
 Wohngebäude von fossil auf nicht fossil um, Gemeinde für Gemeinde; 650 davon standen auf der
 Liste dieser Studie (24 %). Die übrigen drei Viertel erreicht sie nicht, weil der Kanton zu
 jeder Sonde Datum und Gebäudebezug kennt und die offenen Daten nur Koordinate und Laufnummer
-hergeben. Von allen Listenfällen, die das Register bis zum 16.11.2026 berichtigte, erhielten
-682 von 697 den vorgeschlagenen Energieträger; da Vorschlag und Berichtigung sich in Zürich
+hergeben. Von allen Listenfällen, die das Register bis zum 16.11.2026 korrigierte, erhielten
+682 von 697 den vorgeschlagenen Energieträger; da Vorschlag und Korrektur sich in Zürich
 auf dasselbe Sondenregister stützen, bestätigt das die Zuordnung, misst aber keine
 unabhängige Trefferquote. Wo ein Kanton eigene Vollzugsdaten einsetzt, braucht es keine
 Vorauswahl von aussen.
@@ -68,8 +68,10 @@ als Messinstrument dafür, wie viel sich im GWR tatsächlich bewegt, und als Vor
 
 ## Grenzen
 
-- **Ein Kanton als Massstab.** Die 80,8 % beruhen auf 78 prüfbaren Fällen aus Zug.
-  Gasheizungen und Gebäude ohne Eintrag im Tankkataster lassen sich dort nicht prüfen.
+- **Ein Kanton als Massstab.** Die 80,8 % beruhen auf 78 prüfbaren Fällen aus Zug. Von den
+  144 Zuger Listenfällen liess sich nur gut die Hälfte prüfen (Gasheizungen und Öleinträge
+  ohne Tank im Kataster nicht); zählt man die übrigen alle als Fehlschlag oder alle als
+  Treffer, liegt die Trefferquote der Zuger Liste zwischen 44 und 90 %.
 - **Zuordnung über Koordinaten.** Der 20-Meter-Umkreis enthält das richtige Gebäude bei
   73,8 % der Anlagen (im Schnitt 1,87 Gebäude im Umkreis), das nächstgelegene Gebäude ist
   nur bei 64,7 % das richtige (gemessen an den amtlichen EGID des Kantons Zug).
@@ -175,7 +177,7 @@ das Datenverzeichnis fest.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                          # 128 Tests, rund 20 Sekunden, ohne Rohdaten
+pytest                          # 132 Tests, rund 20 Sekunden, ohne Rohdaten
 ruff check .
 python scripts/build_site.py    # Website nach _site/, prüft dabei alle Verweise
 ```
@@ -259,7 +261,7 @@ jüngsten Stand gerechnet; `gold_liste_archiv` hält fest, was je Stand auf der 
 
 | Ebene | Was sie prüft | Wann |
 |---|---|---|
-| `pytest`, 128 Tests | Die SQL-Schritte laufen unverändert über erfundene Register mit zwei Snapshot-Ständen: Silver und Gold des schweizweiten Strangs, die Zuordnung der Anlagen mit allen zehn Entscheidungen der Kaskade, die Verdachtsliste mit jeder Stufe, Archiv und Korrektur-Sicht. Jede erwartete Zahl lässt sich von Hand nachzählen. Dazu die Stichwortregel gegen 150 gelabelte Texte, die Inhaltsprüfung der Downloads, Anonymisierung, fehlende Quellen und der Bau der Website. Nicht abgedeckt: die Messungen gegen die Kataster von Genf und Zug und die Kalibrierung der Zürcher Laufnummer. | bei jedem Push in der CI, ohne Rohdaten, in rund 20 Sekunden |
+| `pytest`, 132 Tests | Die SQL-Schritte laufen unverändert über erfundene Register mit zwei Snapshot-Ständen: Silver und Gold des schweizweiten Strangs, die Zuordnung der Anlagen mit allen zehn Entscheidungen der Kaskade, die Verdachtsliste mit jeder Stufe, Archiv und Korrektur-Sicht. Jede erwartete Zahl lässt sich von Hand nachzählen. Dazu die Stichwortregel gegen 150 gelabelte Texte, die Inhaltsprüfung der Downloads, Anonymisierung, fehlende Quellen und der Bau der Website. Nicht abgedeckt: die Messungen gegen die Kataster von Genf und Zug und die Kalibrierung der Zürcher Laufnummer. | bei jedem Push in der CI, ohne Rohdaten, in rund 20 Sekunden |
 | `python src/checks.py`, 85 Prüfungen | Behauptungen über die echten Daten: Schlüsseleindeutigkeit, Wertebereiche, Koordinaten innerhalb der Schweiz, Codelisten-Abdeckung, Konsistenz von Gemeinde- und Kantonssummen, Snapshot-Integrität, festgeschriebene Regressionswerte. | nach jedem Pipelinelauf; letzter Stand in [reports/checks_baseline.txt](reports/checks_baseline.txt) |
 | Messung gegen Fremddaten | Zuordnung gegen die amtlichen EGID des Kantons Zug, Verdacht gegen die Kataster von Genf und Zug, Liste gegen die Korrekturen, die das Register später selbst vornahm. | je Bericht |
 

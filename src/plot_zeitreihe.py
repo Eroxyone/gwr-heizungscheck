@@ -118,10 +118,19 @@ def schreibe_tabelle(bewegung: pd.DataFrame, korrigiert: pd.DataFrame) -> None:
     piv["Gebäude"] = bewegung.groupby("kanton")["gebaeude_verglichen"].last()
     piv["je 1'000 und Woche"] = bewegung.groupby("kanton")["promille"].mean().round(2)
     piv = piv.sort_values("je 1'000 und Woche", ascending=False)
+    # Rate und Bestand vorn: Sie tragen den Vergleich, die Wochenwerte sind das Detail.
+    piv = piv[["je 1'000 und Woche", "Gebäude", *[c for c in piv.columns if c.startswith("bis ")]]]
+    rate = piv["je 1'000 und Woche"]
+    hoch = [k for k in piv.index if rate[k] >= 1]
     zeilen = ["# Zeitreihe: Bewegung im Register je Woche", "",
-              f"Stand {pd.Timestamp(bewegung['stand_neu'].max()):%d.%m.%Y}. Quelle: "
-              "`v_gold_veraenderung`, Energieträger (GENH1) zwischen zwei Wochen-Snapshots "
-              "verglichen, alle Einträge des Registers unabhängig vom Gebäudestatus.", "",
+              f"Stand {pd.Timestamp(bewegung['stand_neu'].max()):%d.%m.%Y}. Gezählt wird je Kanton "
+              "und Woche, wie viele Einträge des Registers einen anderen Energieträger (GENH1) "
+              "tragen als im Snapshot der Vorwoche, alle Gebäude unabhängig von ihrem Status "
+              "(`v_gold_veraenderung`).", "",
+              f"{len(hoch)} Kantone ändern im Mittel mindestens einen Eintrag je 1'000 Gebäude und "
+              f"Woche ({', '.join(hoch)}), die übrigen {len(piv) - len(hoch)} bleiben darunter. Die "
+              "Tabelle ist nach dieser mittleren Rate geordnet; die Wochenspalten zeigen, dass die "
+              "hohen Werte aus einzelnen Wellen stammen.", "",
               "![Zeitreihe](zeitreihe.png)", "",
               "| Kanton | " + " | ".join(piv.columns) + " |",
               "|---|" + "---:|" * len(piv.columns)]

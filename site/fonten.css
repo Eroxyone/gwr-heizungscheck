@@ -1,0 +1,25 @@
+/* Schriften der Website, aus dem eigenen Verzeichnis statt von Google Fonts geladen.
+   Archivo, Source Sans 3 und IBM Plex Mono stehen unter der SIL Open Font License 1.1
+   (fonts/LICENSE-*.txt). Die Dateien stammen aus den Fontsource-Paketen und enthalten nur
+   den lateinischen Grundbestand; deutsche und franzoesische Texte sind damit vollstaendig. */
+
+@font-face { font-family: "Archivo"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("fonts/archivo-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Archivo"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("fonts/archivo-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Archivo"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("fonts/archivo-latin-700-normal.woff2") format("woff2"); }
+
+@font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("fonts/source-sans-3-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Source Sans 3"; font-style: italic; font-weight: 400; font-display: swap;
+  src: url("fonts/source-sans-3-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("fonts/source-sans-3-latin-600-normal.woff2") format("woff2"); }
+
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }

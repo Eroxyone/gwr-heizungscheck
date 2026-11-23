@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Veraltete Heizungsdaten</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../site/fonten.css">
 
 <style>
 :root {
@@ -30,6 +28,7 @@
   --stufe-c-weich:#F6EED5;
   --stufe-d-weich:#F8E6D6;
   --stufe-e-weich:#F7DFDA;
+  --schrift-a: #25609F; --schrift-b: #2B7189; --schrift-c: #7F6310; --schrift-d: #9A5118; --schrift-e: #A63A27;
   --radius: 4px;
   --breite: 980px;
 }
@@ -43,6 +42,7 @@
     --stufe-d: #E28F4C; --stufe-e: #D4614B;
     --stufe-a-weich:#1B2A3D; --stufe-b-weich:#162C35; --stufe-c-weich:#332C14;
     --stufe-d-weich:#352415; --stufe-e-weich:#361B17;
+    --schrift-a: #7AAAE3; --schrift-b: #62B2CD; --schrift-c: #D9B33C; --schrift-d: #E28F4C; --schrift-e: #E58472;
   }
 }
 :root[data-theme="dark"] {
@@ -54,6 +54,7 @@
   --stufe-d: #E28F4C; --stufe-e: #D4614B;
   --stufe-a-weich:#1B2A3D; --stufe-b-weich:#162C35; --stufe-c-weich:#332C14;
   --stufe-d-weich:#352415; --stufe-e-weich:#361B17;
+    --schrift-a: #7AAAE3; --schrift-b: #62B2CD; --schrift-c: #D9B33C; --schrift-d: #E28F4C; --schrift-e: #E58472;
 }
 
 * { box-sizing: border-box; }
@@ -72,14 +73,14 @@ p { margin: 0 0 1rem; max-width: 68ch; }
 .huelle { max-width: var(--breite); margin: 0 auto; padding: 0 24px; }
 
 .kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); padding: 34px 0 28px; }
-.eyebrow { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .7rem;
+.eyebrow { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   letter-spacing: .12em; text-transform: uppercase; color: var(--akzent); margin: 0 0 8px; }
 .kopf p.lead { font-size: 1.08rem; color: var(--text-leise); margin-top: 12px; }
-.stand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+.stand { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   color: var(--text-still); margin-top: 16px; }
 
 nav.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 22px 0 0; }
-nav.toc a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .72rem;
+nav.toc a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   color: var(--text-leise); text-decoration: none; padding: 3px 9px;
   border: 1px solid var(--linie); border-radius: 2px; background: var(--flaeche); }
 nav.toc a:hover { color: var(--akzent); border-color: var(--akzent); }
@@ -91,7 +92,7 @@ nav.toc a:hover { color: var(--akzent); border-color: var(--akzent); }
 .kz { background: var(--flaeche); padding: 14px 16px 15px; }
 .kz-wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
   font-size: 1.5rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
-.kz-label { font-size: .78rem; color: var(--text-leise); margin-top: 4px; }
+.kz-label { font-size: .82rem; color: var(--text-leise); margin-top: 4px; }
 
 /* Sicherheitsstufen: das Herzstück der Seite */
 .stufen { display: flex; flex-direction: column; gap: 10px; margin: 22px 0; }
@@ -104,12 +105,12 @@ nav.toc a:hover { color: var(--akzent); border-color: var(--akzent); }
 .stufe-kopf { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
 .stufe-zahl { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
   font-size: 1.72rem; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
-.stufe-1 .stufe-zahl { color: var(--stufe-e); }
-.stufe-2 .stufe-zahl { color: var(--stufe-d); }
-.stufe-3 .stufe-zahl { color: var(--stufe-c); }
-.stufe-4 .stufe-zahl { color: var(--stufe-b); }
+.stufe-1 .stufe-zahl { color: var(--schrift-e); }
+.stufe-2 .stufe-zahl { color: var(--schrift-d); }
+.stufe-3 .stufe-zahl { color: var(--schrift-c); }
+.stufe-4 .stufe-zahl { color: var(--schrift-b); }
 .stufe-name { font-family: Archivo, sans-serif; font-weight: 600; font-size: 1rem; }
-.stufe-alt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+.stufe-alt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   color: var(--text-still); margin-left: auto; }
 .stufe p { margin: 8px 0 0; font-size: .92rem; }
 .stufe .einschraenkung { color: var(--text-leise); font-size: .85rem; margin-top: 6px;
@@ -119,7 +120,7 @@ table { border-collapse: collapse; width: 100%; font-size: .88rem; margin: 14px 
 .t-huelle { overflow-x: auto; border: 1px solid var(--linie);
   border-radius: var(--radius); background: var(--flaeche); }
 thead th { background: var(--flaeche-2); color: var(--text-leise);
-  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .68rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   letter-spacing: .05em; text-transform: uppercase; font-weight: 500;
   text-align: right; padding: 8px 12px; white-space: nowrap;
   border-bottom: 1px solid var(--linie); }
@@ -144,19 +145,19 @@ tbody tr:hover { background: var(--flaeche-2); }
   background: var(--flaeche); padding: 14px 18px; margin-bottom: 10px; }
 .quelle-kopf { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 .quelle-name { font-family: Archivo, sans-serif; font-weight: 600; font-size: .97rem; }
-.quelle-herkunft { font-size: .8rem; color: var(--text-still); }
-.quelle a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem;
+.quelle-herkunft { font-size: .82rem; color: var(--text-still); }
+.quelle a { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem;
   color: var(--akzent); word-break: break-all; }
 .quelle p { font-size: .87rem; color: var(--text-leise); margin: 7px 0 0; }
 .chip { display: inline-block; font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: .68rem; padding: 2px 7px; border-radius: 2px; background: var(--flaeche-2);
+  font-size: .82rem; padding: 2px 7px; border-radius: 2px; background: var(--flaeche-2);
   color: var(--text-leise); border: 1px solid var(--linie-stark); }
 
 ol.schritte { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; }
 ol.schritte li { counter-increment: s; position: relative; padding-left: 34px;
   margin-bottom: 12px; max-width: 68ch; }
 ol.schritte li::before { content: counter(s); position: absolute; left: 0; top: 1px;
-  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .74rem; font-weight: 600;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem; font-weight: 600;
   color: var(--akzent); background: var(--akzent-flach); width: 22px; height: 22px;
   display: grid; place-items: center; border-radius: 2px; }
 
@@ -358,7 +359,7 @@ section { scroll-margin-top: 16px; }
     <h2>Verwendete Quellen</h2>
     <p>Alle Daten sind offen zugänglich; die Nutzungsbedingungen je Quelle stehen in
       <a href="lizenzen.md">lizenzen.md</a>. Keine Personendaten.</p>
-    <div id="quellen"></div>
+    <div id="quellenliste"></div>
   </section>
 
   <section id="grenzen">
@@ -459,7 +460,7 @@ section { scroll-margin-top: 16px; }
 
   document.getElementById("stand").textContent =
     "Datenstand Register " + datum(D.stand) + " · Auswertung " + datum(D.erzeugt) +
-    " · " + D.checks + " automatische Datenprüfungen";
+    " · " + D.checks + " automatische Datenprüfungen (Stand 14.09.2026)";
   document.getElementById("fussChecks").textContent =
     D.checks + " Prüfungen laufen über die Daten, bevor eine Zahl in diesen Bericht wandert.";
 
@@ -500,7 +501,7 @@ section { scroll-margin-top: 16px; }
     [n(b.baugesuche_vorhaben), "Bauvorhaben Kanton Zürich"],
     [n(b.heizungsgesuche), "davon mit Heizungsbezug"],
     [n(b.anlagen_gebaut), "gebaute Wärmenutzungsanlagen"],
-    [n(b.pv), "Photovoltaikanlagen"]
+    [n(b.pv), "Photovoltaikanlagen im Kanton Zürich"]
   ]);
 
   var belegSumme = D.belege.reduce(function (a, x) { return a + x.faelle; }, 0);
@@ -649,7 +650,7 @@ section { scroll-margin-top: 16px; }
       text: "333 313 Anlagen. Achtung: Der auf opendata.swiss verlinkte Pfad liefert eine auf " +
             "exakt 100 000 Zeilen gekürzte Datei, die für Zürich nur bis Oktober 2022 reicht." }
   ];
-  document.getElementById("quellen").innerHTML = quellen.map(function (q) {
+  document.getElementById("quellenliste").innerHTML = quellen.map(function (q) {
     return '<div class="quelle"><div class="quelle-kopf">' +
       '<span class="quelle-name">' + esc(q.name) + '</span>' +
       '<span class="quelle-herkunft">' + esc(q.herkunft) + '</span></div>' +

@@ -68,7 +68,10 @@ KOPIEN = {
     "reports/dashboard_daten.js": "reports/dashboard_daten.js",
     "reports/befund_daten.js": "reports/befund_daten.js",
     "site.css": "site/site.css",
+    "fonten.css": "site/fonten.css",
     "favicon.svg": "site/favicon.svg",
+    # Schriften liegen bei der Website selbst, mit ihren Lizenzen
+    **{f"fonts/{p.name}": f"site/fonts/{p.name}" for p in sorted((QUELLE / "fonts").iterdir())},
 }
 NAVIGATION = [
     ("Ergebnis", "index.html"),
@@ -77,11 +80,6 @@ NAVIGATION = [
     ("Methode", "docs/methode.html"),
     ("Datenquellen", "docs/datenquellen.html"),
 ]
-SCHRIFTEN = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n'
-             '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700'
-             '&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600'
-             '&display=swap">')
 
 
 class Baufehler(Exception):
@@ -135,14 +133,18 @@ def fuss(seite: str) -> str:
 def metadaten(seite: str, titel: str, beschreibung: str) -> str:
     """Titel, Beschreibung, Vorschau beim Teilen, kanonische Adresse und Symbol einer Seite."""
     voll = NAME if seite == "index.html" else f"{titel} - {NAME}"
+    adresse = ADRESSE + ("" if seite == "index.html" else seite)
     return f"""<title>{html.escape(voll)}</title>
 <meta name="description" content="{html.escape(beschreibung)}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{html.escape(voll)}">
 <meta property="og:description" content="{html.escape(beschreibung)}">
+<meta property="og:url" content="{adresse}">
 <meta property="og:image" content="{ADRESSE}reports/zeitreihe.png">
-<link rel="canonical" href="{ADRESSE}{'' if seite == 'index.html' else seite}">
-<link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">"""
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{adresse}">
+<link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">
+<link rel="stylesheet" href="{relativ(seite, 'fonten.css')}">"""
 
 
 def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
@@ -152,7 +154,6 @@ def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {metadaten(seite, titel, beschreibung)}
-{SCHRIFTEN}
 <link rel="stylesheet" href="{relativ(seite, 'site.css')}?v={stil_version()}">
 </head>
 <body>
@@ -262,11 +263,28 @@ def typografie(koerper: str) -> str:
         elif tiefe == 0 and stueck:
             stueck = re.sub(r"(\d) ([%‰])", "\\1&nbsp;\\2", stueck)
             stueck = re.sub(r"\b(20\d\d)-([01]\d)-([0-3]\d)\b", r"\3.\2.\1", stueck)
-            stueck = stueck.replace("SHA-256", "SHA‑256")
+            stueck = stueck.replace("SHA-256", "SHA‑256").replace(" – ", " - ")
             if letztes_tag.startswith("<td") and re.fullmatch(r"\d{5,}", stueck.strip()):
                 stueck = f"{int(stueck):,}".replace(",", "'")
         teile.append(stueck)
     return "".join(teile)
+
+
+def tabellen_ordnen(koerper: str) -> str:
+    """Tabellenköpfe gelten für ihre Spalte; eine ausgeschriebene Adresse in einer Zelle wird
+    als Verweis mit dem Namen des Servers gezeigt, damit die Spalte nicht zerbricht."""
+    koerper = re.sub(r"<th(?![^>]*\bscope=)", '<th scope="col"', koerper)
+
+    def kurz(m: re.Match) -> str:
+        adresse, text = m.group(1), m.group(2)
+        if text != adresse:
+            return m.group(0)
+        server = re.sub(r"^https?://", "", adresse).split("/", 1)[0]
+        return f'<a href="{adresse}" title="{adresse}">{server}</a>'
+
+    teile = re.split(r"(<td\b.*?</td>)", koerper, flags=re.S)
+    return "".join(re.sub(r'<a href="([^"]+)">([^<]+)</a>', kurz, t) if t.startswith("<td") else t
+                   for t in teile)
 
 
 def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
@@ -301,7 +319,7 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
     if erzeugt:
         koerper = koerper.replace(erzeugt.group(0), "\n", 1)
         herkunft = " " + erzeugt.group(0).strip()[3:-4]
-    koerper = typografie(koerper)
+    koerper = tabellen_ordnen(typografie(koerper))
     # Breite Tabellen rollen in ihrem eigenen Rahmen, nicht die ganze Seite.
     koerper = koerper.replace("<table>", '<div class="tabelle" tabindex="0" role="region" '
                               'aria-label="Tabelle"><table>').replace("</table>", "</table></div>")
@@ -348,8 +366,13 @@ def navigation_stil() -> str:
     nav = re.search(r"^/\* -+ Navigation \*/\n(.*?)^/\* -+", css, re.S | re.M)
     if not sprung or not nav:
         raise Baufehler("site/site.css: Regeln für Navigation nicht gefunden")
+    # Dieselbe Breite wie auf den übrigen Seiten, damit die Navigation beim Wechsel nicht springt.
+    breite = re.search(r"--breite:\s*(\d+px)", css).group(1)
+    gleich = (f".nav > .huelle {{ max-width: {breite}; margin: 0 auto; padding-left: 24px; padding-right: 24px; }}\n"
+              f"@media (max-width: 760px) {{ .nav > .huelle {{ padding-left: 16px; padding-right: 16px; }} }}\n")
     # Verweise im Text in der Akzentfarbe; ohne Spezifität, damit eigene Regeln gewinnen.
-    return f"<style>\n{sprung.group(0)}\n{nav.group(1)}:where(a) {{ color: var(--akzent); }}\n</style>"
+    return (f"<style>\n{sprung.group(0)}\n{nav.group(1)}{gleich}"
+            f":where(a) {{ color: var(--akzent); }}\n</style>")
 
 
 def html_bericht(pfad: str) -> str:
@@ -359,6 +382,11 @@ def html_bericht(pfad: str) -> str:
     if "</head>" not in text or not re.search(r"<body[^>]*>", text) or not re.search(r"<main\b", text):
         raise Baufehler(f"{pfad}: kein vollständiges HTML-Dokument")
     titel, beschreibung = HTML_BERICHTE[pfad]
+    # Die Schriften bindet metadaten() ein; der Verweis für den Aufruf aus dem Repository entfällt.
+    schriften = '<link rel="stylesheet" href="../site/fonten.css">'
+    if schriften not in text:
+        raise Baufehler(f"{pfad}: bindet site/fonten.css nicht ein")
+    text = text.replace(schriften + "\n", "").replace(schriften, "")
     text = re.sub(r"<title>.*?</title>", lambda _: metadaten(pfad, titel, beschreibung), text, count=1, flags=re.S)
     text = text.replace("</head>", navigation_stil() + "\n</head>", 1)
     text = re.sub(r"<main\b(?![^>]*\bid=)", '<main id="inhalt"', text, count=1)
@@ -390,7 +418,8 @@ def zeitreihe_daten() -> tuple[list[str], dict[str, list[float]], dict[str, list
     zeilen = [z for z in (ROOT / "reports/zeitreihe.md").read_text(encoding="utf-8").splitlines()
               if z.startswith("|")]
     kopf = [z.strip() for z in zeilen[0].strip("|").split("|")]
-    wochen = [k.removeprefix("bis ").strip() for k in kopf if k.startswith("bis ")]
+    spalten_woche = [i for i, k in enumerate(kopf) if k.startswith("bis ")]
+    wochen = [kopf[i].removeprefix("bis ").strip() for i in spalten_woche]
     if kopf[0] != "Kanton" or "Gebäude" not in kopf or len(wochen) < 2:
         raise Baufehler("reports/zeitreihe.md: Tabelle der Bewegung nicht erkannt")
     spalte_geb = kopf.index("Gebäude")
@@ -400,7 +429,7 @@ def zeitreihe_daten() -> tuple[list[str], dict[str, list[float]], dict[str, list
         zellen = [c.strip().replace("'", "") for c in z.strip("|").split("|")]
         if len(zellen) != len(kopf):
             break                                   # die zweite Tabelle des Berichts beginnt
-        anzahl[zellen[0]] = [int(c) for c in zellen[1:1 + len(wochen)]]
+        anzahl[zellen[0]] = [int(zellen[i]) for i in spalten_woche]
         gebaeude[zellen[0]] = int(zellen[spalte_geb])
     if not set(HERVOR) <= set(anzahl):
         raise Baufehler("reports/zeitreihe.md: hervorgehobene Kantone fehlen")
@@ -493,8 +522,8 @@ def zeitreihe_block() -> str:
     namen = {"AG": "Aargau", "BL": "Basel-Landschaft", "ZH": "Zürich"}
     legende = "".join(f'<li class="l-{k.lower()}"><i></i>{namen[k]}</li>' for k in HERVOR)
     legende += f'<li class="l-rest"><i></i>übrige {n_rest} Kantone zusammen</li>'
-    spitzen = ", ".join(
-        f"{namen[k]} {max(anzahl[k]):,} Einträge in der Woche bis {wochen[anzahl[k].index(max(anzahl[k]))]}"
+    spitzen = "; ".join(
+        f"{namen[k]} {max(anzahl[k]):,} Einträge (Woche bis {wochen[anzahl[k].index(max(anzahl[k]))]})"
         .replace(",", "'") for k in HERVOR)
     rest_max = f"{max(promille['rest']):.2f}".replace(".", ",")
     text = (f"Liniendiagramm über {len(wochen)} Wochen. Höchstwerte: {spitzen}. "

@@ -3,20 +3,21 @@
 <header class="kopf">
   <div class="huelle">
     <h1>Lassen sich veraltete Heizungsangaben im Gebäuderegister aus offenen Daten erkennen?</h1>
-    <p class="antwort">Ja, mit messbarer Trefferquote. Die wöchentlichen Abzüge des Registers
+    <p class="antwort">Ja, mit messbarer Trefferquote. Wöchentliche Snapshots des Registers
       zeigen aber auch, dass mehrere Kantone gerade selbst nachführen, und zwar in Schüben
       von einigen tausend Einträgen.</p>
     <p class="stand">Validierungsstudie zum eidgenössischen Gebäude- und Wohnungsregister (GWR),
-      September bis November 2026. Abgeschlossen, Datenstand 16.11.2026.</p>
+      September bis November 2026, abgeschlossen. Registerstand der Auswertung 14.09.2026,
+      Zeitreihe bis 16.11.2026.</p>
 
     <figure class="diagramm">
       <h2>Das Register wird in Wellen nachgeführt</h2>
       {{ZEITREIHE}}
       <figcaption>Zürich, Aargau und Basel-Landschaft änderten im Herbst 2026 in einzelnen
-        Wochen mehrere tausend Heizungseinträge. In Zürich wurden vor allem fossile Einträge
-        berichtigt, im Aargau und in Basel-Landschaft betraf es nur zum kleineren Teil fossile
-        Einträge. Die übrigen 23 Kantone bewegen zusammen weniger als einen Eintrag je 1'000
-        Gebäude und Woche. Verglichen sind zehn Wochenabzüge des GWR;
+        Wochen mehrere tausend Energieträger. In Zürich stellten diese Wellen in neun Wochen
+        2'720 Wohngebäude von fossil auf nicht fossil um; im Aargau wurden vor allem bisher
+        unbestimmte Energieträger ergänzt. Die übrigen 23 Kantone bewegen zusammen weniger als
+        einen Eintrag je 1'000 Gebäude und Woche. Verglichen sind zehn Wochen-Snapshots des GWR;
         <a href="reports/zeitreihe.html">alle Werte je Kanton</a>.</figcaption>
     </figure>
   </div>
@@ -40,7 +41,7 @@
     Wochen selbst vornimmt.</p>
   <p>Vor der Auswertung waren zwei Abbruchkriterien festgelegt: Die Studie endet, wenn
     Baugesuche zu über 80 % schon nachgeführt sind oder wenn es pro Gemeinde nur eine
-    Handvoll davon gibt. Das erste Kriterium wurde klar verfehlt, das zweite traf zu. Deshalb
+    Handvoll davon gibt. Das erste Kriterium wurde nicht ausgelöst, das zweite schon. Deshalb
     kamen die kantonalen Anlagenregister als zweite Belegquelle dazu.</p>
 </section>
 
@@ -48,35 +49,36 @@
   <h2>Das Ergebnis in fünf Zahlen</h2>
   <dl class="zahlen">
     <div>
-      <dt>28,6 %</dt>
+      <dt>28,6 %<small>Stand 14.09.2026</small></dt>
       <dd>der Schweizer Wohngebäude tragen bei der Heizung die Volkszählung 2000 als Quelle.
         <span class="grenze">Ein solcher Eintrag ist ungeprüft. Falsch ist er erst, wenn die
         Heizung seither gewechselt hat.</span></dd>
     </div>
     <div>
-      <dt>40,6 %<small>186 von 458 Gesuchen</small></dt>
+      <dt>40,6 %<small>186 von 458, Stand 13.09.2026</small></dt>
       <dd>der Zürcher Heizungs-Baugesuche, die mindestens sechs Monate zurückliegen, sind im
         Register nicht nachgeführt: Es zeigt noch den alten Energieträger mit einem Datum vor
         dem Gesuch. Sauber nachgeführt sind 43,2 %.
-        <span class="grenze">Erstes Abbruchkriterium (über 80 % nachgeführt) klar
-        verfehlt.</span></dd>
+        <span class="grenze">Das erste Abbruchkriterium (über 80 % nachgeführt) wird damit
+        nicht ausgelöst.</span></dd>
     </div>
     <div>
-      <dt>1,6<small>Gesuche je Gemeinde und Jahr</small></dt>
+      <dt>1,6<small>je Gemeinde und Jahr, seit Herbst 2024</small></dt>
       <dd>Heizungs-Baugesuche hat die mittlere Zürcher Gemeinde; drei Viertel der Gemeinden
         liegen unter 3,1.
-        <span class="grenze">Zweites Abbruchkriterium erfüllt: Baugesuche allein reichen für
-        eine Liste nicht.</span></dd>
+        <span class="grenze">Das zweite Abbruchkriterium wird ausgelöst: Baugesuche allein
+        reichen für eine Liste nicht.</span></dd>
     </div>
     <div>
-      <dt>80,8 %<small>63 von 78 Fällen</small></dt>
+      <dt>80,8 %<small>63 von 78, Stand 14.09.2026</small></dt>
       <dd>der Verdachtsfälle treffen zu, wenn der Beleg jünger ist als der Registereintrag.
         Liegt der Beleg vor dem Eintrag, sind es 13,3 %, kaum mehr als die Grundrate von 8,8 %.
         <span class="grenze">Gemessen am Öltankkataster eines einzigen Kantons (Zug),
-        Vertrauensbereich 71 bis 88 %.</span></dd>
+        Vertrauensbereich 71 bis 88 %. Prüfbar war nur gut die Hälfte der Zuger Listenfälle;
+        siehe Grenzen.</span></dd>
     </div>
     <div>
-      <dt>2'000 bis 5'000<small>Einträge je Woche</small></dt>
+      <dt>2'000 bis 5'000<small>je Woche, Sept. bis Nov. 2026</small></dt>
       <dd>ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148
         Mitte November, Basel-Landschaft 2'329 Ende Oktober.
         <span class="grenze">Gepflegt wird das Register in solchen Wellen. Dazwischen bleibt
@@ -110,16 +112,17 @@
 
 <section class="abschnitt" id="zeitreihe">
   <h2>Die Kantone führen selbst nach</h2>
-  <p>Ein einzelner Abzug des Registers zeigt nur seinen heutigen Zustand. Aufschlussreicher
+  <p>Ein einzelner Snapshot des Registers zeigt nur seinen heutigen Zustand. Aufschlussreicher
     ist die Bewegung, und die lässt sich nachträglich nicht beschaffen. Die Pipeline legt
-    deshalb jede Woche einen Abzug aller 26 Kantone ab und vergleicht ihn mit dem vorherigen.</p>
+    deshalb jede Woche einen Snapshot aller 26 Kantone ab und vergleicht ihn mit dem
+    vorherigen.</p>
   <p>In neun Wochen stellte der Kanton Zürich 2'720 Wohngebäude von fossil auf nicht fossil
     um, Gemeinde für Gemeinde, nach seinem eigenen Leitfaden. 650 davon standen auf der Liste
     dieser Studie, also 24 %. Die übrigen drei Viertel erreicht sie nicht: Der Kanton kennt
     zu jeder Sonde das Datum und das zugehörige Gebäude, die offenen Daten geben nur
     Koordinate und Laufnummer her.</p>
-  <p>Von allen Listenfällen, die das Register bis zum 16.11.2026 berichtigte, erhielten 682
-    von 697 den vorgeschlagenen Energieträger. Vorschlag und Berichtigung stützen sich in
+  <p>Von allen Listenfällen, die das Register bis zum 16.11.2026 korrigierte, erhielten 682
+    von 697 den vorgeschlagenen Energieträger. Vorschlag und Korrektur stützen sich in
     Zürich allerdings auf dasselbe kantonale Sondenregister; die Zahl bestätigt die Zuordnung
     zum Gebäude, eine unabhängige Trefferquote misst sie nicht.</p>
   <p>Wo ein Kanton eigene Vollzugsdaten hat und einsetzt, braucht es demnach keine
@@ -149,7 +152,7 @@
       <h3>Bronze</h3>
       <p class="rolle">unverändert abgelegt</p>
       <ul>
-        <li>Parquet-Abzug je Woche und Kanton</li>
+        <li>Parquet-Snapshot je Woche und Kanton</li>
         <li>Rohdateien mit Manifest und SHA-256</li>
       </ul>
     </div>
@@ -178,7 +181,8 @@
     <li><b>22</b>SQL-Schritte in fester Reihenfolge</li>
     <li><b>85</b>Prüfungen auf den echten Daten</li>
   </ul>
-  <p>Die Qualität sichern drei Ebenen. Automatische Tests führen die SQL-Schritte unverändert
+  <p>Die Qualität sichern drei Ebenen. Automatische Tests führen die zentralen SQL-Schritte
+    (Silver und Gold, Zuordnung der Anlagen, Verdachtsliste) unverändert
     über ein erfundenes Register aus, in dem sich jede erwartete Zahl von Hand nachzählen
     lässt. 85 Prüfungen laufen nach jedem Pipelinelauf über die echten Daten: Schlüssel,
     Wertebereiche, Summen, festgeschriebene Vergleichswerte. Und die Ergebnisse selbst werden
@@ -193,14 +197,17 @@
   <h2>Grenzen</h2>
   <ul>
     <li><b>Ein Kanton als Massstab.</b> Die Trefferquote von 80,8 % beruht auf 78 prüfbaren
-      Fällen aus Zug, einem kleinen Kanton mit Tankkataster. Gasheizungen und Gebäude ohne
-      Eintrag im Kataster lassen sich dort nicht prüfen.</li>
+      Fällen aus Zug, einem kleinen Kanton mit Tankkataster. Von den 144 Zuger Listenfällen
+      liess sich nur gut die Hälfte prüfen: Gasheizungen kennt der Kataster nicht, und bei
+      einem Teil der Öleinträge führt er keinen Tank. Zählt man die nicht prüfbaren Fälle alle
+      als Fehlschlag oder alle als Treffer, liegt die Trefferquote der Zuger Liste zwischen
+      44 und 90 %.</li>
     <li><b>Zuordnung über Koordinaten.</b> Liegt nur der Standort einer Anlage vor, enthält ein
       Umkreis von 20 Metern das richtige Gebäude bei 73,8 % der Anlagen, im Schnitt unter 1,87
       Gebäuden. Das nächstgelegene Gebäude ist nur bei 64,7 % das richtige. Gemessen an den
       amtlichen Gebäudenummern des Kantons Zug.</li>
     <li><b>Textauswertung nicht unabhängig geprüft.</b> Die Erkennung von Heizungswechseln in
-      Baugesuchen erreicht 98,7 % Precision (78 von 79), gemessen an 150 Texten, die ein
+      Baugesuchen erreicht eine Trefferquote von 98,7 % (78 von 79), gemessen an 150 Texten, die ein
       Sprachmodell gelabelt hat und an denen auch die Anweisung für das prüfende Modell
       entwickelt wurde. Eine frische, von einer Person gelabelte Stichprobe fehlt.</li>
     <li><b>Keine Prüfung vor Ort.</b> Keine Gemeinde hat eine Stichprobe der Liste am Gebäude

@@ -120,3 +120,26 @@ def test_html_berichte_tragen_navigation_und_metadaten(bau, website):
         assert 'class="sprung"' in text and 'aria-label="Hauptnavigation"' in text
         assert 'property="og:title"' in text and 'rel="icon"' in text
         assert '<main id="inhalt"' in text
+
+
+def test_adresse_in_tabellenzelle_zeigt_den_server(bau):
+    html = bau.tabellen_ordnen('<table><thead><tr><th>Quelle</th></tr></thead><tbody><tr><td>'
+                               '<a href="https://daten.example.ch/ogd/a/b.csv">https://daten.example.ch/ogd/a/b.csv</a>'
+                               '</td></tr></tbody></table><p><a href="https://x.ch/y">https://x.ch/y</a></p>')
+    assert '<th scope="col">Quelle</th>' in html
+    assert '>daten.example.ch</a>' in html and 'title="https://daten.example.ch/ogd/a/b.csv"' in html
+    assert '<p><a href="https://x.ch/y">https://x.ch/y</a></p>' in html
+
+
+def test_keine_schriften_oder_skripte_von_fremden_servern(website):
+    """Die Website laedt nichts von Dritten: Schriften liegen bei ihr selbst."""
+    ziel, _ = website
+    for seite in ziel.rglob("*.html"):
+        text = seite.read_text(encoding="utf-8")
+        assert "fonts.googleapis" not in text and "fonts.gstatic" not in text, seite.name
+        geladen = re.findall(r'<script[^>]+src="https?://[^"]*"|<link rel="(?:stylesheet|preconnect|icon)"'
+                             r'[^>]+href="https?://[^"]*"', text)
+        assert not geladen, (seite.name, geladen)
+    css = (ziel / "fonten.css").read_text(encoding="utf-8")
+    for datei in re.findall(r'url\("([^"]+)"\)', css):
+        assert (ziel / datei).is_file(), datei

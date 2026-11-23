@@ -144,8 +144,8 @@ main > .huelle > .abschnitt:first-child { border-top: 0; margin-top: 14px; }
 .zahlen > div:last-child { border-bottom: 0; padding-bottom: 0; }
 .zahlen > div { display: grid; grid-template-columns: 13.5rem minmax(0, 1fr); gap: 6px 28px;
   padding: 17px 0; border-bottom: 1px solid var(--linie); align-items: baseline; }
-.zahlen dt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  font-size: 1.42rem; font-weight: 500; letter-spacing: -0.04em; line-height: 1.2; white-space: nowrap; }
+.zahlen dt { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums;
+  font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; }
 .zahlen dt small { display: block; font-family: "Source Sans 3", ui-sans-serif, sans-serif;
   font-size: 0.88rem; font-weight: 400; letter-spacing: 0; color: var(--text-leise); margin-top: 3px; }
 .zahlen dd { margin: 0; }
@@ -159,8 +159,8 @@ main > .huelle > .abschnitt:first-child { border-top: 0; margin-top: 14px; }
 .balken .spur { display: flex; align-items: center; gap: 12px; }
 .balken .strich { height: 22px; border-radius: 2px; background: var(--linie-stark); min-width: 3px; }
 .balken .strich.treffer { background: var(--akzent); }
-.balken .wert { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
-  font-weight: 500; white-space: nowrap; }
+.balken .wert { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums;
+  font-weight: 600; white-space: nowrap; }
 
 /* Pipeline in vier Schichten */
 .schichten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 22px 0 20px;
@@ -178,8 +178,8 @@ main > .huelle > .abschnitt:first-child { border-top: 0; margin-top: 14px; }
   list-style: none; padding: 0; margin: 0 0 26px; }
 .fakten li { padding: 0 20px; }
 .fakten li { margin: 0; font-size: 0.95rem; color: var(--text-leise); line-height: 1.4; }
-.fakten b { display: block; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 500;
-  font-size: 1.2rem; color: var(--text); letter-spacing: -0.02em; }
+.fakten b { display: block; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-weight: 600;
+  font-size: 1.3rem; color: var(--text); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 
 /* Liste der Berichte */
 .berichte { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--linie-stark); }
@@ -246,7 +246,6 @@ thead th { font-weight: 600; background: var(--flaeche-2); border-bottom: 1px so
 tbody tr:last-child td { border-bottom: 0; }
 td[style*="right"], th[style*="right"] { font-variant-numeric: tabular-nums; white-space: nowrap; }
 td:first-child { overflow-wrap: break-word; }
-td a { overflow-wrap: anywhere; }
 
 .prosa > .quelltext { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--linie);
   font-size: 0.93rem; color: var(--text-leise); max-width: none; }
