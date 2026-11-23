@@ -61,8 +61,10 @@ def test_diagramm_zeigt_die_zahlen_der_tabelle(bau):
     assert len(wochen) >= 2 and n_rest + len(bau.HERVOR) == 26
     svg = bau.zeitreihe_svg(1000, 400, 13.5, 1)
     for kanton in bau.HERVOR:
-        hoechst = f"{max(anzahl[kanton]):,}".replace(",", "'")
-        assert f">{kanton} {hoechst}<" in svg
+        i = anzahl[kanton].index(max(anzahl[kanton]))
+        promille_txt = f"{promille[kanton][i]:.1f}".replace(".", ",")
+        hoechst = f"{anzahl[kanton][i]:,}".replace(",", "'")
+        assert f">{kanton} {promille_txt} ({hoechst})<" in svg
         assert len(promille[kanton]) == len(wochen)
 
 
@@ -84,3 +86,37 @@ def test_ausgeschriebene_adressen_werden_verweise(bau):
     assert '<a href="https://example.org/a.b">https://example.org/a.b</a>, dann' in html
     assert "<code>https://x.y/z</code>" in html
     assert html.count("<a ") == 2
+
+
+def test_typografie_im_fliesstext(bau):
+    html = bau.typografie("<p>Am 2026-09-14 waren es 40,6 % und 1,2 ‰ (SHA-256).</p>"
+                          "<table><tr><td>23919</td><td>2026</td></tr></table>"
+                          "<pre>2026-09-14 40 %</pre>")
+    assert "14.09.2026" in html and "40,6&nbsp;%" in html and "1,2&nbsp;‰" in html
+    assert "SHA‑256" in html
+    assert "<td>23'919</td><td>2026</td>" in html
+    assert "<pre>2026-09-14 40 %</pre>" in html
+
+
+def test_verweistext_mit_dateiname_wird_kurzname(bau, website):
+    ziel, _ = website
+    befunde = (ziel / "docs" / "befunde.html").read_text(encoding="utf-8")
+    assert ">reports/zeitreihe.md<" not in befunde and ">methode.md<" not in befunde
+    assert ">Zeitreihe</a>" in befunde
+
+
+def test_fremder_ordner_wird_nicht_geleert(bau, tmp_path):
+    (tmp_path / "wichtig.txt").write_text("x", encoding="utf-8")
+    with pytest.raises(bau.Baufehler):
+        bau.baue(tmp_path)
+    assert (tmp_path / "wichtig.txt").is_file()
+
+
+def test_html_berichte_tragen_navigation_und_metadaten(bau, website):
+    ziel, _ = website
+    for pfad, (titel, _) in bau.HTML_BERICHTE.items():
+        text = (ziel / pfad).read_text(encoding="utf-8")
+        assert f"<title>{titel} - {bau.NAME}</title>" in text
+        assert 'class="sprung"' in text and 'aria-label="Hauptnavigation"' in text
+        assert 'property="og:title"' in text and 'rel="icon"' in text
+        assert '<main id="inhalt"' in text

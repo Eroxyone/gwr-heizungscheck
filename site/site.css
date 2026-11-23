@@ -9,7 +9,7 @@
   --linie-stark:  #B4C0CD;
   --text:         #161A21;
   --text-leise:   #5C6878;
-  --text-still:   #6F7B8A;
+  --text-still:   #636E7D;
   --akzent:       #0F6E78;
   --akzent-flach: #E2EFF0;
 
@@ -246,6 +246,7 @@ thead th { font-weight: 600; background: var(--flaeche-2); border-bottom: 1px so
 tbody tr:last-child td { border-bottom: 0; }
 td[style*="right"], th[style*="right"] { font-variant-numeric: tabular-nums; white-space: nowrap; }
 td:first-child { overflow-wrap: break-word; }
+td a { overflow-wrap: anywhere; }
 
 .prosa > .quelltext { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--linie);
   font-size: 0.93rem; color: var(--text-leise); max-width: none; }

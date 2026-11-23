@@ -1,8 +1,8 @@
 # Methode
 
 Wie aus den Quellen ein Verdacht wird, was gemessen ist und was nicht. Zahlen mit
-Registerstand 14.09.2026, wo nichts anderes steht. Die Kurzfassung steht im
-[README](../README.md), die Herkunft der Daten in [datenquellen.md](datenquellen.md).
+Registerstand 14.09.2026, wo nichts anderes steht. Die Kurzfassung steht in der
+[Übersicht](../README.md), die Herkunft der Daten in [datenquellen.md](datenquellen.md).
 
 ## Warum Snapshots
 
@@ -21,9 +21,8 @@ Baum mit `read_parquet('data/snapshots/gwr/**/*.parquet', hive_partitioning = tr
 Sobald zwei Stände vorliegen, liefert die View `v_gold_veraenderung` die Änderungsrate je
 Kanton und Zeitraum.
 
-Ein Windows-Task `GWR-Snapshot` läuft dafür wöchentlich montags um 06:30
-(`scripts/snapshot.ps1`). Entfernen mit
-`Unregister-ScheduledTask -TaskName "GWR-Snapshot" -Confirm:$false`.
+Den wöchentlichen Abzug zieht `scripts/snapshot.ps1`, im Projekt jeden Montag um 06:30 über
+den Windows-Taskplaner gestartet.
 
 ## Was die Zeitreihe nach neun Wochen gezeigt hat
 

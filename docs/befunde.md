@@ -42,4 +42,4 @@ liegt nach der kantonalen Nachführung am 16.11.2026 bei 67,4 %.
    Am 14.09. waren es 3'423 Fälle; 697 davon hat das Register seither selbst korrigiert, bei
    682 mit dem vorgeschlagenen Energieträger ([reports/zeitreihe.md](../reports/zeitreihe.md)).
 
-Zurück zum [README](../README.md); die Methode steht in [methode.md](methode.md).
+Wie die Zahlen entstehen, steht in der [Methode](methode.md).

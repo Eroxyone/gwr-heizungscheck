@@ -17,7 +17,7 @@
   --linie-stark:  #B4C0CD;
   --text:         #161A21;
   --text-leise:   #5C6878;
-  --text-still:   #838F9E;
+  --text-still:   #636E7D;
   --akzent:       #0F6E78;
   --akzent-flach: #E2EFF0;
   --stufe-a:      #2D6FB5;
@@ -37,7 +37,7 @@
   :root:not([data-theme="light"]) {
     --grund: #11141A; --flaeche: #181C24; --flaeche-2: #21262F;
     --linie: #2C333E; --linie-stark: #3E4753;
-    --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #737F8D;
+    --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #8A96A5;
     --akzent: #3FB3BF; --akzent-flach: #163236;
     --stufe-a: #5892D6; --stufe-b: #62B2CD; --stufe-c: #D9B33C;
     --stufe-d: #E28F4C; --stufe-e: #D4614B;
@@ -48,7 +48,7 @@
 :root[data-theme="dark"] {
   --grund: #11141A; --flaeche: #181C24; --flaeche-2: #21262F;
   --linie: #2C333E; --linie-stark: #3E4753;
-  --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #737F8D;
+  --text: #E7ECF2; --text-leise: #9BA7B6; --text-still: #8A96A5;
   --akzent: #3FB3BF; --akzent-flach: #163236;
   --stufe-a: #5892D6; --stufe-b: #62B2CD; --stufe-c: #D9B33C;
   --stufe-d: #E28F4C; --stufe-e: #D4614B;
@@ -438,6 +438,9 @@ section { scroll-margin-top: 16px; }
   function k(x) { return x == null ? "–" : String(x).replace(".", ","); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // Datum wie in den uebrigen Berichten: TT.MM.JJJJ statt JJJJ-MM-TT
+  function datum(s) { var m = /^(\d{4})-(\d{2})-(\d{2})(.*)$/.exec(String(s == null ? "" : s));
+    return m ? m[3] + "." + m[2] + "." + m[1] + m[4] : String(s == null ? "" : s); }
 
   function kacheln(ziel, items) {
     document.getElementById(ziel).innerHTML = items.map(function (i) {
@@ -455,7 +458,7 @@ section { scroll-margin-top: 16px; }
   }
 
   document.getElementById("stand").textContent =
-    "Datenstand Register " + D.stand + " · Auswertung " + D.erzeugt +
+    "Datenstand Register " + datum(D.stand) + " · Auswertung " + datum(D.erzeugt) +
     " · " + D.checks + " automatische Datenprüfungen";
   document.getElementById("fussChecks").textContent =
     D.checks + " Prüfungen laufen über die Daten, bevor eine Zahl in diesen Bericht wandert.";

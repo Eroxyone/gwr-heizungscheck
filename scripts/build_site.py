@@ -34,16 +34,33 @@ NAME = "GWR-Heizungscheck"
 BESCHREIBUNG = ("Validierungsstudie: Lassen sich veraltete Heizungsangaben im eidgenössischen "
                 "Gebäude- und Wohnungsregister aus offenen Daten erkennen?")
 
-# Berichte, die als Seite erscheinen. Der Titel kommt aus der ersten Überschrift.
-BERICHTE = [
-    "docs/befunde.md", "docs/methode.md", "docs/datenquellen.md",
-    "reports/zeitreihe.md", "reports/belegwirkung.md", "reports/kantonsvergleich.md",
-    "reports/report.md", "reports/zuordnung_zg.md", "reports/extraktion_evaluation.md",
-    "reports/precision.md", "reports/groundtruth.md", "reports/quellenmatrix.md",
-    "reports/quellenvergleich.md", "reports/lizenzen.md",
-]
-# Bestehende HTML-Berichte: Sie werden übernommen und bekommen eine Leiste zur Startseite.
-HTML_BERICHTE = ["reports/dashboard.html", "reports/befund.html"]
+# Berichte, die als Seite erscheinen, mit ihrem Kurznamen. Der Seitentitel kommt aus der
+# ersten Überschrift; der Kurzname ersetzt Verweistexte wie "methode.md", die im Repository
+# den Dateinamen nennen.
+BERICHTE = {
+    "docs/befunde.md": "Befunde im Detail",
+    "docs/methode.md": "Methode",
+    "docs/datenquellen.md": "Datenquellen",
+    "reports/zeitreihe.md": "Zeitreihe",
+    "reports/belegwirkung.md": "Belegwirkung",
+    "reports/kantonsvergleich.md": "Kantonsvergleich",
+    "reports/report.md": "Detailauswertung Zürich",
+    "reports/zuordnung_zg.md": "Genauigkeit der Zuordnung",
+    "reports/extraktion_evaluation.md": "Auswertung der Baugesuchstexte",
+    "reports/precision.md": "Vorstufe der Messung",
+    "reports/groundtruth.md": "Vergleichsdaten Genf und Zug",
+    "reports/quellenmatrix.md": "Quellenmatrix",
+    "reports/quellenvergleich.md": "Quellenvergleich",
+    "reports/lizenzen.md": "Lizenzlage",
+}
+# Bestehende HTML-Berichte: Sie werden übernommen und bekommen Navigation, Titel und
+# Metadaten der Website.
+HTML_BERICHTE = {
+    "reports/dashboard.html": ("Dashboard", "Pflege-Index der Heizungsangaben im GWR für 26 Kantone "
+                               "und 2'110 Gemeinden, Stand 14.09.2026."),
+    "reports/befund.html": ("Zwischenbericht", "Der Stand der Studie vom 14.09.2026 auf einer Seite, "
+                            "vor der Messung der Belegwirkung und vor der Zeitreihe."),
+}
 # Was unverändert mitkommt: Ziel -> Quelle.
 KOPIEN = {
     "reports/zeitreihe.png": "reports/zeitreihe.png",
@@ -115,21 +132,26 @@ def fuss(seite: str) -> str:
             f'</div></footer>')
 
 
-def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
+def metadaten(seite: str, titel: str, beschreibung: str) -> str:
+    """Titel, Beschreibung, Vorschau beim Teilen, kanonische Adresse und Symbol einer Seite."""
     voll = NAME if seite == "index.html" else f"{titel} - {NAME}"
-    return f"""<!doctype html>
-<html lang="de">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{html.escape(voll)}</title>
+    return f"""<title>{html.escape(voll)}</title>
 <meta name="description" content="{html.escape(beschreibung)}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{html.escape(voll)}">
 <meta property="og:description" content="{html.escape(beschreibung)}">
 <meta property="og:image" content="{ADRESSE}reports/zeitreihe.png">
 <link rel="canonical" href="{ADRESSE}{'' if seite == 'index.html' else seite}">
-<link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">
+<link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">"""
+
+
+def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
+    return f"""<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{metadaten(seite, titel, beschreibung)}
 {SCHRIFTEN}
 <link rel="stylesheet" href="{relativ(seite, 'site.css')}?v={stil_version()}">
 </head>
@@ -169,6 +191,8 @@ def verweis(md: str, ziel: str, seiten: set[str], dateien: set[str], bild: bool 
     except ValueError as e:
         raise Baufehler(f"{md}: Verweis verlässt das Repository: {ziel}") from e
     seite = seitenpfad(md)
+    if rel == "README.md":                  # im Repository die Übersicht, hier die Startseite
+        return relativ(seite, "index.html") + sprung
     if rel in seiten:
         return relativ(seite, seitenpfad(rel)) + sprung
     if rel in dateien:
@@ -201,6 +225,50 @@ def adressen_verlinken(koerper: str) -> str:
     return "".join(teile)
 
 
+_DATEINAME = re.compile(r"^(\.\./)?([\w-]+/)*[\w-]+\.md(#[\w-]+)?$")
+
+
+def verweistexte_benennen(md: str, kinder: list) -> None:
+    """Ein Verweis, dessen Text nur der Dateiname eines Berichts ist ("methode.md"), bekommt
+    auf der Website den Kurznamen der Seite als Text."""
+    for i, k in enumerate(kinder[:-2]):
+        if k.type != "link_open" or kinder[i + 2].type != "link_close":
+            continue
+        text = kinder[i + 1]
+        if text.type not in ("text", "code_inline") or not _DATEINAME.match(text.content):
+            continue
+        ziel = (ROOT / md).parent.joinpath((k.attrGet("href") or "").partition("#")[0]).resolve()
+        name = BERICHTE.get(ziel.relative_to(ROOT).as_posix()) if ziel.is_relative_to(ROOT) else None
+        if name:
+            text.type, text.tag, text.markup, text.content = "text", "", "", name
+
+
+_ERZEUGT = re.compile(r"\s*<p>Erzeugt von .*?</p>\n?", re.S)
+
+
+def typografie(koerper: str) -> str:
+    """Schweizer Satzregeln im Fliesstext: geschütztes Leerzeichen vor Prozent und Promille,
+    Datum als TT.MM.JJJJ, Tausendertrenner in Tabellenzellen, kein Umbruch in "SHA-256".
+
+    Code, vorformatierter Text und Skripte bleiben unberührt.
+    """
+    teile, tiefe, letztes_tag = [], 0, ""
+    for stueck in re.split(r"(<[^>]+>)", koerper):
+        if stueck.startswith("<"):
+            name = re.match(r"</?(\w+)", stueck)
+            if name and name.group(1) in ("code", "pre", "script", "style"):
+                tiefe += -1 if stueck.startswith("</") else 1
+            letztes_tag = stueck
+        elif tiefe == 0 and stueck:
+            stueck = re.sub(r"(\d) ([%‰])", "\\1&nbsp;\\2", stueck)
+            stueck = re.sub(r"\b(20\d\d)-([01]\d)-([0-3]\d)\b", r"\3.\2.\1", stueck)
+            stueck = stueck.replace("SHA-256", "SHA‑256")
+            if letztes_tag.startswith("<td") and re.fullmatch(r"\d{5,}", stueck.strip()):
+                stueck = f"{int(stueck):,}".replace(",", "'")
+        teile.append(stueck)
+    return "".join(teile)
+
+
 def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
     """Wandelt einen Markdown-Bericht um. Gibt Titel und fertige Seite zurück."""
     parser = MarkdownIt("commonmark").enable("table")
@@ -217,6 +285,7 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
             t.attrSet("id", name)
             if t.tag == "h2":
                 kapitel.append((name, text))
+        verweistexte_benennen(md, t.children or [])
         for k in t.children or []:
             if k.type == "link_open":
                 k.attrSet("href", verweis(md, k.attrGet("href"), seiten, dateien))
@@ -226,6 +295,13 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
     if not titel:
         raise Baufehler(f"{md}: keine Überschrift erster Ordnung")
     koerper = adressen_verlinken(parser.renderer.render(tokens, parser.options, {}))
+    # Der Hinweis, welches Skript den Bericht erzeugt, gehört ans Ende, nicht unter den Titel.
+    erzeugt = _ERZEUGT.search(koerper)
+    herkunft = ""
+    if erzeugt:
+        koerper = koerper.replace(erzeugt.group(0), "\n", 1)
+        herkunft = " " + erzeugt.group(0).strip()[3:-4]
+    koerper = typografie(koerper)
     # Breite Tabellen rollen in ihrem eigenen Rahmen, nicht die ganze Seite.
     koerper = koerper.replace("<table>", '<div class="tabelle" tabindex="0" role="region" '
                               'aria-label="Tabelle"><table>').replace("</table>", "</table></div>")
@@ -249,7 +325,7 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
              f'{inhalt}</aside>'
              f'<article class="prosa">{koerper}'
              f'<p class="quelltext">Diese Seite entsteht aus '
-             f'<a href="{REPO}/blob/main/{md}"><code>{md}</code></a> im Repository.</p>'
+             f'<a href="{REPO}/blob/main/{md}"><code>{md}</code></a> im Repository.{herkunft}</p>'
              f'</article></div></main>')
     absatz = re.search(r"<p>(.*?)</p>", koerper, re.S)
     kurz = re.sub(r"<[^>]+>", "", absatz.group(1)) if absatz else BESCHREIBUNG
@@ -261,39 +337,47 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
 
 # ---------------------------------------------------------------- bestehende HTML-Berichte
 
-LEISTE_STIL = """<style>
-.zur-studie { background: var(--flaeche); border-bottom: 1px solid var(--linie); font-size: .93rem; }
-.zur-studie div { max-width: var(--breite); margin: 0 auto; padding: 10px 24px; display: flex;
-  flex-wrap: wrap; gap: 4px 24px; align-items: baseline; }
-.zur-studie a { color: var(--text-leise); text-decoration: none; }
-.zur-studie a:hover { color: var(--text); text-decoration: underline; }
-.zur-studie a:first-child { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-weight: 700;
-  color: var(--text); margin-right: auto; }
-.zur-studie a:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
-:where(a) { color: var(--akzent); }
-</style>"""
+def navigation_stil() -> str:
+    """Die Regeln für Sprunglink und Navigation aus site.css, für Seiten mit eigenem Stylesheet.
+
+    Die beiden HTML-Berichte verwenden dieselben Farbnamen wie die Website; deshalb genügt
+    es, diesen Ausschnitt einzusetzen, statt das ganze Stylesheet mit ihrem eigenen zu mischen.
+    """
+    css = (QUELLE / "site.css").read_text(encoding="utf-8")
+    sprung = re.search(r"^\.sprung \{.*?^\.sprung:focus \{.*?\}$", css, re.S | re.M)
+    nav = re.search(r"^/\* -+ Navigation \*/\n(.*?)^/\* -+", css, re.S | re.M)
+    if not sprung or not nav:
+        raise Baufehler("site/site.css: Regeln für Navigation nicht gefunden")
+    # Verweise im Text in der Akzentfarbe; ohne Spezifität, damit eigene Regeln gewinnen.
+    return f"<style>\n{sprung.group(0)}\n{nav.group(1)}:where(a) {{ color: var(--akzent); }}\n</style>"
 
 
 def html_bericht(pfad: str) -> str:
-    """Übernimmt einen fertigen HTML-Bericht und setzt die Leiste zur Studie darüber."""
+    """Übernimmt einen fertigen HTML-Bericht und gibt ihm Navigation, Titel und Metadaten
+    der Website."""
     text = (ROOT / pfad).read_text(encoding="utf-8")
-    punkte = "".join(f'<a href="{relativ(pfad, ziel)}">{name}</a>' for name, ziel in
-                     [(NAME, "index.html"), ("Ergebnis", "index.html"), ("Berichte", "index.html#berichte"),
-                      ("Methode", "docs/methode.html")])
-    leiste = f'<nav class="zur-studie" aria-label="Zur Studie"><div>{punkte}<a href="{REPO}">Code auf GitHub</a></div></nav>'
-    if "</head>" not in text or not re.search(r"<body[^>]*>", text):
+    if "</head>" not in text or not re.search(r"<body[^>]*>", text) or not re.search(r"<main\b", text):
         raise Baufehler(f"{pfad}: kein vollständiges HTML-Dokument")
-    text = text.replace("</head>", LEISTE_STIL + "\n</head>", 1)
+    titel, beschreibung = HTML_BERICHTE[pfad]
+    text = re.sub(r"<title>.*?</title>", lambda _: metadaten(pfad, titel, beschreibung), text, count=1, flags=re.S)
+    text = text.replace("</head>", navigation_stil() + "\n</head>", 1)
+    text = re.sub(r"<main\b(?![^>]*\bid=)", '<main id="inhalt"', text, count=1)
+    kopf = f'<a class="sprung" href="#inhalt">Zum Inhalt</a>\n{navigation(pfad)}'
 
     def umgeschrieben(m: re.Match) -> str:
         ziel = (ROOT / pfad).parent.joinpath(m.group(1)).resolve().relative_to(ROOT).as_posix()
         if ziel not in BERICHTE:
             raise Baufehler(f"{pfad}: Verweis auf {m.group(1)}, das keine Seite der Website ist")
-        return f'href="{relativ(pfad, seitenpfad(ziel))}{m.group(2) or ""}"'
+        linktext = m.group(3)
+        if _DATEINAME.match(linktext):          # Dateiname als Text wird zum Namen der Seite
+            linktext = BERICHTE[ziel]
+        return f'<a href="{relativ(pfad, seitenpfad(ziel))}{m.group(2) or ""}">{linktext}</a>'
 
     # Im Repository zeigen die Verweise auf die Markdown-Fassung, hier auf die Seite daraus.
-    text = re.sub(r'href="([^":#]+\.md)(#[^"]*)?"', umgeschrieben, text)
-    return re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + "\n" + leiste, text, count=1)
+    text = re.sub(r'<a href="([^":#]+\.md)(#[^"]*)?">([^<]*)</a>', umgeschrieben, text)
+    if re.search(r'href="[^":#]+\.md[#"]', text):
+        raise Baufehler(f"{pfad}: Verweis auf eine Markdown-Datei mit unerwartetem Aufbau")
+    return re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + "\n" + kopf, text, count=1)
 
 
 # ---------------------------------------------------------------- Zeitreihendiagramm
@@ -339,8 +423,9 @@ def _schneidet(kasten: tuple[float, float, float, float], linien: list[list[tupl
     return False
 
 
-def zeitreihe_svg(breite: int, hoehe: int, schrift: float, jede: int) -> str:
-    """Zeichnet das Diagramm als SVG. `jede` dünnt die Beschriftung der Wochen aus."""
+def zeitreihe_svg(breite: int, hoehe: int, schrift: float, jede: int, absolut: bool = True) -> str:
+    """Zeichnet das Diagramm als SVG. `jede` dünnt die Beschriftung der Wochen aus; ohne
+    `absolut` nennen die Marken nur den Wert der Achse, für die schmale Fassung."""
     wochen, promille, anzahl, _ = zeitreihe_daten()
     # Rechts so viel Rand, dass die letzte Wochenbeschriftung nicht abgeschnitten wird.
     links, rechts, oben, unten = 34.0, schrift * 2.1, schrift * 2.2, schrift * 2.4
@@ -374,7 +459,10 @@ def zeitreihe_svg(breite: int, hoehe: int, schrift: float, jede: int) -> str:
     for k in HERVOR:
         i = max(range(len(wochen)), key=lambda j: promille[k][j])
         px, py = punkte[k][i]
-        text = f"{k} {anzahl[k][i]:,}".replace(",", "'")
+        # Die Marke nennt den Wert in der Einheit der Achse, dazu die absolute Zahl.
+        text = f"{k} {promille[k][i]:.1f}".replace(".", ",")
+        if absolut:
+            text += f" ({anzahl[k][i]:,})".replace(",", "'")
         b, h = len(text) * schrift * 0.58, schrift * 1.15
         lagen = [("middle", px, py - 12, px - b / 2), ("start", px + 12, py + h * 0.3, px + 12),
                  ("end", px - 12, py + h * 0.3, px - 12 - b), ("start", px + 12, py - 10, px + 12),
@@ -408,11 +496,14 @@ def zeitreihe_block() -> str:
     spitzen = ", ".join(
         f"{namen[k]} {max(anzahl[k]):,} Einträge in der Woche bis {wochen[anzahl[k].index(max(anzahl[k]))]}"
         .replace(",", "'") for k in HERVOR)
-    rest_max = f"{max(promille['rest']):.1f}".replace(".", ",")
+    rest_max = f"{max(promille['rest']):.2f}".replace(".", ",")
     text = (f"Liniendiagramm über {len(wochen)} Wochen. Höchstwerte: {spitzen}. "
-            f"Die übrigen {n_rest} Kantone bleiben zusammen unter {rest_max} Einträgen je 1'000 Gebäude.")
+            f"Die übrigen {n_rest} Kantone kommen zusammen auf höchstens {rest_max} geänderte "
+            f"Einträge je 1'000 Gebäude und Woche.")
     breit = zeitreihe_svg(1000, 400, 13.5, 1)
-    schmal = zeitreihe_svg(520, 380, 15.0, 2).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
+    # Auf dem Handy wird das Diagramm auf rund 340 px verkleinert; die Schrift ist so gewählt,
+    # dass sie dort mindestens 12 px gross bleibt.
+    schmal = zeitreihe_svg(440, 380, 16.0, 2, absolut=False).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
     return (f'<p class="einheit" id="zr-titel">Geänderte Energieträger je Woche und 1\'000 Gebäude</p>'
             f'<ul class="legende">{legende}</ul>'
             f'<p id="zr-text" hidden>{text}</p>'
@@ -444,12 +535,23 @@ def pruefe_verweise(ziel: Path) -> list[str]:
     return fehler
 
 
+def leere_ziel(ziel: Path) -> None:
+    """Leert das Zielverzeichnis, aber nur, wenn es leer ist oder eine frühere Website enthält.
+
+    Erkennungszeichen ist die Datei .nojekyll, die jeder Bau anlegt. Ein Tippfehler bei
+    --ziel löscht so keinen fremden Ordner.
+    """
+    if not ziel.exists():
+        return
+    inhalt = [k for k in ziel.iterdir() if k.name != ".git"]
+    if inhalt and not (ziel / ".nojekyll").is_file():
+        raise Baufehler(f"{ziel} ist nicht leer und enthält keine frühere Website; nichts gelöscht")
+    for kind in inhalt:
+        shutil.rmtree(kind) if kind.is_dir() else kind.unlink()
+
+
 def baue(ziel: Path) -> int:
-    if ziel.exists():
-        for kind in ziel.iterdir():
-            if kind.name == ".git":
-                continue
-            shutil.rmtree(kind) if kind.is_dir() else kind.unlink()
+    leere_ziel(ziel)
     ziel.mkdir(parents=True, exist_ok=True)
 
     seiten = set(BERICHTE)
@@ -462,7 +564,7 @@ def baue(ziel: Path) -> int:
 
     start = (QUELLE / "index.html").read_text(encoding="utf-8")
     start = re.sub(r"<!--.*?-->\s*", "", start, count=1, flags=re.S)
-    start = start.replace("{{ZEITREIHE}}", zeitreihe_block()).replace("{{REPO}}", REPO)
+    start = typografie(start).replace("{{ZEITREIHE}}", zeitreihe_block()).replace("{{REPO}}", REPO)
     if "{{" in start:
         raise Baufehler("site/index.html: unbekannter Platzhalter")
     schreibe("index.html", rahmen("index.html", NAME, BESCHREIBUNG, start))

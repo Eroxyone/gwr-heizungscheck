@@ -33,3 +33,4 @@ reports/befund_daten.json
 
 # Website
 _site/
+.playwright-mcp/

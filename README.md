@@ -34,11 +34,11 @@ aktiv weiterentwickelt. Fragen und Hinweise gern als Issue.
 
 | | |
 |---|---|
-| **28,6 %** | der Schweizer Wohngebäude tragen bei der Heizung noch die Volkszählung 2000 als Quelle. Das heisst ungeprüft, nicht falsch. |
-| **16'025** | Wohngebäude sind fossil eingetragen, obwohl im Umkreis von 20 Metern eine Erdwärmesonde oder eine andere Wärmenutzungsanlage liegt und kein Gebäude dort eine Wärmepumpe ausweist (Stand September 2026, Kantone mit offenem Anlagenregister). Die Verdachtsliste zählt enger: nur Anlagen, die genau einem Gebäude zugeordnet sind. |
+| **28,6 %** | der Schweizer Wohngebäude tragen bei der Heizung noch die Volkszählung 2000 als Quelle. Ein solcher Eintrag ist ungeprüft; falsch ist er erst, wenn die Heizung seither gewechselt hat. |
+| **40,6 %** | der Zürcher Heizungs-Baugesuche, die mindestens sechs Monate zurückliegen, sind im Register nicht nachgeführt (186 von 458); sauber nachgeführt sind 43,2 %. Das erste Abbruchkriterium der Studie (über 80 % nachgeführt) ist klar verfehlt. |
+| **1,6** | Heizungs-Baugesuche je Jahr hat die mittlere Zürcher Gemeinde. Das zweite Abbruchkriterium greift: Baugesuche allein reichen für eine Liste nicht, deshalb kamen 13 kantonale Anlagenregister als Belege dazu. |
 | **80,8 %** | der Verdachtsfälle treffen zu, wenn der Beleg jünger ist als der Registereintrag (63 von 78, Vertrauensbereich 71 bis 88 %). Liegt der Beleg vor dem Eintrag: 13,3 %, kaum über der Grundrate von 8,8 %. Gemessen am Öltankkataster eines einzigen Kantons (Zug). |
-| **682 von 697** | Fällen der Liste vom 14.09.2026, die das Register bis zum 16.11.2026 korrigierte, erhielten den vorgeschlagenen Energieträger (Zürich: 645 von 650). Vorschlag und Korrektur stützen sich in Zürich auf dasselbe kantonale Sondenregister: Die Zahl belegt Übereinstimmung, keine unabhängige Trefferquote. |
-| **2'000 bis 5'000 pro Woche** | Energieträger ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148 Mitte November, Basel-Landschaft 2'329 Ende Oktober. Die übrigen 23 Kantone bewegen zusammen weniger als einen Eintrag je 1'000 Gebäude und Woche. |
+| **2'000 bis 5'000 pro Woche** | Energieträger ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148 Mitte November, Basel-Landschaft 2'329 Ende Oktober; in Zürich vor allem fossile Einträge, im Aargau und in Basel-Landschaft nur zum kleineren Teil. Die übrigen 23 Kantone bewegen zusammen weniger als einen Eintrag je 1'000 Gebäude und Woche. |
 
 ## Was die Studie zeigt
 
@@ -56,7 +56,11 @@ Faktor 6 zwischen den beiden Gruppen.
 Wohngebäude von fossil auf nicht fossil um, Gemeinde für Gemeinde; 650 davon standen auf der
 Liste dieser Studie (24 %). Die übrigen drei Viertel erreicht sie nicht, weil der Kanton zu
 jeder Sonde Datum und Gebäudebezug kennt und die offenen Daten nur Koordinate und Laufnummer
-hergeben. Wo ein Kanton eigene Vollzugsdaten einsetzt, braucht es keine Vorauswahl von aussen.
+hergeben. Von allen Listenfällen, die das Register bis zum 16.11.2026 berichtigte, erhielten
+682 von 697 den vorgeschlagenen Energieträger; da Vorschlag und Berichtigung sich in Zürich
+auf dasselbe Sondenregister stützen, bestätigt das die Zuordnung, misst aber keine
+unabhängige Trefferquote. Wo ein Kanton eigene Vollzugsdaten einsetzt, braucht es keine
+Vorauswahl von aussen.
 
 **Wofür das Repo taugt:** als Methode für Kantone und Gemeinden ohne eigene Vollzugsdaten,
 als Messinstrument dafür, wie viel sich im GWR tatsächlich bewegt, und als Vorlage für
@@ -64,11 +68,11 @@ als Messinstrument dafür, wie viel sich im GWR tatsächlich bewegt, und als Vor
 
 ## Grenzen
 
-- **Ein Kanton als Massstab.** Die 80,8 % stammen aus Zug. Von 144 Zuger Fällen liessen sich
-  79 prüfen, Gasheizungen gar nicht.
+- **Ein Kanton als Massstab.** Die 80,8 % beruhen auf 78 prüfbaren Fällen aus Zug.
+  Gasheizungen und Gebäude ohne Eintrag im Tankkataster lassen sich dort nicht prüfen.
 - **Zuordnung über Koordinaten.** Der 20-Meter-Umkreis enthält das richtige Gebäude bei
-  73,8 % der Anlagen, das nächstgelegene Gebäude ist nur bei 64,7 % das richtige (gemessen
-  an den amtlichen EGID des Kantons Zug).
+  73,8 % der Anlagen (im Schnitt 1,87 Gebäude im Umkreis), das nächstgelegene Gebäude ist
+  nur bei 64,7 % das richtige (gemessen an den amtlichen EGID des Kantons Zug).
 - **Textauswertung nicht unabhängig geprüft.** Die Kaskade aus Stichwortregel und
   Sprachmodell erreicht 98,7 % Precision (78 von 79), gemessen an 150 Texten, die ein
   Sprachmodell gelabelt hat und an denen auch die Anweisung für das prüfende Modell
