@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Heizungsregister Schweiz</title>
-<link rel="stylesheet" href="../site/fonten.css">
+<link rel="stylesheet" href="../site/schriften.css">
 
 <style>
 :root {
@@ -176,7 +176,8 @@ section { margin-bottom: 40px; }
 }
 .rang-zeile:first-child { border-top: 0; }
 .rang-zeile:hover { background: var(--flaeche-2); }
-.rang-zeile[aria-pressed="true"] { background: var(--akzent-flach); }
+.rang-zeile[aria-expanded="true"] { background: var(--akzent-flach); }
+.rang-tabelle .detail { margin: 0 14px 14px; }
 .rang-zeile:focus-visible { outline: 2px solid var(--akzent); outline-offset: -2px; }
 .rang-nr { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .82rem; color: var(--text-still); font-variant-numeric: tabular-nums; }
 .rang-kt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; font-size: .92rem; }
@@ -232,6 +233,10 @@ input[type="search"], select {
 }
 input[type="search"] { min-width: 210px; }
 input[type="search"]:focus-visible, select:focus-visible { outline: 2px solid var(--akzent); outline-offset: 1px; border-color: var(--akzent); }
+.leer { color: var(--text-leise); margin: 12px 0 0; }
+.zuruecksetzen { font: inherit; color: var(--akzent); background: none; border: 1px solid var(--linie-stark);
+  border-radius: var(--radius); padding: 6px 10px; margin-left: 8px; cursor: pointer; }
+.zuruecksetzen:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 .treffer { font-size: .82rem; color: var(--text-still); font-family: "IBM Plex Mono", ui-monospace, monospace; margin-left: auto; }
 
 .tabellen-huelle { overflow-x: auto; border: 1px solid var(--linie); border-radius: var(--radius); background: var(--flaeche); }
@@ -260,7 +265,7 @@ thead th {
   border-bottom: 1px solid var(--linie); cursor: pointer; user-select: none;
 }
 thead th:first-child, thead th:nth-child(2) { text-align: left; }
-.sortieren { all: inherit; display: inline; padding: 0; border: 0; cursor: pointer; }
+.sortieren { all: inherit; display: inline-block; padding: 8px 0; margin: -8px 0; border: 0; cursor: pointer; }
 .sortieren:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 thead th:hover { color: var(--text); }
 thead th[aria-sort] { color: var(--akzent); }
@@ -291,7 +296,9 @@ tbody tr:hover { background: var(--flaeche-2); }
 
 @media (max-width: 720px) {
   .stand { text-align: left; }
-  .rang-zeile { grid-template-columns: 26px 40px 1fr 60px; }
+  .rang-zeile { grid-template-columns: 24px 34px 1fr auto; gap: 8px; padding: 9px 10px; }
+  .rang-tabelle .detail { margin: 0 8px 12px; }
+  .kz:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .rang-zeile .verstecken-klein { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -319,12 +326,15 @@ tbody tr:hover { background: var(--flaeche-2); }
   <section>
     <div class="abschnitt-kopf">
       <h2>Kantone im Vergleich</h2>
-      <p>Klicken für Quellenmix und Altersprofil</p>
+      <p>Kanton wählen für Quellenmix und Altersprofil</p>
     </div>
     <p class="hinweis">Der Pflege-Index fasst Vollständigkeit, Aktualität und Herkunft der
-      Heizungsangabe zusammen. Das Etikett rechts sagt, <em>wie</em> gepflegt wird: laufend,
+      Heizungsangabe zusammen. Das Etikett sagt, <em>wie</em> gepflegt wird: laufend,
       durch einen einzelnen Sammelimport, sporadisch, oder gar nicht mehr, weil der Altbestand
       überwiegt.</p>
+    <p class="hinweis">Stand 14.09.2026. Seither haben Zürich, Aargau und Basel-Landschaft in
+      einzelnen Wochen mehrere tausend Einträge nachgeführt; ihre Werte wären heute andere
+      (<a href="zeitreihe.md">Zeitreihe</a>).</p>
     <div class="rang-tabelle" id="rangliste"></div>
     <div class="legende">
       <span><i class="punkt bg-a"></i> A ab 90</span>
@@ -333,7 +343,6 @@ tbody tr:hover { background: var(--flaeche-2); }
       <span><i class="punkt bg-d"></i> D ab 45</span>
       <span><i class="punkt bg-e"></i> E unter 45</span>
     </div>
-    <div class="detail" id="detail"></div>
   </section>
 
   <section>
@@ -392,6 +401,8 @@ tbody tr:hover { background: var(--flaeche-2); }
         <tbody id="koerper"></tbody>
       </table>
     </div>
+    <p class="leer" id="leerHinweis" role="status" hidden>Keine Gemeinde passt zu Suche und
+      Filter. <button type="button" id="zuruecksetzen" class="zuruecksetzen">Filter zurücksetzen</button></p>
     <p class="hinweis" id="tabellenFuss"></p>
   </section>
 
@@ -469,7 +480,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
   function pct(n) { return n == null ? "–" : n.toFixed(1).replace(".", ",") + " %"; }
   function komma(n) { return n == null ? "–" : String(n).replace(".", ","); }
   function eineStelle(n) { return n == null ? "–" : Number(n).toFixed(1).replace(".", ","); }
-  function jahre(n) { return n == null ? "–" : komma(n) + (Number(n) === 1 ? " Jahr" : " Jahre"); }
+  function jahre(n) { return n == null ? "–" : eineStelle(n) + (Number(n) === 1 ? " Jahr" : " Jahre"); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   // Datum wie in den uebrigen Berichten: TT.MM.JJJJ statt JJJJ-MM-TT
@@ -489,7 +500,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
       fuss: "bestehend, Kategorie 1020/1030/1040" },
     { wert: pct(100 * s.aus_vz2000 / s.wohngebaeude), label: "noch aus der Volkszählung 2000",
       fuss: tsd(s.aus_vz2000) + " Einträge, seither ungeprüft" },
-    { wert: komma(s.median_alter_jahre) + " J.", label: "Median-Alter der Heizungsangabe",
+    { wert: eineStelle(s.median_alter_jahre) + " J.", label: "Median-Alter der Heizungsangabe",
       fuss: "Jahre seit der letzten Aktualisierung" },
     { wert: pct(100 * s.fossil / s.wohngebaeude), label: "fossil beheizt",
       fuss: tsd(s.fossil) + " Gebäude mit Öl oder Gas" },
@@ -538,7 +549,8 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     document.getElementById("rangliste").innerHTML = kantone.map(function (k, i) {
       var n = noteKlein(k.note);
       return '<button type="button" class="rang-zeile" data-kt="' + k.kanton + '"' +
-        ' aria-pressed="' + (gewaehlt === k.kanton) + '">' +
+        ' aria-expanded="' + (gewaehlt === k.kanton) + '"' +
+        (gewaehlt === k.kanton ? ' aria-controls="detail"' : '') + '>' +
         '<span class="rang-nr">' + (i + 1) + '</span>' +
         '<span class="rang-kt note-' + n + '">' + k.kanton + '</span>' +
         '<span class="rang-balken-huelle">' +
@@ -546,11 +558,13 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
             '" style="width:' + k.pflege_index + '%"></span></span>' +
           '<span class="rang-wert">' + eineStelle(k.pflege_index) + '</span>' +
         '</span>' +
-        '<span class="verstecken-klein"><span class="chip chip-' + esc(k.pflegemuster) + '">' +
+        '<span><span class="chip chip-' + esc(k.pflegemuster) + '">' +
           esc(k.pflegemuster === "Rueckstand" ? "Rückstand" : k.pflegemuster) + '</span></span>' +
         '<span class="rang-name verstecken-klein">' + esc(D.kantonNamen[k.kanton] || "") + '</span>' +
         '<span class="rang-zahl verstecken-klein">' + tsd(k.wohngebaeude) + '</span>' +
-        '</button>';
+        '</button>' +
+        // Das Detail steht direkt unter dem gewaehlten Kanton, nicht unter der ganzen Liste.
+        (gewaehlt === k.kanton ? '<div class="detail" id="detail" aria-live="polite"></div>' : '');
     }).join("");
   }
 
@@ -566,11 +580,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
 
   function zeichneDetail(kt) {
     var ziel = document.getElementById("detail");
-    if (!kt) {
-      ziel.innerHTML = '<p style="margin:0;color:var(--text-leise);font-size:.88rem">' +
-        'Einen Kanton anklicken, um Quellenmix und Altersprofil zu sehen.</p>';
-      return;
-    }
+    if (!kt || !ziel) return;
     var k = kantone.filter(function (x) { return x.kanton === kt; })[0];
     var q = quellen.filter(function (x) { return x.kanton === kt; }).slice(0, 8)
       .map(function (x) { return { name: x.quelle_txt + " (" + x.quelle_code + ")", wert: x.pct }; });
@@ -582,7 +592,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     ziel.innerHTML =
       '<div><h3>' + esc(D.kantonNamen[kt]) + ' <span>' + esc(kt) + '</span></h3>' +
         '<div class="liste">' +
-        [["Pflege-Index", komma(k.pflege_index) + "  (Note " + esc(String(k.note).trim()) + ")"],
+        [["Pflege-Index", eineStelle(k.pflege_index) + "  (Note " + esc(String(k.note).trim()) + ")"],
          ["Pflegemuster", k.pflegemuster === "Rueckstand" ? "Rückstand" : esc(k.pflegemuster)],
          ["Wohngebäude", tsd(k.wohngebaeude)],
          ["Gemeinden", tsd(k.gemeinden)],
@@ -610,6 +620,9 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     zeichneDetail(gewaehlt);
     document.getElementById("ktFilter").value = gewaehlt || "";
     zeichneTabelle();
+    // Die Zeilen werden neu gezeichnet; der Fokus bleibt auf dem gewaehlten Kanton.
+    var neu = document.querySelector('.rang-zeile[data-kt="' + kt + '"]');
+    if (neu) neu.focus();
   });
 
   // ---------------------------------------------------------------- Gemeindetabelle
@@ -617,10 +630,10 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     { s: "kanton", t: "KT", txt: true },
     { s: "gemeinde", t: "Gemeinde", txt: true },
     { s: "wohngebaeude", t: "Wohngeb.", f: tsd },
-    { s: "pflege_index", t: "Index", f: komma, note: true },
+    { s: "pflege_index", t: "Index", f: eineStelle, note: true },
     { s: "pflegemuster", t: "Muster", txt: true, chip: true },
     { s: "pct_vz2000", t: "VZ 2000", f: pct },
-    { s: "median_alter_jahre", t: "Alter", f: function (v) { return komma(v) + " J."; } },
+    { s: "median_alter_jahre", t: "Alter", f: function (v) { return eineStelle(v) + " J."; } },
     { s: "pct_fossil", t: "fossil", f: pct },
     { s: "pct_waermepumpe", t: "WP", f: pct },
     { s: "kandidaten", t: "Kandidaten", f: tsd }
@@ -662,6 +675,7 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     });
     document.getElementById("treffer").textContent = tsd(reihen.length) + " Treffer";
     var sichtbar = reihen.slice(0, MAXZEILEN);
+    document.getElementById("leerHinweis").hidden = reihen.length > 0;
     document.getElementById("koerper").innerHTML = sichtbar.map(function (g) {
       return "<tr>" + SPALTEN.map(function (c) {
         var v = g[c.s];
@@ -693,6 +707,16 @@ Herkunft        Anteil ohne Quelle 860 (Volkszählung 2000)</div>
     if (sp === sortSpalte) { sortAuf = !sortAuf; }
     else { sortSpalte = sp; sortAuf = (sp === "kanton" || sp === "gemeinde" || sp === "pflegemuster"); }
     zeichneTabelle();
+  });
+  document.getElementById("zuruecksetzen").addEventListener("click", function () {
+    document.getElementById("suche").value = "";
+    ["ktFilter", "musterFilter", "groesse"].forEach(function (id) {
+      document.getElementById(id).selectedIndex = 0;
+    });
+    gewaehlt = null;
+    zeichneRangliste();
+    zeichneTabelle();
+    document.getElementById("suche").focus();
   });
   ["suche", "ktFilter", "musterFilter", "groesse"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", function () {

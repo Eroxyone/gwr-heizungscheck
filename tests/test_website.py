@@ -140,7 +140,7 @@ def test_keine_schriften_oder_skripte_von_fremden_servern(website):
         geladen = re.findall(r'<script[^>]+src="https?://[^"]*"|<link rel="(?:stylesheet|preconnect|icon)"'
                              r'[^>]+href="https?://[^"]*"', text)
         assert not geladen, (seite.name, geladen)
-    css = (ziel / "fonten.css").read_text(encoding="utf-8")
+    css = (ziel / "schriften.css").read_text(encoding="utf-8")
     for datei in re.findall(r'url\("([^"]+)"\)', css):
         assert (ziel / datei).is_file(), datei
 

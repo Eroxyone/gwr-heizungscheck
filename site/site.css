@@ -299,3 +299,7 @@ pre.beispiel { font-size: 0.82rem; margin: 0 0 1em; max-width: var(--spalte);
 
 /* Graue Linien und Balken mit mindestens 3:1 gegen den Hintergrund */
 .balken .strich { background: var(--reihe-rest); }
+
+/* Kopf: Technik und Umfang in einer Zeile, Stand in der Breite des Absatzes */
+.kopf .technik { color: var(--text); font-size: 0.98rem; max-width: 70ch; margin: 14px 0 0; }
+.kopf .stand { max-width: 70ch; }

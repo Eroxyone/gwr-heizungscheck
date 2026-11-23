@@ -68,7 +68,7 @@ KOPIEN = {
     "reports/dashboard_daten.js": "reports/dashboard_daten.js",
     "reports/befund_daten.js": "reports/befund_daten.js",
     "site.css": "site/site.css",
-    "fonten.css": "site/fonten.css",
+    "schriften.css": "site/schriften.css",
     "navigation.css": "site/navigation.css",
     "favicon.svg": "site/favicon.svg",
     # Schriften liegen bei der Website selbst, mit ihren Lizenzen
@@ -153,7 +153,7 @@ def metadaten(seite: str, titel: str, beschreibung: str) -> str:
 <meta name="color-scheme" content="light dark">
 <link rel="canonical" href="{adresse}">
 <link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">
-{stil(seite, 'fonten.css')}
+{stil(seite, 'schriften.css')}
 {stil(seite, 'navigation.css')}"""
 
 
@@ -392,9 +392,9 @@ def html_bericht(pfad: str) -> str:
         raise Baufehler(f"{pfad}: kein vollständiges HTML-Dokument")
     titel, beschreibung = HTML_BERICHTE[pfad]
     # Die Schriften bindet metadaten() ein; der Verweis für den Aufruf aus dem Repository entfällt.
-    schriften = '<link rel="stylesheet" href="../site/fonten.css">'
+    schriften = '<link rel="stylesheet" href="../site/schriften.css">'
     if schriften not in text:
-        raise Baufehler(f"{pfad}: bindet site/fonten.css nicht ein")
+        raise Baufehler(f"{pfad}: bindet site/schriften.css nicht ein")
     text = text.replace(schriften + "\n", "").replace(schriften, "")
     text = re.sub(r"<title>.*?</title>", lambda _: metadaten(pfad, titel, beschreibung), text, count=1, flags=re.S)
     text = re.sub(r"<main\b(?![^>]*\bid=)", '<main id="inhalt"', text, count=1)
@@ -618,6 +618,15 @@ def baue(ziel: Path) -> int:
     if "{{" in start:
         raise Baufehler("site/index.html: unbekannter Platzhalter")
     schreibe("index.html", rahmen("index.html", NAME, BESCHREIBUNG, start))
+    # GitHub Pages zeigt 404.html für jede unbekannte Adresse, auch in Unterordnern. Die
+    # Basisadresse sorgt dafür, dass Stylesheets und Verweise dort trotzdem stimmen.
+    fehlt = rahmen("404.html", "Seite nicht gefunden", BESCHREIBUNG,
+                   '<main id="inhalt" class="seite"><div class="huelle"><article class="prosa">'
+                   '<h1>Diese Seite gibt es nicht</h1>'
+                   '<p>Die Adresse ist falsch geschrieben oder die Seite wurde umbenannt. Alle Berichte '
+                   'stehen auf der <a href="index.html#berichte">Startseite</a>.</p>'
+                   '</article></div></main>')
+    schreibe("404.html", fehlt.replace("<head>", f'<head>\n<base href="{ADRESSE}">', 1))
 
     for md in BERICHTE:
         _, seite = bericht(md, seiten, dateien)

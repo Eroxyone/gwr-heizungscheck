@@ -3,9 +3,12 @@
 <header class="kopf">
   <div class="huelle">
     <h1>Lassen sich veraltete Heizungsangaben im Gebäuderegister aus offenen Daten erkennen?</h1>
-    <p class="antwort">Ja, mit messbarer Trefferquote. Wöchentliche Snapshots des Registers
-      zeigen aber auch, dass mehrere Kantone gerade selbst nachführen, und zwar in Schüben
-      von einigen tausend Einträgen.</p>
+    <p class="antwort">Ja. Liegt ein Beleg wie eine bewilligte Erdwärmesonde zeitlich nach dem
+      Registereintrag, ist der Eintrag in vier von fünf Fällen falsch, gemessen in einem Kanton.
+      Wöchentliche Snapshots zeigen zugleich, dass mehrere Kantone gerade selbst nachführen.</p>
+    <p class="technik">Gebaut mit Python, SQL und DuckDB in Bronze-, Silver- und Gold-Schichten:
+      3,17 Mio Gebäude aus allen 26 Kantonen, 30 offene Quellen, 136 automatische Tests und 85
+      Prüfungen auf den echten Daten.</p>
     <p class="stand">Validierungsstudie zum eidgenössischen Gebäude- und Wohnungsregister (GWR),
       September bis November 2026, abgeschlossen. Registerstand 14.09.2026 für die ganze
       Schweiz und 13.09.2026 für die Zürcher Detailauswertung, Zeitreihe bis 16.11.2026.</p>
@@ -56,8 +59,10 @@
 Im GWR:     Heizöl, Volkszählung 2000, Stand 29.11.2001
 Beleg:      Erdwärmesonde, Bohrung 2019, 6 m vom Gebäude
 Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
-  <p>Gebäudegenaue Listen werden nicht veröffentlicht; die Website zeigt nur Zahlen je
-    Kanton und Gemeinde.</p>
+  <p>Die Stufe sagt, wie stark der Beleg ist. Am stärksten ist ein datierter Beleg, der jünger
+    ist als der Registereintrag; die übrigen Stufen beschreibt die
+    <a href="docs/methode.html">Methode</a>. Gebäudegenaue Listen werden nicht veröffentlicht;
+    die Website zeigt nur Zahlen je Kanton und Gemeinde.</p>
   <p>Vor der Auswertung waren zwei Abbruchkriterien festgelegt: Die Studie endet, wenn
     Baugesuche zu über 80 % schon nachgeführt sind oder wenn es pro Gemeinde nur eine
     Handvoll davon gibt. Das erste Kriterium wurde nicht ausgelöst, das zweite schon. Deshalb
@@ -65,7 +70,7 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
 </section>
 
 <section class="abschnitt" id="zahlen">
-  <h2>Das Ergebnis in fünf Zahlen</h2>
+  <h2>Die Ergebnisse in Zahlen</h2>
   <dl class="zahlen">
     <div>
       <dt>28,6 %<small>Stand 14.09.2026</small></dt>
@@ -151,7 +156,7 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
 
 <section class="abschnitt" id="aufbau">
   <h2>Wie es gebaut ist</h2>
-  <p>Python und DuckDB, lokal lauffähig ohne Dienst und ohne Zugang. Die Fachlogik steht in
+  <p>Python und DuckDB, lokal lauffähig ohne Cloud-Dienst und ohne Konto. Die Fachlogik steht in
     SQL, je Schritt eine Datei. Python lädt die Quellen, führt die Schritte in der richtigen
     Reihenfolge aus und erzeugt die Berichte.</p>
   <div class="schichten breit">
@@ -199,12 +204,15 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
     <li><b>22</b>SQL-Schritte in fester Reihenfolge</li>
     <li><b>85</b>Prüfungen auf den echten Daten</li>
   </ul>
-  <p>Abgesichert ist die Pipeline auf drei Ebenen. Automatische Tests führen die zentralen SQL-Schritte
-    (Silver und Gold, Zuordnung der Anlagen, Verdachtsliste) unverändert
-    über ein erfundenes Register aus, in dem sich jede erwartete Zahl von Hand nachzählen
-    lässt. 85 Prüfungen laufen nach jedem Pipelinelauf über die echten Daten: Schlüssel,
-    Wertebereiche, Summen, festgeschriebene Vergleichswerte. Und die Ergebnisse selbst werden
-    gegen fremde Daten gemessen. Gebäudegenaue Listen und Rohdaten sind nicht Teil des
+  <p>Geprüft wird auf drei Arten. Automatische Tests führen die zentralen SQL-Schritte
+    (Silver und Gold, Zuordnung der Anlagen, Verdachtsliste) unverändert über ein erfundenes
+    Register aus, in dem sich jede erwartete Zahl von Hand nachzählen lässt. 85 Prüfungen
+    laufen nach jedem Pipelinelauf über die echten Daten: Schlüssel, Wertebereiche, Summen,
+    festgeschriebene Vergleichswerte. Und die Ergebnisse selbst werden gegen fremde Daten
+    gemessen.</p>
+  <p>Nicht automatisch getestet sind die Messungen gegen die Kataster von Genf und Zug, also
+    auch die Rechnung hinter den 80,8 %; sie sind über die Prüfungen auf den echten Daten und
+    die Berichte nachvollziehbar. Gebäudegenaue Listen und Rohdaten sind nicht Teil des
     Repositories.</p>
   <p><a href="docs/methode.html">Methode</a>,
     <a href="docs/datenquellen.html">Datenquellen</a>,
@@ -281,6 +289,36 @@ Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
       <span>Was der Kanton Luzern in seinem Projekt verwendet hat und was offen fehlt</span></li>
     <li><a href="reports/lizenzen.html">Lizenzlage</a>
       <span>Nutzungsbedingungen je Quelle</span></li>
+  </ul>
+</section>
+
+<section class="abschnitt" id="rueckblick">
+  <h2>Rückblick</h2>
+  <h3>Was ich anders machen würde</h3>
+  <ul>
+    <li><b>Zuerst die Zeitreihe, dann die Liste.</b> Wenige Wochen Snapshots haben mehr über den
+      Nutzen der Methode gesagt als drei Wochen Listenbau. Wer misst, wie schnell ein Register
+      gepflegt wird, weiss, wo eine Vorauswahl überhaupt gebraucht wird.</li>
+    <li><b>Früher an echten Korrekturen messen.</b> Der Zuger Tankkataster war ein Behelf; der
+      Vergleich zweier Registerstände liefert die besseren Labels und kostet nichts.</li>
+    <li><b>Metadaten nicht als Qualitätsmass nehmen.</b> Die Stadt Zürich hat keinen einzigen
+      Eintrag aus der Volkszählung 2000 und trotzdem 87 von 123 Heizungs-Baugesuchen nicht
+      nachgeführt.</li>
+    <li><b>Die Liste von Anfang an je Snapshot neu rechnen.</b> Zwei Wochen lang führte sie 240
+      Fälle, die das Register schon korrigiert hatte, weil der Wochenlauf nur die Silver-Schicht
+      erneuerte. Seither archiviert jeder Lauf die Liste je Stand.</li>
+  </ul>
+  <h3>Was die Prüfungen gefunden haben</h3>
+  <ul>
+    <li>Ein Logikfehler setzte 26 Gebäude auf die Liste, obwohl ihr Baugesuch bereits
+      nachgeführt war: Der Filter prüfte, ob es ein Baugesuch gab, statt ob es nachgeführt
+      war.</li>
+    <li>Die Vergleichssicht der Zeitreihe zählte neue Gebäude nicht mit; sie landeten im
+      FULL JOIN in einer leeren Gruppe statt beim Kanton. Gefunden von einem Test mit
+      erfundenem Vor-Snapshot, Wochen bevor der zweite echte Snapshot vorlag.</li>
+    <li>Das Archiv der Liste prüfte nur den Stand, nicht den Kanton. Ein Kanton, dessen Snapshot
+      erst in einem späteren Lauf nachkam, hätte gefehlt. Gefunden von einem Test, der genau
+      das nachstellt.</li>
   </ul>
 </section>
 

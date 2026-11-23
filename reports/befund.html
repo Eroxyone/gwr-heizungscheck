@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Veraltete Heizungsdaten</title>
-<link rel="stylesheet" href="../site/fonten.css">
+<link rel="stylesheet" href="../site/schriften.css">
 
 <style>
 :root {
@@ -458,7 +458,7 @@ section { scroll-margin-top: 16px; }
 
   function tabelle(id, kopf, reihen) {
     document.getElementById(id).innerHTML =
-      "<thead><tr>" + kopf.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") +
+      "<thead><tr>" + kopf.map(function (h) { return '<th scope="col">' + esc(h) + "</th>"; }).join("") +
       "</tr></thead><tbody>" + reihen.map(function (r) {
         return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody>";
@@ -585,7 +585,7 @@ section { scroll-margin-top: 16px; }
   tabelle("tKantone",
     ["Kanton", "Note", "Index", "Pflegemuster", "Wohngebäude", "Quelle 860", "Alter", "fossil"],
     D.kantone.map(function (x) {
-      var farbe = "var(--stufe-" + (stufeVon[x.note] || "e") + ")";
+      var farbe = "var(--schrift-" + (stufeVon[x.note] || "e") + ")";
       return [esc(ktName[x.kanton] || x.kanton),
               '<span style="color:' + farbe + ';font-weight:600">' + esc(x.note) + "</span>",
               k(x.idx),

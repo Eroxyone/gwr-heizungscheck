@@ -89,8 +89,8 @@ als Messinstrument dafür, wie viel sich im GWR tatsächlich bewegt, und als Vor
 - **Früher mit echten Korrekturen messen statt mit Katastern.** Der Zuger Tankkataster war ein
   Behelf; der Vergleich zweier Registerstände ist das ehrlichere Label und kostet nichts.
 - **Metadaten nie als Qualitätsmass nehmen.** "Quelle Volkszählung 2000" heisst ungeprüft, nicht
-  falsch. Die Stadt Zürich hat null solche Einträge und trotzdem bei zwei Dritteln der
-  Heizungs-Baugesuche keine Nachführung.
+  falsch. Die Stadt Zürich hat null solche Einträge und trotzdem 87 von 123 Heizungs-Baugesuchen
+  (70,7 %) nicht nachgeführt.
 - **Gold-Layer an den Snapshot koppeln, von Anfang an.** Zwei Wochen lang führte die Liste
   240 Fälle, die das Register schon korrigiert hatte, weil der Wochenlauf nur den Silver-Layer
   neu rechnete. Jetzt archiviert jeder Lauf die Liste je Stand und misst, was seither geschah.
