@@ -1,42 +1,42 @@
-# Was Luzern verwendet hat, und was uns fehlt
+# Quellenvergleich: das Luzerner GWR-Projekt und diese Studie
 
-Stand 14.09.2026. Grundlage ist der Schlussbericht **«GWR Verbesserung Kanton Luzern»**
+Stand 14.09.2026. Verglichen werden die Datenquellen des Projekts **«GWR Verbesserung
+Kanton Luzern»** mit den offenen Quellen dieser Studie. Grundlage ist der Schlussbericht
 vom 06.05.2025, verfasst von der Hochschule Luzern (Kompetenzzentrum für Thermische
-Energiespeicher) im Auftrag des Bau-, Umwelt- und Wirtschaftsdepartements. Das Dokument
-listet auf 55 Seiten jede verwendete Quelle einzeln auf, mit Fallzahlen und Trefferquoten
-- also genau das, was man sonst nie zu sehen bekommt.
+Energiespeicher) im Auftrag des Bau-, Umwelt- und Wirtschaftsdepartements. Er listet auf
+55 Seiten jede verwendete Quelle einzeln auf, mit Fallzahlen und Trefferquoten.
 
 ---
 
-## 1. Was dort herauskam
+## 1. Ergebnis des Luzerner Projekts
 
-Rund **35'000 Wohngebäude** wurden überprüft und korrigiert, etwa die Hälfte des Kantons.
+Rund **35'000 Wohngebäude** sind überprüft und korrigiert, etwa die Hälfte des Kantons.
 Ergebnis:
 
-- Anteil erneuerbarer Heizungen **+5 Prozentpunkte auf 54 %** - erstmals eine Mehrheit
+- Anteil erneuerbarer Heizungen **+5 Prozentpunkte auf 54 %**
 - Anteil unbestimmter Energiequellen **von 23 % auf 16 %**
 - Einträge älter als acht Jahre **von 71 % auf 40 %**
 - Im interkantonalen Vergleich **von Platz 14 auf Platz 5**
 
-Das Vorgehen ist dasselbe wie unseres: kantonale Datenquellen gegen das GWR halten,
+Das Vorgehen entspricht dem dieser Studie: kantonale Datenquellen gegen das GWR halten,
 daraus **Prüflisten je Gemeinde** erzeugen, die Gemeinde trägt selbst ein. Der
-Unterschied liegt nicht in der Methode, sondern im Zugang zu den Quellen.
+Unterschied liegt im Zugang zu den Quellen.
 
 ---
 
 ## 2. Die fünfzehn Quellen, mit Trefferquote
 
 «GWR anpassen» heisst: Die Quelle widerspricht dem Register und schlägt eine Korrektur
-vor. Das ist die Zahl, die zählt.
+vor. Die Spalte "Quote" ist der Anteil solcher Einträge.
 
-| Quelle | Einträge | davon Korrektur | Quote | haben wir? |
+| Quelle | Einträge | davon Korrektur | Quote | in dieser Studie |
 |---|---:|---:|---:|---|
 | **Meldeformular** (Eigentümermeldung über Webkarte) | 437 | 403 | **92,2 %** | nein |
 | **Luft-Wasser-Wärmepumpen** (aus Baugesuchen, Lärmfachstelle) | 5'750 | 4'468 | **77,7 %** | nur LU |
 | **Wärmepumpen-System-Modul** (FWS-Zertifikate) | 3'067 | 2'311 | **75,3 %** | nein |
 | **Fördergesuche** (bewilligt und ausbezahlt) | 4'025 | 2'912 | **72,3 %** | nein |
 | **Energiemeldungen** (kantonaler Energienachweis) | 4'868 | 3'031 | **62,3 %** | nein |
-| **Erdsondendatenbank** | 13'409 | 5'247 | 39,1 % | **ja, 12 Kantone** |
+| **Erdsondendatenbank** | 13'409 | 5'247 | 39,1 % | **ja, 13 Kantone** |
 | **Fernwärmedatenbank** | 3'157 | 1'153 | 36,5 % | nein |
 | **Grundwasserdatenbank** | 468 | 166 | 35,5 % | teilweise |
 | **Tankanlagen** | 19'867 | 3'186 | 16,0 % | nur ZG |
@@ -47,84 +47,78 @@ vor. Das ist die Zahl, die zählt.
 | ~~GEAK-Nachweise~~ | - | - | **verworfen** | - |
 | ~~Grosse Feuerungen~~ | 2'503 | - | **verworfen** | - |
 
-### Die zwei verworfenen Quellen sind so lehrreich wie die verwendeten
+### Die zwei verworfenen Quellen
 
 **GEAK:** «In diesem Datensatz ist mehrheitlich der Wärmeerzeuger bei der Bestandsaufnahme
 eingetragen und nicht nach der Sanierung.» Der Gebäudeenergieausweis dokumentiert also den
-Zustand *vor* dem Umbau. Wer ihn als Beleg für eine neue Heizung nimmt, dreht die
-Zeitachse um.
+Zustand *vor* dem Umbau und taugt nicht als Beleg für eine neue Heizung.
 
-**Grosse Feuerungen:** Die Adressen sind Korrespondenzadressen - Hauptsitz statt
-beheiztes Gebäude. Damit ist keine Gebäudezuordnung möglich. Dasselbe Problem, an dem in
-unserem Projekt die Zuordnung über den 20-Meter-Umkreis hängt, nur unlösbar.
+**Grosse Feuerungen:** Die Adressen sind Korrespondenzadressen, also der Hauptsitz statt
+des beheizten Gebäudes. Damit ist keine Gebäudezuordnung möglich.
 
-### Und ein Befund zur Feuerungskontrolle, der überrascht
+### Die Feuerungskontrolle widerspricht anderen Quellen
 
-Die FeKo ist mit 45'575 Einträgen die grösste Quelle, hat aber die zweitschlechteste
-Korrekturquote - und im Bericht steht der Grund: *«Eine Analyse der resultierenden
+Die FeKo ist mit 45'575 Einträgen die grösste Quelle, hat aber die zweittiefste
+Korrekturquote. Der Bericht nennt den Grund: *«Eine Analyse der resultierenden
 Widersprüche hat gezeigt, dass die FeKo-Informationen häufig im Widerspruch zu mehreren
 anderen sekundären Datenquellen stehen. Daher werden sie in bestimmten Kombinationen mit
 anderen Quellen ausgeschlossen.»*
 
-Das ist ein Warnschild. Die Feuerungskontrolle wirkt wie die perfekte Quelle - sie sagt
-direkt, welche Feuerung im Haus steht - und ist in der Praxis unzuverlässig. Für uns
-relevant, weil der Genfer Kesselkataster genau so eine Quelle ist und bei uns als
-Bodenwahrheit dient.
+Die Feuerungskontrolle sagt direkt, welche Feuerung im Haus steht, und ist nach dieser
+Erfahrung trotzdem unzuverlässig. Das betrifft diese Studie: Der Genfer Kesselkataster
+ist eine Quelle dieser Art und dient hier als Gegenquelle für die Labels.
 
 ---
 
-## 3. Was wir haben und Luzern nicht
+## 3. Quellen dieser Studie, die Luzern nicht verwendet
 
-Der Vergleich geht nicht nur in eine Richtung.
-
-| Unsere Quelle | Fälle auf der Verdachtsliste | in Luzern |
+| Quelle dieser Studie | Fälle auf der Verdachtsliste (14.09.2026) | in Luzern |
 |---|---:|---|
-| **Baugesuche schweizweit** (Amtsblattportal, alle Kantone) | 223 | nur der Lärmfachstellen-Auszug für Luft-Wasser-WP |
-| **Kantonale Anlagenregister**, 12 Kantone statt einem | 3'193 | nur Luzern |
+| **Baugesuche schweizweit** (Amtsblattportal, 13 Kantone) | 223 | nur der Lärmfachstellen-Auszug für Luft-Wasser-WP |
+| **Kantonale Anlagenregister** aus 13 Kantonen, Fälle aus zehn | 3'193 | nur Luzern |
 | **Photovoltaik des BFE**, alle 26 Kantone | 82'793 im Score | gar nicht |
-| **Registerwiderspruch** (Warmwasser gegen Heizung im GWR selbst) | 7 | gar nicht |
+| **Registerwiderspruch** (Wärmeerzeuger gegen Energieträger im GWR selbst) | 7 | gar nicht |
 
-Und ein methodischer Unterschied, der wichtiger ist als jede Quelle: **Wir prüfen die
-Reihenfolge.** Luzern fragt «widerspricht die Sekundärquelle dem Register» - wir fragen
-zusätzlich «ist der Beleg jünger als der Registereintrag». Nur bei den EWL-Verbrauchsdaten
-macht Luzern dasselbe (*«Sofern das Enddatum jünger als das Aktualisierungsdatum
-Heizsystem im GWR ist»*). Gemessen an den Zuger Labels trennt genau dieses Merkmal am
-schärfsten: 80,8 % gegen 13,3 %.
+Dazu kommt ein methodischer Unterschied: **Diese Studie prüft die Reihenfolge.** Luzern
+fragt, ob die Sekundärquelle dem Register widerspricht. Hier kommt die Frage dazu, ob der
+Beleg jünger ist als der Registereintrag. Nur bei den EWL-Verbrauchsdaten geht Luzern
+gleich vor (*«Sofern das Enddatum jünger als das Aktualisierungsdatum Heizsystem im GWR
+ist»*). Gemessen an den Zuger Labels trennt dieses Merkmal am stärksten: 80,8 % gegen
+13,3 % ([belegwirkung.md](belegwirkung.md)).
 
-Luzern kann darauf verzichten, weil es die Quellen *besitzt* und ihnen direkt glaubt. Wir
-arbeiten von aussen mit offenen Daten und brauchen das Zeitargument als Ersatz.
+Luzern kann darauf verzichten, weil der Kanton über die Quellen selbst verfügt. Eine
+Auswertung von aussen mit offenen Daten braucht die Reihenfolge als Ersatz.
 
 ---
 
-## 4. Was uns fehlt, und ob es zu bekommen ist
+## 4. Fehlende Quellen und ihre Zugänglichkeit
 
-Nach Trefferquote sortiert, mit der einzigen Frage, die zählt: Kommt man ohne Amt daran?
+Die Frage ist jeweils, ob die Quelle offen zugänglich ist.
 
-### Nicht zu bekommen, weil es kantonale Vollzugsdaten sind
+### Nicht offen: kantonale Vollzugsdaten
 
-- **Meldeformular (92,2 %)** ist keine Datenquelle, sondern ein Instrument: Der Kanton
-  Luzern hat eine Webkarte veröffentlicht, auf der jeder seinen Heizungseintrag sieht und
-  per Formular korrigieren kann. Das ist der stärkste Hebel im ganzen Bericht und der
-  einzige, den man nicht kaufen, sondern nur bauen kann.
+- **Meldeformular (92,2 %)** ist ein Instrument und keine Datenquelle: Der Kanton
+  Luzern betreibt eine Webkarte, auf der Eigentümerinnen und Eigentümer ihren
+  Heizungseintrag sehen und per Formular korrigieren. Es hat die höchste Korrekturquote
+  im Bericht.
 - **Energiemeldungen (62,3 %)** sind der kantonale Energienachweis aus dem
   Baubewilligungsverfahren. Nicht öffentlich.
 - **Fördergesuche (72,3 %)** liegen beim Kanton. Das Gebäudeprogramm veröffentlicht auf
   opendata.swiss nur Jahresstatistiken je Kanton und Kategorie, nichts auf Gebäudeebene.
-- **Feuerungskontrolle (14,1 %)** ist kantonal, ausser in Genf.
+- **Feuerungskontrolle (14,1 %)** ist kantonal und nur in Genf offen.
 
-### Zu bekommen, aber rechtlich gesperrt
+### Öffentlich einsehbar, aber in der Nutzung eingeschränkt
 
 - **Minergie**: Die Gebäudeliste auf minergie.ch ist öffentlich durchsuchbar, aber die
   Nutzungsbedingungen untersagen die Verwendung *«für andere Zwecke, insbesondere
-  kommerzielle»*. Für eine Weitergabe der Liste also nicht brauchbar.
+  kommerzielle»*. Für eine Weitergabe von Ergebnissen ist sie damit nicht brauchbar.
 - **Wärmepumpen-System-Modul (75,3 %)**: Die FWS veröffentlicht auf wp-systemmodul.ch
-  eine Datenbank - aber nur der zertifizierten *Module und Installateure*, nicht der
-  installierten Anlagen je Gebäude. Auf Gebäudeebene kantonale Vollzugsdaten.
+  eine Datenbank der zertifizierten *Module und Installateure*, nicht der installierten
+  Anlagen je Gebäude. Auf Gebäudeebene sind es kantonale Vollzugsdaten.
 
-### Zu bekommen, offen, und bisher ungenutzt
+### Offen und bisher ungenutzt
 
-**Thermische Netze des BFE.** Das ist die eine Lücke, die sich ohne Amtsgang schliessen
-lässt:
+**Thermische Netze des BFE.** Diese Quelle ist offen zugänglich:
 
 | | |
 |---|---|
@@ -135,19 +129,19 @@ lässt:
 | Formate | GeoPackage, CSV, Interlis, WMS, REST |
 | Enthält | Netzgeometrien und **Versorgungsgebiete** |
 
-Luzerns Fernwärmedatenbank hatte 36,5 % Korrekturquote - vergleichbar mit der
-Erdsondendatenbank, die bei uns 3'193 der 3'423 Fälle trägt. Ein Gebäude mit fossilem
-Eintrag innerhalb eines bestehenden Versorgungsgebiets ist derselbe Fallentyp wie ein
-Gebäude neben einer ausgeführten Sonde.
+Luzerns Fernwärmedatenbank hat 36,5 % Korrekturquote, vergleichbar mit der
+Erdsondendatenbank, die in dieser Studie 3'193 der 3'423 Fälle der Liste vom 14.09.2026
+trägt. Ein Gebäude mit fossilem Eintrag innerhalb eines bestehenden Versorgungsgebiets ist
+derselbe Falltyp wie ein Gebäude neben einer ausgeführten Sonde.
 
-Die Einschränkung gleich dazu: Ein Versorgungsgebiet sagt, dass dort ein Netz liegt, nicht
-dass dieses Gebäude angeschlossen ist. Der Beleg ist also schwächer als eine Anlagenummer
-und läge ohne eigene Messung eher auf dem Niveau der Photovoltaik. Vor dem Einbau müsste
-er gegen die Zuger oder Genfer Labels gehalten werden, wie alles andere auch.
+Die Einschränkung: Ein Versorgungsgebiet sagt, dass dort ein Netz liegt, nicht dass dieses
+Gebäude angeschlossen ist. Der Beleg ist also schwächer als eine Anlagenummer und läge
+ohne eigene Messung eher auf dem Niveau der Photovoltaik. Vor einer Verwendung wäre er an
+den Zuger oder Genfer Labels zu messen.
 
 ---
 
-## 5. Der strukturelle Befund, der über alles andere hinausgeht
+## 5. Direkte Übertragung aus der Vollzugssoftware
 
 Aus einer Anleitung des Kantons Schaffhausen vom 09.12.2025: **Das Bundesamt für
 Statistik lässt neu mehrere Kanäle der Datenlieferung zu, und aus der
@@ -159,97 +153,84 @@ Der Ablauf: Sobald ein Projekt durch die Gemeinde abgeschlossen ist, zeigt EVEN 
 Differenz zum GWR an, die Gemeinde gibt frei, und die Daten gehen in der Folgenacht ans
 Register.
 
-Das ist derselbe Mechanismus, den der Kanton Aargau seit 2026 fährt, und es ist die
-direkte Alternative zu diesem ganzen Projekt: die Lösung des Problems an der
-Quelle. Wo eine Gemeinde ihre Energienachweise über EVEN oder eBAU
-abwickelt und den Kanal eingerichtet hat, entsteht der Rückstand gar nicht erst.
+Das ist derselbe Mechanismus, den der Kanton Aargau seit 2026 einsetzt. Er löst das
+Problem an der Quelle: Wo eine Gemeinde ihre Energienachweise über EVEN oder eBAU
+abwickelt und den Kanal eingerichtet hat, entsteht kein neuer Rückstand.
 
-**Für Gespräche mit Ämtern heisst das zweierlei.** Erstens gehört die Frage «arbeiten Sie
-mit EVEN oder eBAU, und ist der GWR-Kanal eingerichtet?» in jedes erste Gespräch - eine
-Gemeinde, die mit Ja antwortet, braucht die Liste für den Zuwachs nicht mehr, sondern nur
-noch für den Altbestand. Zweitens bestätigt es den eigenen Kernbefund: Das hier ist eine
-**einmalige Bereinigung des Altbestands**, kein Dauerbetrieb.
+**Für die Einordnung der Studie heisst das zweierlei.** Erstens hängt der Nutzen eines
+Abgleichs davon ab, ob eine Gemeinde mit EVEN oder eBAU arbeitet und der GWR-Kanal
+eingerichtet ist: Dann betrifft er nur noch den Altbestand, nicht den Zuwachs. Zweitens
+stützt es den Befund aus [report.md](report.md): Es geht um eine **einmalige Bereinigung
+des Altbestands**, nicht um eine Daueraufgabe.
 
 ---
 
-## 5b. Kann man Luzerns Quellen für Bern nachbauen?
+## 5b. Luzerns Quellen für Bern
 
-Die naheliegende Frage nach dem Bericht. Die Antwort zerfällt in zwei Teile, und nur
-einer davon ist interessant.
+Für Bern stellt sich die Frage in zwei Teilen.
 
-### Mehr Fälle wären das falsche Ziel
+### Mehr Fälle
 
-Fernwärme, Minergie, Wärmepumpen-Zertifikate, Fördergesuche - all das würde die Berner
-Liste verlängern. Es gibt aber 655 Berner Fälle und keine Messung dazu. Der Engpass ist nicht
-die Menge, sondern dass in Bern nichts gemessen ist. Eine längere unbestätigte Liste ist
-keine bessere Liste.
+Fernwärme, Minergie, Wärmepumpen-Zertifikate, Fördergesuche: Jede dieser Quellen würde
+die Berner Liste verlängern. Zu den 655 Berner Fällen (14.09.2026) gibt es aber keine
+Messung. Es fehlt in Bern an einer Messung, nicht an Fällen.
 
-### Eine Gegenquelle für Bern wäre dagegen sehr viel wert
+### Eine Gegenquelle für Bern
 
-Die gesamte Messung des Projekts hängt an **einem** Kanton: Zug, 109 prüfbare Fälle. Das ist
-die grösste Schwäche der Studie. Ein Tankkataster oder eine
-Feuerungskontrolle für Bern würde die Liste nicht verlängern, sondern aus «Zug ist nicht
-Bern» eine Berner Zahl machen. Das wäre der Unterschied zwischen einem Argument und einer
-Ausrede.
+Die Messung der Anlagenfälle beruht auf **einem** Kanton: Zug, 109 prüfbare Fälle mit
+Anlagenbeleg, davon 79 mit Listenstufe ([belegwirkung.md](belegwirkung.md)). Das ist die
+grösste Schwäche der Studie. Ein Tankkataster oder eine Feuerungskontrolle für Bern würde
+eine eigene Berner Messung erlauben.
 
 ### Gesucht, nicht gefunden
 
-Systematisch über die CKAN-Schnittstelle von opendata.swiss durchsucht, mit den Begriffen
+Die Suche lief über die CKAN-Schnittstelle von opendata.swiss, mit den Begriffen
 Tankanlagen, wassergefährdende Flüssigkeiten, Feuerungskontrolle, Wärmeerzeuger,
 Heizungskataster, citernes, installations de production de chaleur.
 
 **Der Kanton Bern veröffentlicht nichts davon.** Aus dem gesamten Berner Bestand auf
-opendata.swiss hat nur die Wärmeversorgungskarte der *Stadt* Bern einen Heizungsbezug -
+opendata.swiss hat nur die Wärmeversorgungskarte der *Stadt* Bern einen Heizungsbezug:
 Netzgebiete, keine Gebäudezuordnung.
 
-Schweizweit auf Gebäudeebene gibt es genau zwei Quellen, und wir haben beide:
+Auf Gebäudeebene sind schweizweit zwei solche Quellen offen. Beide sind eingebunden:
 
-| Kanton | Quelle | Status bei uns |
+| Kanton | Quelle | Verwendung in dieser Studie |
 |---|---|---|
-| Genf | Cadastre des installations de combustion stationnaires | eingebaut, taugt seit dem Statusfilter nicht mehr zur Messung |
-| Zug | Tankkataster | eingebaut, trägt die gesamte Messung |
+| Genf | Cadastre des installations de combustion stationnaires | eingebunden; der Anlagenbeleg lässt sich in Genf nicht messen (Statusfilter, [belegwirkung.md](belegwirkung.md)) |
+| Zug | Tankkataster | eingebunden; trägt die Messung der Anlagenfälle |
 
 Alles andere ist aggregierte Statistik: Anzahl Anlagen je Energieträger und Gemeinde
-(Zug, Basel-Landschaft, BFS). Für eine Gemeindeauswertung gut, für die Prüfung eines
-einzelnen Gebäudes wertlos.
+(Zug, Basel-Landschaft, BFS). Das genügt für eine Gemeindeauswertung, nicht für die
+Prüfung eines einzelnen Gebäudes.
 
-Und der Luzerner Tankkataster, der auf opendata.swiss steht, ist nicht der aus dem
-Bericht: Dort heisst es «freistehende, grössere Tankanlagen» - ein paar Industrietanks,
-nicht die 19'867 Einträge, mit denen die HSLU gearbeitet hat.
+Der Luzerner Tankkataster auf opendata.swiss ist nicht der aus dem Bericht: Dort heisst
+es «freistehende, grössere Tankanlagen», also einige Industrietanks und nicht die 19'867
+Einträge, mit denen die HSLU gearbeitet hat.
 
-### Was daraus folgt
+### Folgerung für Bern
 
-**Es gibt keinen dritten Messkanton zu holen.** Die Suche hat den Plan nicht geändert,
-sondern bestätigt: Der einzige Weg zu einer Berner Zahl ist die Rückmeldung einer Berner
-Gemeinde. Genau deshalb steht am Anfang eine Prüfung durch eine Gemeinde.
-
-Und es ist ein Argument **für** das Gespräch mit dem Kanton, nicht dagegen: Bern besitzt
-diese Daten, veröffentlicht sie nur nicht. Wer mit der Koordinationsstelle spricht, redet
-nicht über den Kauf einer Liste, sondern über die Kombination - Methode und zehn Kantone
-Breite auf der einen Seite, Vollzugsdaten auf der anderen. Luzern hat genau so
-angefangen.
+**Ein dritter Kanton mit offener Gegenquelle ist nicht in Sicht.** Eine Berner Messung
+ist mit offenen Daten nicht möglich; sie bräuchte eine Prüfung vor Ort oder Vollzugsdaten
+des Kantons. Der Kanton Bern verfügt über solche Daten, veröffentlicht sie aber nicht.
 
 ---
 
-## 6. Was daraus folgt
+## 6. Folgerungen
 
-1. **Die grössten Lücken sind nicht schliessbar.** Die fünf stärksten Luzerner Quellen -
-   Meldeformular, Fördergesuche, Energiemeldungen, WPSM, Luft-Wasser-Wärmepumpen - sind
-   allesamt kantonale Vollzugsdaten. Wer sie will, muss mit dem Kanton zusammenarbeiten
-   statt ihm etwas vorzulegen. Das ist ein Argument für das Gespräch mit der
-   GWR-Koordinationsstelle, nicht dagegen.
-2. **Eine Lücke ist schliessbar:** die thermischen Netze des BFE. Offen, wöchentlich,
-   kommerziell nutzbar. Vor dem Einbau messen.
-3. **Zwei Quellen nicht anfassen:** GEAK dokumentiert den Zustand vor der Sanierung,
-   Minergie ist kommerziell gesperrt.
-4. **Die Feuerungskontrolle ist mit Vorsicht zu geniessen.** Luzern musste sie in
-   bestimmten Kombinationen ausschliessen, weil sie anderen Quellen häufig widerspricht.
-   Das betrifft uns direkt: Der Genfer Kesselkataster ist eine solche Quelle und dient
-   als Bodenwahrheit.
-5. **Unser eigentlicher Vorteil ist nicht eine Quelle, sondern die Breite und das
-   Zeitargument.** Luzern hat einen Kanton mit fünfzehn Quellen bearbeitet; wir haben
-   zehn Kantone mit vieren. Und wir prüfen, ob der Beleg jünger ist als der Eintrag -
-   was Luzern sich sparen kann, weil es seinen Quellen direkt glaubt.
+1. **Die grössten Lücken lassen sich mit offenen Daten nicht schliessen.** Die fünf
+   Luzerner Quellen mit den höchsten Korrekturquoten (Meldeformular,
+   Luft-Wasser-Wärmepumpen, WPSM, Fördergesuche, Energiemeldungen) sind kantonale
+   Vollzugsdaten. Zugänglich sind sie nur in Zusammenarbeit mit dem Kanton.
+2. **Eine Lücke lässt sich schliessen:** die thermischen Netze des BFE (offen,
+   wöchentlich aktualisiert). Ihre Wirkung als Beleg ist nicht gemessen.
+3. **Zwei Quellen scheiden aus:** GEAK dokumentiert den Zustand vor der Sanierung,
+   Minergie untersagt die Weiterverwendung.
+4. **Die Feuerungskontrolle ist als Quelle unsicher.** Luzern schliesst sie in
+   bestimmten Kombinationen aus, weil sie anderen Quellen häufig widerspricht. Der Genfer
+   Kesselkataster ist eine solche Quelle und dient in dieser Studie als Gegenquelle.
+5. **Die Studie unterscheidet sich durch Breite und Reihenfolge.** Luzern bearbeitet
+   einen Kanton mit fünfzehn Quellen; diese Studie hat Anlagenfälle aus zehn Kantonen
+   und vier Quellenarten. Dazu prüft sie, ob der Beleg jünger ist als der Eintrag.
 
 ### Quellen
 

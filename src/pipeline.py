@@ -44,6 +44,30 @@ SCHRITTE_ZH = [
 ]
 
 
+def lade_spatial(con: duckdb.DuckDBPyConnection) -> None:
+    """Laedt die Spatial-Erweiterung von DuckDB.
+
+    Zuerst LOAD: Ist die Erweiterung schon installiert, braucht der Lauf kein Netz.
+    INSTALL holt sie aus dem Netz und folgt deshalb nur, wenn LOAD scheitert.
+    """
+    try:
+        con.execute("LOAD spatial")
+    except duckdb.Error as nicht_geladen:
+        try:
+            con.execute("INSTALL spatial")
+            con.execute("LOAD spatial")
+        except duckdb.Error as nicht_installiert:
+            raise RuntimeError(
+                "Die DuckDB-Erweiterung 'spatial' laesst sich weder laden noch installieren.\n"
+                f"  LOAD:    {nicht_geladen}\n"
+                f"  INSTALL: {nicht_installiert}\n"
+                "DuckDB holt sie bei der ersten Benutzung aus dem Netz. Auf einem Rechner "
+                "ohne Netzzugang muss sie einmalig bei bestehender Verbindung installiert "
+                "werden:\n"
+                "  python -c \"import duckdb; duckdb.connect().execute('INSTALL spatial')\""
+            ) from nicht_installiert
+
+
 def connect(schreibend: bool = True) -> duckdb.DuckDBPyConnection:
     """Verbindung zur Datenbank.
 
@@ -54,7 +78,8 @@ def connect(schreibend: bool = True) -> duckdb.DuckDBPyConnection:
     """
     config.DB.parent.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(str(config.DB), read_only=not schreibend)
-    con.execute("INSTALL spatial; LOAD spatial; SET enable_progress_bar=false;")
+    lade_spatial(con)
+    con.execute("SET enable_progress_bar=false")
     return con
 
 
@@ -168,6 +193,15 @@ def _baugesuche_ch_bereit() -> str | None:
     return None
 
 
+def fuehre_aus(con: duckdb.DuckDBPyConnection, schritte: list[str]) -> None:
+    """Fuehrt die genannten SQL-Dateien der Reihe nach aus."""
+    for schritt in schritte:
+        start = time.time()
+        print(f"-> {schritt}", end="", flush=True)
+        con.execute(_sql(schritt))
+        print(f"  {time.time() - start:5.1f}s")
+
+
 def run(strang: str = "alle", con: duckdb.DuckDBPyConnection | None = None):
     if strang not in ("alle", "ch", "zh"):
         raise ValueError(f"Unbekannter Strang '{strang}': erlaubt sind alle, ch, zh")
@@ -193,11 +227,7 @@ def run(strang: str = "alle", con: duckdb.DuckDBPyConnection | None = None):
         else:
             print("   (ZH-Strang uebersprungen, Bronze-Tabellen fehlen)")
 
-    for schritt in schritte:
-        start = time.time()
-        print(f"-> {schritt}", end="", flush=True)
-        con.execute(_sql(schritt))
-        print(f"  {time.time() - start:5.1f}s")
+    fuehre_aus(con, schritte)
     return con
 
 

@@ -1,3 +1,8 @@
 * text=auto
 *.ps1 text eol=crlf
 *.png binary
+# Die Fachlogik steht in SQL; GitHub soll sie in der Sprachstatistik mitzaehlen,
+# die erzeugten HTML-Berichte nicht.
+*.sql linguist-detectable=true
+reports/*.html linguist-generated=true
+reports/*.js linguist-generated=true

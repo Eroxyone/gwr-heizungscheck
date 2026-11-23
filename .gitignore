@@ -30,3 +30,6 @@ reports/befund_daten.json
 # Werkzeuge
 .pytest_cache/
 .ruff_cache/
+
+# Website
+_site/

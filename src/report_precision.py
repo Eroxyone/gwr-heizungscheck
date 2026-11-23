@@ -1,18 +1,13 @@
-"""Wie oft stimmt der Verdacht? Gemessen an zwei kantonalen Gegenquellen.
+"""Vorstufe: Gegenprobe der Verdachtsfaelle an zwei kantonalen Gegenquellen.
 
-Das Projekt konnte lange zeigen, dass es Verdachtsfaelle findet - nicht, ob sie stimmen.
-Zwei Kantone erlauben die Gegenprobe, und zwar mit voellig verschiedenen Datensaetzen:
+Gemessen wird eine Hilfsgroesse: Laeuft bei einem fossil eingetragenen Wohngebaeude laut
+Gegenquelle noch eine fossile Heizung - und wie oft bei einem Gebaeude mit Beleg?
 
   Genf  Feuerungskataster, 55'372 Kessel mit EGID, Brennstoff und Betriebszustand
   Zug   Tankkataster, 8'319 Heizoeltanks, getrennt nach "in Betrieb" und "ausser Betrieb"
 
-Dass beide zum selben Ergebnis kommen, ist der eigentliche Wert. Ein einzelner Kanton
-waere eine Anekdote; zwei unabhaengige Quellen mit demselben Muster sind ein Befund.
-
-Die entscheidende Zahl ist nicht der Anteil selbst, sondern der Abstand zur Grundrate:
-Wie oft laeuft bei einem beliebigen fossil eingetragenen Wohngebaeude noch eine fossile
-Heizung - und wie oft bei einem, das dieses Projekt meldet? Erst diese Differenz sagt,
-ob die Auswahl etwas taugt.
+Aussagekraeftig ist der Abstand zur Grundrate, nicht der Anteil selbst. Wie oft der
+Registereintrag tatsaechlich falsch ist, misst reports/belegwirkung.md an Labels.
 
     python src/report_precision.py
 """
@@ -38,10 +33,10 @@ QUELLEN = {
         "spalte": "oeltank_in_betrieb",
         "name": "Tankkataster",
         "beschreibung": "8'319 Heizöltanks in vier Layern, getrennt nach Betriebszustand",
-        # Ein Heizoeltank sagt nichts ueber eine Gasheizung. Ein erster Lauf verglich
-        # trotzdem alle fossilen Eintraege gegen den Tankkataster und mischte damit
-        # 4'430 Oel-Eintraege (91,2 % mit aktivem Tank) mit 554 Gas-Eintraegen (26,4 %)
-        # zu einer Scheingrundrate von 84,0 %. Zug prueft deshalb nur Oel.
+        # Ein Heizoeltank sagt nichts ueber eine Gasheizung. Gegen alle fossilen Eintraege
+        # gerechnet, mischen sich 4'430 Oel-Eintraege (91,2 % mit aktivem Tank) mit
+        # 554 Gas-Eintraegen (26,4 %) zu einer irrefuehrenden Grundrate von 84,0 %.
+        # Zug prueft deshalb nur Oel.
         "nur_klasse": "oel",
     },
 }
@@ -96,35 +91,36 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", default=str(config.REPORTS / "precision.md"))
     a = p.parse_args(argv)
 
-    con = pipeline.connect()
+    con = pipeline.connect(schreibend=False)
+    stand = con.execute("SELECT max(stand) FROM silver_gebaeude_ch").fetchone()[0]
     messungen = [messung(con, kt) for kt in QUELLEN]
 
     text = [
-        "# Wie oft stimmt der Verdacht?",
+        "# Vorstufe: Gegenprobe der Verdachtsfälle an Feuerungs- und Tankkataster",
         "",
-        "> **Dieser Bericht ist eine Vorstufe.** Er misst, ob sich zu einem "
-        "Verdachtsfall noch ein aktiver fossiler Kessel finden laesst - also eine "
-        "Hilfsgroesse. Die eigentliche Frage, wie oft der Registereintrag "
-        "tatsaechlich falsch ist, beantwortet `reports/belegwirkung.md`. Wo die "
-        "beiden Berichte verschiedene Zahlen nennen, gilt der andere.",
+        f"> **Dieser Bericht ist eine Vorstufe, Registerstand {stand.strftime('%d.%m.%Y')}.** "
+        "Er misst, ob sich zu einem Verdachtsfall noch ein aktiver fossiler Kessel oder "
+        "Tank finden lässt, also eine Hilfsgrösse. Wie oft der Registereintrag "
+        "tatsächlich falsch ist, beantwortet [belegwirkung.md](belegwirkung.md). Wo die "
+        "beiden Berichte verschiedene Zahlen nennen, gilt belegwirkung.md.",
         "",
-        "Alle Belege dieses Projekts zeigen in dieselbe Richtung: Hier wurde eine "
+        "Alle Belege dieser Studie zeigen in dieselbe Richtung: Hier ist eine "
         "Wärmepumpe gebaut, hier eine Sonde gebohrt, hier ein Baugesuch publiziert. "
-        "Keiner davon kann sagen, ob die alte Ölheizung daneben **noch läuft**. Genau "
-        "das ist aber die Frage, denn ein Verdachtsfall ist nur dann ein Fehler im "
-        "Register, wenn der fossile Eintrag nicht mehr stimmt.",
+        "Keiner davon sagt, ob die alte Ölheizung daneben **noch läuft**. Ein "
+        "Verdachtsfall ist aber nur dann ein Fehler im Register, wenn der fossile "
+        "Eintrag nicht mehr stimmt.",
         "",
-        "Zwei Kantone erlauben die Gegenprobe, mit völlig verschiedenen Datensätzen:",
+        "Zwei Kantone erlauben die Gegenprobe, mit verschiedenen Datensätzen:",
         "",
     ]
     for m in messungen:
+        klasse_txt = {"oel": "Heizöl", "gas": "Gas"}.get(m.get("nur_klasse"), m.get("nur_klasse"))
         einschr = (f" (nur gegen Einträge mit Energieträger "
-                   f"{m['nur_klasse']} ausgewertet)") if m.get("nur_klasse") else ""
+                   f"{klasse_txt} ausgewertet)") if m.get("nur_klasse") else ""
         text.append(f"- **{m['kanton']}, {m['name']}**: {m['beschreibung']}{einschr}")
     text += [
         "",
-        "Dass beide zum selben Ergebnis kommen, ist der eigentliche Wert dieser Messung. "
-        "Ein einzelner Kanton wäre eine Anekdote.",
+        "Beide Messungen zeigen dieselbe Rangfolge der Belegarten.",
         "",
     ]
 
@@ -137,7 +133,7 @@ def main(argv: list[str] | None = None) -> int:
             f"Von den fossil eingetragenen Wohngebäuden in {m['kanton']} stehen "
             f"{fmt.tsd(int(grund.gebaeude))} auch in dieser Quelle. Bei "
             f"**{fmt.de(str(grund.pct_aktiv))} %** von ihnen läuft dort noch eine fossile "
-            "Heizung. Das ist die Grundrate, die eine Auswahl schlagen muss.",
+            "Heizung. Das ist die Grundrate.",
             "",
             fmt.md(m["je_beleg"]),
             "",
@@ -159,13 +155,13 @@ def main(argv: list[str] | None = None) -> int:
                 f"{fmt.de(str(z['fossil läuft noch %']))} %, gemessen an "
                 f"{fmt.tsd(int(z['geprüft']))} geprüften Fällen. Diese Belegart findet "
                 "hier eher Gebäude, bei denen der fossile Eintrag stimmt."
-                + (" **Bei dieser Fallzahl ist das ein Hinweis, kein Befund.**"
+                + (" Die Fallzahl ist für eine belastbare Aussage zu klein."
                    if klein else ""),
                 "",
             ]
         text += [
-            f"Der Gegenbeleg nimmt {fmt.tsd(m['entfernt'])} Fälle aus der Liste, "
-            f"{fmt.tsd(m['bleibt'])} bleiben.",
+            f"Der Gegenbeleg nimmt {fmt.tsd(m['entfernt'])} Fälle aus der Sicht "
+            f"`v_gold_verdacht`, {fmt.tsd(m['bleibt'])} bleiben.",
             "",
         ]
 
@@ -175,59 +171,55 @@ def main(argv: list[str] | None = None) -> int:
     text += [
         "## Was beide Messungen gemeinsam sagen",
         "",
-        f"1. **Die Auswahl wirkt, aber sie trennt nicht sauber.** Der beste Beleg "
+        f"1. **Die Auswahl wirkt, trennt aber nicht sauber.** Der beste Beleg "
         f"drückt den Anteil noch laufender fossiler Heizungen um "
         f"{fmt.de(str(min(abstaende)))} bis {fmt.de(str(max(abstaende)))} Prozentpunkte "
-        "unter die Grundrate. Die Mehrheit der gemeldeten Gebäude heizt trotzdem noch "
-        "fossil.",
+        "unter die Grundrate. Über alle Belegarten zusammen trägt die Mehrheit der "
+        "ausgewählten Gebäude weiterhin einen aktiven fossilen Gegenbeleg.",
         "2. **Die Wärmenutzungsanlage ist der stärkste verfügbare Beleg**, in beiden "
-        "Kantonen. Photovoltaik liegt dahinter, wirkt aber messbar - und ist der einzige "
+        "Kantonen. Photovoltaik liegt dahinter, wirkt aber messbar, und ist der einzige "
         "Beleg, den es in allen 26 Kantonen gibt.",
         "3. **Der Registerwiderspruch liegt in beiden Kantonen über der Grundrate**, "
-        "beruht dort aber auf wenigen geprüften Fällen. Wichtiger ist eine Einschränkung, "
-        "die man leicht übersieht: Der Untertyp, der im Score damals am "
-        "höchsten gewichtet war - Wärmeerzeuger \"Wärmepumpe\" bei Energieträger "
-        "\"Heizöl\" - **kommt in Genf und Zug kein einziges Mal vor**. Gemessen wurden "
-        "nur die schwächeren Untertypen Fernwärme, Erdwärme und Luft. Über die 45 Punkte "
-        "sagt diese Messung also nichts. Sie bleiben unbelegt, nicht widerlegt.",
+        "beruht dort aber auf wenigen geprüften Fällen. Der Untertyp, der im Score "
+        "Punkte gibt (Wärmeerzeuger \"Wärmepumpe\" bei Energieträger \"Heizöl\"), kommt "
+        "in Genf und Zug nicht vor. Gemessen sind nur die Warmwasser-Untertypen "
+        "Fernwärme, Erdwärme und Luft. Über den Erzeuger-Widerspruch sagt diese "
+        "Messung nichts.",
         "",
-        "**Und eine Warnung zur Formulierung.** Auch \"der Anteil veralteter Einträge ist "
-        "doppelt so hoch\" geht über das hinaus, was hier gemessen wurde. Gemessen ist: "
-        "Ausgewählte Gebäude tragen seltener einen **aktiven fossilen Gegenbeleg** als "
-        "der Vergleichsbestand. Das ist nicht dasselbe wie \"der GWR-Eintrag ist falsch\" "
-        "- ein Gebäude ohne Kessel- oder Tankeintrag kann auch einfach nicht erfasst "
-        "sein. Vertretbar ist deshalb nur: \"Das sind dokumentierte Prüffälle. Wie hoch "
-        "die tatsächliche Korrekturquote ist, zeigt erst die Prüfung durch eine "
-        "Gemeinde.\"",
+        "**Zur Formulierung.** Gemessen ist: Ausgewählte Gebäude tragen seltener einen "
+        "**aktiven fossilen Gegenbeleg** als der Vergleichsbestand. Das ist nicht "
+        "dasselbe wie \"der GWR-Eintrag ist falsch\": Ein Gebäude ohne Kessel- oder "
+        "Tankeintrag kann auch nicht erfasst sein. Eine Aussage wie \"der Anteil "
+        "veralteter Einträge ist doppelt so hoch\" geht deshalb über diese Messung "
+        "hinaus.",
         "",
         "## Grenzen dieser Messung",
         "",
         "1. **Zwei Kantone sind nicht die Schweiz.** Genf hat den höchsten Anteil "
         "\"unbestimmt\" im GWR und eine sehr tiefe Wärmepumpendichte, Zug ist klein und "
         "dicht bebaut. Die Zahlen sind eine Grössenordnung.",
-        "2. **Eine Gegenquelle gilt nur für den Brennstoff, den sie kennt.** Ein erster "
-        "Lauf verglich in Zug alle fossilen Einträge gegen den Öltankkataster und "
-        "mischte so 4'430 Öl-Einträge (91,2 % mit aktivem Tank) mit 554 Gas-Einträgen "
-        "(26,4 %) zu einer Scheingrundrate von 84,0 %. Ein stillgelegter Öltank "
-        "widerlegt keine Gasheizung. Zug wird deshalb nur noch gegen Öl-Einträge "
-        "gerechnet.",
+        "2. **Eine Gegenquelle gilt nur für den Brennstoff, den sie kennt.** Ein "
+        "stillgelegter Öltank widerlegt keine Gasheizung. Zug wird deshalb nur gegen "
+        "Öl-Einträge gerechnet. Gegen alle fossilen Einträge gerechnet, mischen sich "
+        "4'430 Öl-Einträge (91,2 % mit aktivem Tank) mit 554 Gas-Einträgen (26,4 %) zu "
+        "einer irreführenden Grundrate von 84,0 %.",
         "3. **Die Gegenquellen sind selbst nicht fehlerfrei.** Ein Kessel gilt als aktiv "
         "und ein Tank als in Betrieb, bis jemand die Stilllegung meldet. Wo zwei amtliche "
         "Register sich widersprechen, lässt sich aus den Daten allein nicht sagen, "
         "welches recht hat.",
         "4. **Eine Zentralheizung kann mehrere Gebäude versorgen.** Genf führt dazu eine "
-        "eigene Beziehungstabelle mit 2'587 Einträgen; dieser Bericht nutzt sie noch "
-        "nicht. Der Zuger Tankkataster wird über einen 10-m-Umkreis zugeordnet, nicht "
-        "über eine Gebäudenummer.",
+        "eigene Beziehungstabelle mit 2'587 Einträgen; dieser Bericht nutzt sie nicht. "
+        "Der Zuger Tankkataster wird über einen 10-m-Umkreis zugeordnet, nicht über "
+        "eine Gebäudenummer.",
         "5. **Hybridanlagen sind keine Widersprüche.** Ein Genfer Kessel \"en réserve\" "
         "neben einer Wärmepumpe ist der Normalfall und zählt weder als Beleg noch als "
         "Gegenbeleg.",
         "",
-        "## Was als Nächstes zu tun ist",
+        "## Einordnung",
         "",
-        "Diese Messung ersetzt die manuelle Prüfung nicht, sie ordnet sie ein. Offen "
-        "bleibt die Prüfung einer Stichprobe durch eine Gemeinde; die spätere Messung an "
-        "den Korrekturen im Register steht in [zeitreihe.md](zeitreihe.md).",
+        "Diese Messung ersetzt die Prüfung vor Ort nicht. Die Messung an Labels steht in "
+        "[belegwirkung.md](belegwirkung.md), die Messung an den späteren Korrekturen im "
+        "Register in [zeitreihe.md](zeitreihe.md).",
         "",
     ]
 

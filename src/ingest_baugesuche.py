@@ -305,7 +305,9 @@ def detail(eintrag: dict) -> dict:
     """Objektadresse, Parzelle, BFS-Nummer und Volltext einer Publikation nachladen."""
     try:
         x = re.sub(r">\s+<", "><", _hole(eintrag["ref"], 90, versuche=3))
-    except Exception as fehler:  # noqa: BLE001
+    # Breit gefangen: Eine einzelne Publikation, die sich nicht laden laesst (Netz, Format),
+    # soll den Abzug von Zehntausenden nicht abbrechen. Der Fehler steht im Datensatz.
+    except Exception as fehler:
         return {**eintrag, "detail_fehler": str(fehler)[:80]}
 
     ohne = PERSONENBLOCK.sub("", x)
@@ -416,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:
     for rubrik, meta in auswahl.items():
         try:
             zeilen, luecken = liste(rubrik, a.ab, a.bis)
-        except Exception as fehler:  # noqa: BLE001
+        # Breit gefangen: Faellt die Liste eines Kantons aus, laufen die uebrigen weiter.
+        except Exception as fehler:
             print(f"  {rubrik:9s} FEHLER: {fehler}", file=sys.stderr)
             continue
         if meta["modus"] == "voll":

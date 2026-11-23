@@ -6,7 +6,7 @@
   "alt": "bisheriger Energietraeger, null wenn im Text nicht genannt",
   "neubau": "Neubau oder Ersatzneubau statt Ersatz im Bestand"
  },
- "gelabelt_von": "Claude Opus 5, manuelle Durchsicht der Volltexte",
+ "gelabelt_von": "Sprachmodell (Claude Opus 5), jeder Text einzeln im Volltext beurteilt; keine Zweitprüfung durch eine Person",
  "datum": "2026-09-13",
  "labels": {
   "0":   {"heizung": true,  "wechsel": true,  "neu": null,          "alt": null,   "neubau": false},

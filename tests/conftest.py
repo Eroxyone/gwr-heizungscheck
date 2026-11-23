@@ -6,6 +6,10 @@ Staende mit zwei Dutzend Gebaeuden auf, lassen die unveraenderten SQL-Schritte d
 laufen und pruefen die Ergebnisse gegen Zahlen, die sich von Hand nachzaehlen lassen.
 
 Alle Gemeinden, EGID und Adressen hier sind erfunden.
+
+Zwei Welten: das Register in dieser Datei fuer den schweizweiten Strang (Fixture
+`register`) und die Welt in verdachtswelt.py mit Anlagen, Baugesuchen und Photovoltaik
+fuer die Anlagenzuordnung und den Verdachts-Layer (Fixture `verdacht`).
 """
 from __future__ import annotations
 
@@ -28,14 +32,18 @@ UNBESTIMMT = ("7598", "859", "2012-01-01")
 FERNWAERME = ("7580", "870", "2024-06-01")
 
 
-def _gebaeude(egid, kanton, bfs, gemeinde, heizung, gkat="1020", gstat="1004"):
+def _gebaeude(egid, kanton, bfs, gemeinde, heizung, gkat="1020", gstat="1004", *,
+              koordinate=(2700000.0, 1200000.0), erzeuger="7436", warmwasser=None):
+    """Eine Zeile des Gebaeude-Snapshots. `heizung` und `warmwasser` sind Tripel aus
+    Energietraeger, Informationsquelle und Aktualisierungsdatum."""
     traeger, quelle, datum = heizung
+    ww_traeger, ww_quelle, ww_datum = warmwasser or (None, None, None)
     return {
         "EGID": str(egid), "GDEKT": kanton, "GGDENR": str(bfs), "GGDENAME": gemeinde,
-        "GKODE": "2700000.0", "GKODN": "1200000.0", "GSTAT": gstat, "GKAT": gkat,
+        "GKODE": str(koordinate[0]), "GKODN": str(koordinate[1]), "GSTAT": gstat, "GKAT": gkat,
         "GKLAS": "1110", "GBAUJ": "1975", "GAREA": "120", "GASTW": "2", "GANZWHG": "1",
-        "GWAERZH1": "7436", "GENH1": traeger, "GWAERSCEH1": quelle, "GWAERDATH1": datum,
-        "GWAERZW1": None, "GENW1": None, "GWAERSCEW1": None, "GWAERDATW1": None,
+        "GWAERZH1": erzeuger, "GENH1": traeger, "GWAERSCEH1": quelle, "GWAERDATH1": datum,
+        "GWAERZW1": None, "GENW1": ww_traeger, "GWAERSCEW1": ww_quelle, "GWAERDATW1": ww_datum,
     }
 
 
@@ -104,31 +112,56 @@ def _schreibe_parquet(ziel: Path, zeilen: list[dict], spalten: list[str]) -> Non
     ziel.parent.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect()
     con.execute("CREATE TABLE t (" + ", ".join(f'"{s}" VARCHAR' for s in spalten) + ")")
-    con.executemany(f"INSERT INTO t VALUES ({', '.join('?' * len(spalten))})",
-                    [[z.get(s) for s in spalten] for z in zeilen])
+    if zeilen:      # ohne Zeilen entsteht eine leere Datei mit den Spalten
+        con.executemany(f"INSERT INTO t VALUES ({', '.join('?' * len(spalten))})",
+                        [[z.get(s) for s in spalten] for z in zeilen])
     con.execute(f"COPY t TO '{ziel.as_posix()}' (FORMAT PARQUET)")
     con.close()
+
+
+def schreibe_gebaeude(wurzel: Path, stand: str, kanton: str, gebaeude: list[dict]) -> None:
+    """Ein Gebaeude-Snapshot, so wie ingest.py ihn hinterlaesst."""
+    _schreibe_parquet(
+        wurzel / "snapshots" / "gwr" / f"snapshot_date={stand}" / f"kanton={kanton}" / "data.parquet",
+        [{**g, "GEXPDAT": stand} for g in gebaeude], config.SNAPSHOT_SPALTEN)
+
+
+def schreibe_adressen(wurzel: Path, stand: str, kanton: str, adressen: list[dict]) -> None:
+    """Ein Adress-Snapshot. Jede Adresse nennt mindestens EGID, STRNAME und DEINR."""
+    _schreibe_parquet(
+        wurzel / "snapshots" / "gwr_adresse" / f"snapshot_date={stand}" / f"kanton={kanton}" / "data.parquet",
+        [{"DPLZ4": "9000", "DPLZNAME": "Testwil", "DKODE": "2700000.0", "DKODN": "1200000.0",
+          "DOFFADR": "1", "DEXPDAT": stand, **a} for a in adressen],
+        config.SNAPSHOT_SPALTEN_EINGANG)
+
+
+def schreibe_kodes(wurzel: Path, kodes: list[tuple[str, str, str]]) -> None:
+    """Die Codeliste des Merkmalskatalogs, reduziert auf die gebrauchten Spalten."""
+    (wurzel / "raw").mkdir(parents=True, exist_ok=True)
+    with (wurzel / "raw" / "kodes_codes_codici.csv").open("w", encoding="utf-8", newline="") as fh:
+        schreiber = csv.writer(fh, delimiter="\t")
+        schreiber.writerow(["CECODID", "CMERKM", "CODTXTLD"])
+        schreiber.writerows((code, merkmal, text) for merkmal, code, text in kodes)
 
 
 def baue_register(wurzel: Path) -> None:
     """Legt Snapshots, Adressen und Codeliste so ab, wie ingest.py sie hinterlaesst."""
     for stand, kantone in ((STAND_ALT, _stand_alt()), (STAND_NEU, _stand_neu())):
         for kanton, gebaeude in kantone.items():
-            _schreibe_parquet(
-                wurzel / "snapshots" / "gwr" / f"snapshot_date={stand}" / f"kanton={kanton}" / "data.parquet",
-                [{**g, "GEXPDAT": stand} for g in gebaeude], config.SNAPSHOT_SPALTEN)
-    _schreibe_parquet(
-        wurzel / "snapshots" / "gwr_adresse" / f"snapshot_date={STAND_NEU}" / "kanton=AI" / "data.parquet",
-        [{"EGID": egid, "STRNAME": strasse, "DEINR": nr, "DPLZ4": "9000", "DPLZNAME": "Testwil",
-          "DKODE": "2700000.0", "DKODN": "1200000.0", "DOFFADR": offiziell, "DEXPDAT": STAND_NEU}
-         for egid, strasse, nr, offiziell in ADRESSEN],
-        config.SNAPSHOT_SPALTEN_EINGANG)
+            schreibe_gebaeude(wurzel, stand, kanton, gebaeude)
+    schreibe_adressen(wurzel, STAND_NEU, "AI", [
+        {"EGID": egid, "STRNAME": strasse, "DEINR": nr, "DOFFADR": offiziell}
+        for egid, strasse, nr, offiziell in ADRESSEN])
+    schreibe_kodes(wurzel, KODES)
 
-    (wurzel / "raw").mkdir(parents=True, exist_ok=True)
-    with (wurzel / "raw" / "kodes_codes_codici.csv").open("w", encoding="utf-8", newline="") as fh:
-        schreiber = csv.writer(fh, delimiter="\t")
-        schreiber.writerow(["CECODID", "CMERKM", "CODTXTLD"])
-        schreiber.writerows((code, merkmal, text) for merkmal, code, text in KODES)
+
+def datenverzeichnis(mp: pytest.MonkeyPatch, wurzel: Path) -> None:
+    """Richtet alle Datenpfade der Pipeline auf ein Testverzeichnis."""
+    mp.setattr(config, "DATA", wurzel)
+    mp.setattr(config, "RAW", wurzel / "raw")
+    mp.setattr(config, "SNAPSHOTS", wurzel / "snapshots")
+    mp.setattr(config, "PROCESSED", wurzel / "processed")
+    mp.setattr(config, "DB", wurzel / "processed" / "gwr.duckdb")
 
 
 @pytest.fixture(scope="session")
@@ -137,12 +170,33 @@ def register(tmp_path_factory) -> duckdb.DuckDBPyConnection:
     wurzel = tmp_path_factory.mktemp("gwr")
     baue_register(wurzel)
     mp = pytest.MonkeyPatch()
-    mp.setattr(config, "DATA", wurzel)
-    mp.setattr(config, "RAW", wurzel / "raw")
-    mp.setattr(config, "SNAPSHOTS", wurzel / "snapshots")
-    mp.setattr(config, "PROCESSED", wurzel / "processed")
-    mp.setattr(config, "DB", wurzel / "processed" / "gwr.duckdb")
+    datenverzeichnis(mp, wurzel)
     con = pipeline.run("ch")
     yield con
     con.close()
     mp.undo()
+
+
+@pytest.fixture(scope="session")
+def verdacht(tmp_path_factory) -> duckdb.DuckDBPyConnection:
+    """Verdachts-Layer und Anlagenzuordnung ueber der erfundenen Welt aus verdachtswelt.py.
+
+    Die Pipeline laeuft zweimal auf derselben Datenbank, erst mit dem aelteren, dann mit
+    dem juengeren Registerstand - so wie der woechentliche Snapshot-Lauf. Die Tests sehen
+    den Zustand nach dem zweiten Lauf, das Archiv fuehrt beide Staende.
+    """
+    import verdachtswelt as welt  # erst hier: das Modul benutzt die Helfer dieser Datei
+
+    wurzel = tmp_path_factory.mktemp("verdacht")
+    welt.schreibe_rohdaten(wurzel)
+    mp = pytest.MonkeyPatch()
+    datenverzeichnis(mp, wurzel)
+    try:
+        con = pipeline.connect()
+        for stand in (STAND_ALT, STAND_NEU):
+            welt.rechne_stand(con, wurzel, stand)
+    finally:
+        # Die Pfade gelten nur waehrend der Laeufe, danach wieder die des Aufrufers.
+        mp.undo()
+    yield con
+    con.close()

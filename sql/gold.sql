@@ -10,11 +10,17 @@
 CREATE OR REPLACE VIEW v_gold_basis AS
 SELECT * FROM silver_gebaeude_ch WHERE ist_wohngebaeude;
 
--- --------------------------------------------------------------------------- Kennzahlen Gemeinde
-CREATE OR REPLACE TABLE gold_gemeinde AS
+-- --------------------------------------------------------------------------- Kennzahlen
+-- Dieselben Kennzahlen auf zwei Ebenen. Jede Kennzahl ist genau einmal definiert:
+-- GROUPING SETS rechnet sie je Gemeinde und je Kanton, die Spalte ebene sagt, welche
+-- Zeile zu welcher Ebene gehoert. gold_gemeinde und gold_kanton sind Ausschnitte
+-- dieser Sicht und koennen deshalb nicht auseinanderlaufen.
+CREATE OR REPLACE VIEW v_gold_kennzahlen AS
 WITH z AS (
     SELECT
+        CASE WHEN GROUPING(bfs_nr) = 1 THEN 'kanton' ELSE 'gemeinde' END AS ebene,
         kanton, bfs_nr, gemeinde, max(stand) AS stand,
+        count(DISTINCT bfs_nr)                                         AS gemeinden,
         count(*)                                                       AS wohngebaeude,
         sum(hat_angabe::INT)                                           AS mit_angabe,
         sum((quelle_datum >= stand - INTERVAL 5 YEAR)::INT)            AS aktuell_5j,
@@ -30,7 +36,7 @@ WITH z AS (
         count(DISTINCT quelle_code)                                    AS anzahl_quellen,
         sum((quelle_datum >= stand - INTERVAL 1 YEAR)::INT)            AS aktualisiert_12m
     FROM v_gold_basis
-    GROUP BY 1, 2, 3
+    GROUP BY GROUPING SETS ((kanton, bfs_nr, gemeinde), (kanton))
 )
 SELECT z.*,
     round(100.0 * mit_angabe   / nullif(wohngebaeude, 0), 1)                      AS pct_vollstaendig,
@@ -48,40 +54,15 @@ SELECT z.*,
          + 100.0 * (wohngebaeude - aus_vz2000) / nullif(wohngebaeude, 0)) / 3.0, 1) AS pflege_index
 FROM z;
 
--- --------------------------------------------------------------------------- Kennzahlen Kanton
+-- Je Gemeinde. Die Zahl der Gemeinden waere hier immer eins.
+CREATE OR REPLACE TABLE gold_gemeinde AS
+SELECT * EXCLUDE (ebene, gemeinden)
+FROM v_gold_kennzahlen WHERE ebene = 'gemeinde';
+
+-- Je Kanton, ohne die Spalten, die nur auf Gemeindeebene gefuehrt werden.
 CREATE OR REPLACE TABLE gold_kanton AS
-WITH z AS (
-    SELECT
-        kanton, max(stand) AS stand,
-        count(DISTINCT bfs_nr)                                         AS gemeinden,
-        count(*)                                                       AS wohngebaeude,
-        sum(hat_angabe::INT)                                           AS mit_angabe,
-        sum((quelle_datum >= stand - INTERVAL 5 YEAR)::INT)            AS aktuell_5j,
-        sum((quelle_datum >= stand - INTERVAL 15 YEAR)::INT)           AS aktuell_15j,
-        sum(quelle_vz2000::INT)                                        AS aus_vz2000,
-        sum(ist_fossil::INT)                                           AS fossil,
-        sum((energie_klasse = 'waermepumpe')::INT)                     AS waermepumpe,
-        sum((ist_fossil AND (quelle_vz2000 OR quelle_datum IS NULL
-             OR quelle_datum < stand - INTERVAL 15 YEAR))::INT)        AS kandidaten,
-        median(alter_jahre)                                            AS median_alter_jahre,
-        sum((quelle_datum >= stand - INTERVAL 1 YEAR)::INT)            AS aktualisiert_12m
-    FROM v_gold_basis
-    GROUP BY 1
-)
-SELECT z.*,
-    round(100.0 * mit_angabe  / nullif(wohngebaeude, 0), 1)                       AS pct_vollstaendig,
-    round(100.0 * aktuell_5j  / nullif(wohngebaeude, 0), 1)                       AS pct_aktuell_5j,
-    round(100.0 * aktuell_15j / nullif(wohngebaeude, 0), 1)                       AS pct_aktuell_15j,
-    round(100.0 * aus_vz2000  / nullif(wohngebaeude, 0), 1)                       AS pct_vz2000,
-    round(100.0 * (wohngebaeude - aus_vz2000) / nullif(wohngebaeude, 0), 1)       AS pct_ohne_vz2000,
-    round(100.0 * fossil      / nullif(wohngebaeude, 0), 1)                       AS pct_fossil,
-    round(100.0 * waermepumpe / nullif(wohngebaeude, 0), 1)                       AS pct_waermepumpe,
-    round(100.0 * kandidaten  / nullif(wohngebaeude, 0), 1)                       AS pct_kandidaten,
-    round(100.0 * aktualisiert_12m / nullif(wohngebaeude, 0), 1)                  AS pct_bewegung_12m,
-    round((100.0 * mit_angabe  / nullif(wohngebaeude, 0)
-         + 100.0 * aktuell_15j / nullif(wohngebaeude, 0)
-         + 100.0 * (wohngebaeude - aus_vz2000) / nullif(wohngebaeude, 0)) / 3.0, 1) AS pflege_index
-FROM z;
+SELECT * EXCLUDE (ebene, bfs_nr, gemeinde, fernwaerme, holz, anzahl_quellen)
+FROM v_gold_kennzahlen WHERE ebene = 'kanton';
 
 -- --------------------------------------------------------------------------- Pflegemuster
 -- Der Index oben belohnt Sammelimporte: Basel-Stadt traegt bei 99 % aller Wohngebaeude

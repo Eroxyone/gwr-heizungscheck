@@ -1,6 +1,8 @@
 """Erzeugt reports/report.md, die Stichprobe und die internen Verdachtslisten.
 
-Alle Zahlen im Report kommen aus dieser Datei - nichts ist von Hand eingetragen.
+Tabellen und Kennzahlen des Reports kommen aus dieser Datei. Fest in der Vorlage
+(src/report_template.md) stehen einzelne Werte im Fliesstext; fest in dieser Datei steht
+die Sensitivitaetsrechnung zum Suchradius (t5_radius).
 """
 from __future__ import annotations
 
@@ -10,7 +12,7 @@ import pandas as pd
 
 import config
 import pipeline
-from fmt import md, skalar, tsd
+from fmt import de, md, skalar, tsd
 
 ROOT = config.ROOT
 REPORTS = config.REPORTS
@@ -29,9 +31,94 @@ STATUS_TXT = {
     "unklar": "unklar (keine Angabe im GWR oder kein Träger im Gesuchstext)",
 }
 
+# Interne Bezeichner der Pipeline, wie sie in den Tabellen des Reports stehen sollen.
+TRAEGER_TXT = {
+    "waermepumpe": "Wärmepumpe", "fernwaerme": "Fernwärme", "holz": "Holz",
+    "solarthermie": "Solarthermie", "oel": "Heizöl", "gas": "Gas",
+    "elektro": "Elektrizität", "unbestimmt": "unbestimmt", "andere": "andere",
+    "unklar": "unklar", "keine": "keine", "ohne_angabe": "ohne Angabe",
+    "abwaerme": "Abwärme",
+}
+ANLAGENTYP_TXT = {
+    "erdwaermesonde": "Erdwärmesonde", "erdregister": "Erdregister",
+    "grundwasserfassung": "Grundwasserfassung", "quellfassung": "Quellfassung",
+    "grundwasserwaermepumpe": "Grundwasser-Wärmepumpe",
+    "luft_wasser_wp": "Luft-Wasser-Wärmepumpe", "waermepumpe": "Wärmepumpe",
+    "fernwaermeanschluss": "Fernwärmeanschluss",
+}
+STATUS_GWR_TXT = {
+    "nachgefuehrt": "nachgeführt (Wärmepumpe im Umkreis eingetragen)",
+    "widerspruch_fossil": "Widerspruch (fossil eingetragen, keine Wärmepumpe)",
+    "unklar": "unklar (weder Wärmepumpe noch fossil)",
+}
+# Die Quellenbeschreibungen im Manifest sind ohne Umlaute geschrieben.
+_UMLAUTE = (("oeffentlich", "öffentlich"), ("Elektrizitaet", "Elektrizität"),
+            ("waerme", "wärme"), ("Waerme", "Wärme"), ("Gebaeude", "Gebäude"))
 
 
+def lesbar(df: pd.DataFrame, spalte: str, woerter: dict) -> pd.DataFrame:
+    """Ersetzt interne Bezeichner in einer Spalte durch lesbaren Text. Unbekanntes bleibt."""
+    df = df.copy()
+    df[spalte] = df[spalte].map(lambda w: woerter.get(w, w))
+    return df
 
+
+def umlaute(text: str) -> str:
+    """Setzt in einer Quellenbeschreibung aus dem Manifest die Umlaute ein."""
+    for alt, neu in _UMLAUTE:
+        text = text.replace(alt, neu)
+    return text
+
+
+def quartalsanteile(monate: pd.DataFrame, stand_bg) -> dict:
+    """Anteil der Heizungsgesuche im ersten und im letzten vollständigen Quartal.
+
+    Erwartet die Monatstabelle des Reports (Spalten Monat, Baugesuche, davon Heizung).
+    Ein Quartal zählt nur, wenn alle drei Monate vorliegen und es nicht das Quartal ist,
+    in dem der Datenstand liegt.
+    """
+    m = monate.copy()
+    jahr = m["Monat"].str[:4].astype(int)
+    nr = (m["Monat"].str[5:7].astype(int) - 1) // 3 + 1
+    m["ordnung"] = jahr * 10 + nr
+    m["Quartal"] = "Q" + nr.astype(str) + " " + jahr.astype(str)
+    q = (m.groupby(["ordnung", "Quartal"], as_index=False)
+          .agg(monate=("Monat", "count"), alle=("Baugesuche", "sum"),
+               heizung=("davon Heizung", "sum"))
+          .sort_values("ordnung"))
+    stand = pd.Timestamp(stand_bg)
+    angebrochen = stand.year * 10 + (stand.month - 1) // 3 + 1
+    voll = q[(q["monate"] == 3) & (q["ordnung"] != angebrochen)]
+    erstes, letztes = voll.iloc[0], voll.iloc[-1]
+    return {
+        "t2_quartal_erstes": erstes["Quartal"],
+        "t2_anteil_erstes": round(100.0 * erstes["heizung"] / erstes["alle"], 1),
+        "t2_quartal_letztes": letztes["Quartal"],
+        "t2_anteil_letztes": round(100.0 * letztes["heizung"] / letztes["alle"], 1),
+    }
+
+
+def spanne_kantone(kantone: pd.DataFrame) -> dict:
+    """Spanne des Anteils mit Wärmepumpen-Eintrag über die Kantone, für den Fliesstext.
+
+    Erwartet die Kantonstabelle von Test 5 (Spalten Kanton, % mit WP). Die Grenzen
+    45 % und 56 % sind fest gewählt; sie teilen die Kantone in drei Gruppen.
+    """
+    k = kantone.sort_values("% mit WP")
+    anteil = k["% mit WP"]
+    tief, hoch = anteil < 45, anteil > 56
+    mitte = ~tief & ~hoch
+
+    def gruppe(maske) -> str:
+        return ", ".join(k[maske]["Kanton"]) or "keiner"
+
+    return {
+        "t5_kt_min": k.iloc[0]["Kanton"], "t5_pct_min": anteil.iloc[0],
+        "t5_kt_max": k.iloc[-1]["Kanton"], "t5_pct_max": anteil.iloc[-1],
+        "t5_n_mitte": int(mitte.sum()), "t5_kt_mitte": gruppe(mitte),
+        "t5_n_tief": int(tief.sum()), "t5_kt_tief": gruppe(tief),
+        "t5_n_hoch": int(hoch.sum()), "t5_kt_hoch": gruppe(hoch),
+    }
 
 
 def main() -> None:
@@ -50,8 +137,9 @@ def main() -> None:
 
     # ------------------------------------------------------------- Datenbasis
     quellen = pd.DataFrame([
-        {"Quelle": m["desc"].split(",")[0], "Datei": m["file"],
-         "MB": round(m["bytes"] / 1e6, 1), "URL": m["url"]}
+        {"Quelle": umlaute(m["desc"].split(",")[0]), "Datei": m["file"],
+         # Als Text mit Dezimalkomma: fmt.de laesst Zeilen mit einer URL unangetastet.
+         "MB": de(f"{m['bytes'] / 1e6:.1f}"), "URL": m["url"]}
         for m in manifest.values()
     ])
     umfang = q("""
@@ -125,6 +213,7 @@ def main() -> None:
                count(*) AS Gesuche
         FROM silver_baugesuche WHERE ist_heizungsereignis GROUP BY 1 ORDER BY 2 DESC
     """)
+    t2_traeger = lesbar(t2_traeger, "neuer Energieträger laut Gesuchstext", TRAEGER_TXT)
 
     # ------------------------------------------------------------- Zuordnung
     match_quote = q("""
@@ -147,8 +236,8 @@ def main() -> None:
 
     # ------------------------------------------------------------- Test 3
     t3_haupt = q("""
-        SELECT status, count(*) AS n, round(100.0*count(*)/sum(count(*)) OVER (),1) AS "%"
-        FROM v_test3 WHERE n_gebaeude = 1 AND NOT ist_reiner_neubau GROUP BY 1 ORDER BY n DESC
+        SELECT status, count(*) AS "Fälle", round(100.0*count(*)/sum(count(*)) OVER (),1) AS "%"
+        FROM v_test3 WHERE n_gebaeude = 1 AND NOT ist_reiner_neubau GROUP BY 1 ORDER BY 2 DESC
     """)
     t3_haupt.insert(0, "Status", t3_haupt.pop("status").map(STATUS_TXT))
     t3_alter = q(f"""
@@ -178,7 +267,7 @@ def main() -> None:
         GROUP BY 1 HAVING count(*) >= 8 ORDER BY 4 DESC
     """)
     t3_gwr_bei_luecke = q("""
-        SELECT energietraeger_txt AS "GWR-Energieträger", quelle_txt AS "GWR-Informationsquelle", count(*) AS n
+        SELECT energietraeger_txt AS "GWR-Energieträger", quelle_txt AS "GWR-Informationsquelle", count(*) AS "Fälle"
         FROM v_test3 WHERE n_gebaeude = 1 AND NOT ist_reiner_neubau AND status = 'nicht_nachgefuehrt'
         GROUP BY 1,2 ORDER BY 3 DESC LIMIT 10
     """)
@@ -197,16 +286,17 @@ def main() -> None:
         WHERE g.bfs_nr IN ({FOKUS_SQL}) GROUP BY 1 ORDER BY 2 DESC
     """)
     t4_top = q("""
-        SELECT gemeinde AS Gemeinde, count(*) AS "Verdachtsfälle" FROM v_test4
+        SELECT gemeinde AS Gemeinde, count(*) AS "PV und fossil und Quelle 860" FROM v_test4
         GROUP BY 1 ORDER BY 2 DESC LIMIT 10
     """)
     t5_anlagen = q("""
-        SELECT kanton AS KT, anlagentyp AS Anlagentyp, count(*) AS Anlagen,
+        SELECT kanton AS "Kanton", anlagentyp AS Anlagentyp, count(*) AS Anlagen,
                sum(ist_gebaut::INT) AS "davon gebaut"
         FROM silver_waermenutzung GROUP BY 1,2 ORDER BY 1, 3 DESC
     """)
+    t5_anlagen = lesbar(t5_anlagen, "Anlagentyp", ANLAGENTYP_TXT)
     t5_kantone = q("""
-        SELECT kanton AS KT, count(*) AS "Anlagen mit Gebäude",
+        SELECT kanton AS "Kanton", count(*) AS "Anlagen mit Gebäude",
                sum((mit_waermepumpe>0)::INT) AS "mit Wärmepumpe im GWR",
                round(100.0*sum((mit_waermepumpe>0)::INT)/count(*),1) AS "% mit WP",
                sum((mit_waermepumpe=0 AND fossil>0)::INT) AS "Widerspruch"
@@ -217,17 +307,18 @@ def main() -> None:
                round(100.0*count(*)/sum(count(*)) OVER (),1) AS "%"
         FROM v_test6 GROUP BY 1 ORDER BY 2 DESC
     """)
+    t6_status = lesbar(t6_status, "Stand im GWR", STATUS_GWR_TXT)
     t6_alter = q("""
         SELECT CASE WHEN alter_jahre<2 THEN '0-1 Jahre' WHEN alter_jahre<5 THEN '2-4 Jahre'
                     WHEN alter_jahre<10 THEN '5-9 Jahre' WHEN alter_jahre<20 THEN '10-19 Jahre'
-                    ELSE '20+ Jahre' END AS "Alter der Bewilligung",
+                    ELSE '20+ Jahre' END AS "Alter der Anlage",
                count(*) AS Anlagen,
                round(100.0*sum((status_gwr='nachgefuehrt')::INT)/count(*),1) AS "% nachgeführt",
                round(100.0*sum((status_gwr='widerspruch_fossil')::INT)/count(*),1) AS "% Widerspruch"
         FROM v_test6 GROUP BY 1 ORDER BY min(alter_jahre)
     """)
     t6_jahre = q("""
-        SELECT substr(CAST(datum_bewilligung AS VARCHAR),1,4) AS Bewilligungsjahr,
+        SELECT substr(CAST(datum_bewilligung AS VARCHAR),1,4) AS "Jahr der Anlage",
                count(*) AS Anlagen,
                round(100.0*sum((status_gwr='nachgefuehrt')::INT)/count(*),1) AS "% nachgeführt"
         FROM v_test6 WHERE datum_bewilligung >= DATE '2016-01-01'
@@ -239,6 +330,7 @@ def main() -> None:
         FROM match_waermenutzung WHERE gkat IN ('1020','1030','1040')
         GROUP BY 1 ORDER BY 2 DESC LIMIT 8
     """)
+    t5_umkreis = lesbar(t5_umkreis, "GWR-Energieträger", TRAEGER_TXT)
     t5_radius = q("""
         SELECT r AS "Radius (m)", anlagen AS "Anlagen mit Gebäude",
                gebaeude_je_anlage AS "Gebäude je Anlage", pct_widerspruch AS "% Widerspruch"
@@ -246,7 +338,7 @@ def main() -> None:
              AS t(r, anlagen, gebaeude_je_anlage, pct_widerspruch)
     """)
     t5_gemeinden = q("""
-        SELECT kanton AS KT, gemeinde AS Gemeinde, count(*) AS "Widersprüche",
+        SELECT kanton AS "Kanton", gemeinde AS Gemeinde, count(*) AS "Widersprüche",
                sum((quelle_code='860')::INT) AS "davon Quelle 860"
         FROM v_test5 GROUP BY 1,2 ORDER BY 3 DESC LIMIT 12
     """)
@@ -369,6 +461,9 @@ def main() -> None:
         max_doppelt=v1("""SELECT max(n) FROM (SELECT count(*) AS n FROM silver_baugesuche
                           GROUP BY vorhaben_id)"""),
         t_listen=t_listen,
+        t5_n_kantone=v1("SELECT count(DISTINCT kanton) FROM silver_waermenutzung"),
+        **quartalsanteile(t2_monat, stand_bg),
+        **spanne_kantone(t5_kantone),
         n_bg=tsd(v1("SELECT count(*) FROM silver_baugesuche")),
         n_heiz=tsd(v1("SELECT count(*) FROM silver_baugesuche WHERE ist_heizungsereignis")),
         n_kandidaten=tsd(v1("SELECT sum(ist_kandidat::INT) FROM v_test1_gebaeude")),

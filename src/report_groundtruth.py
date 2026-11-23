@@ -1,16 +1,13 @@
-"""Wie oft ist der Registereintrag wirklich falsch? Gemessen an echten Labels.
+"""Labels aus Genf und Zug: Wie oft ist der Registereintrag falsch?
 
-Das Projekt hat lange die falsche Frage gemessen. Die Gegenkataster von Genf und Zug
-wurden nur benutzt, um einen Verdacht zu entkraeften - "kein aktiver fossiler Kessel
-gefunden" galt als Treffer. Das ist nicht dasselbe wie "der Eintrag ist falsch": Ein
-Gebaeude ohne Kesseleintrag kann auch einfach nicht erfasst sein.
+groundtruth_ge.sql und groundtruth_zg.sql leiten aus den kantonalen Gegenquellen je
+auswertbarem Gebaeude ein Label ab: Passt der GWR-Eintrag zum Waermeerzeuger, den die
+Gegenquelle ausweist? "Kein aktiver fossiler Kessel gefunden" reicht dafuer nicht, denn
+ein Gebaeude ohne Kesseleintrag kann auch nicht erfasst sein (reports/precision.md misst
+nur diese Hilfsgroesse).
 
-Seit groundtruth_ge.sql und groundtruth_zg.sql gibt es echte Labels. Fuer jedes
-auswertbare Gebaeude steht fest, ob der GWR-Eintrag zum tatsaechlichen Waermeerzeuger
-passt. Damit laesst sich zum ersten Mal sagen, was ein Beleg wert ist.
-
-Zwei Kantone, zwei voellig verschiedene Quellen, dieselbe Rangfolge - das ist der
-eigentliche Befund. Ein einzelner Kanton waere nicht genug gewesen.
+Dieser Bericht dokumentiert die Labelsaetze und die Grundrate. Die Messung je Belegart
+und Listenstufe steht in reports/belegwirkung.md.
 
     python src/report_groundtruth.py
 """
@@ -24,28 +21,38 @@ import config
 import fmt
 import pipeline
 
-# Drei Labelsaetze statt zwei. Der Unterschied zwischen "breit" und "strikt" ist keine
-# Feinheit, sondern die Hauptunsicherheit dieser Messung:
+# Drei Labelsaetze. Der Unterschied zwischen "breit" und "strikt" ist die
+# Hauptunsicherheit dieser Messung:
 #
 #   breit    Auch "fossiler Kessel stillgelegt, nichts Neues erfasst" gilt als falscher
 #            Eintrag. Begruendung: Das Gebaeude muss mit irgendetwas geheizt werden.
-#   strikt   Nur wo der Kataster einen ANDEREN aktiven Waermeerzeuger nennt. Das ist ein
-#            direkter Vergleich statt eines Schlusses. Kostet 861 der 1'437 positiven
-#            Faelle, also drei Fuenftel des Signals.
+#   strikt   Nur wo der Kataster einen anderen aktiven Waermeerzeuger nennt. Das ist ein
+#            direkter Vergleich statt eines Schlusses.
 #
-# Beide werden ausgewiesen. Wer nur die guenstigere Zahl nennt, behauptet eine Sicherheit,
-# die er nicht hat.
+# Beide werden ausgewiesen.
 KANTONE = {
     "GE": {"sicht": "v_ge_label_klar", "roh": "v_ge_label",
            "quelle": "Feuerungskataster mit EGID, Brennstoff und Betriebszustand",
-           "staerke": "sagt auch, WAS stattdessen laeuft"},
+           "staerke": "nennt auch den Wärmeerzeuger, der stattdessen läuft"},
     "GE strikt": {"sicht": "v_ge_label_strikt", "roh": "v_ge_label",
                   "quelle": "derselbe Kataster, aber nur direkte Vergleiche",
-                  "staerke": "ohne die Faelle, bei denen nur die Stilllegung bekannt ist",
+                  "staerke": "ohne die Fälle, bei denen nur die Stilllegung bekannt ist",
                   "ohne_verteilung": True},
     "ZG": {"sicht": "v_zg_label_klar", "roh": "v_zg_label",
            "quelle": "Tankkataster, getrennt nach in und ausser Betrieb",
            "staerke": "nur Heizöl, Zuordnung über einen 10-m-Umkreis statt über die EGID"},
+}
+
+# Die Sichten fuehren die Labels als technische Bezeichner.
+LABEL_TXT = {
+    "stimmt": "stimmt", "ungeklaert": "ungeklärt",
+    "hybrid": "hybrid (fossil und erneuerbar zugleich)",
+    "falscher_traeger": "falscher fossiler Träger",
+    "veraltet_waermepumpe": "veraltet, jetzt Wärmepumpe",
+    "veraltet_fernwaerme": "veraltet, jetzt Fernwärme",
+    "veraltet_holz": "veraltet, jetzt Holz",
+    "veraltet_elektro": "veraltet, jetzt Elektroheizung",
+    "veraltet_stillgelegt": "veraltet, Feuerung oder Tank stillgelegt",
 }
 
 BELEG_SQL = """
@@ -99,17 +106,26 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", default=str(config.REPORTS / "groundtruth.md"))
     a = p.parse_args(argv)
 
-    con = pipeline.connect()
+    con = pipeline.connect(schreibend=False)
+    stand = con.execute("SELECT max(stand) FROM silver_gebaeude_ch").fetchone()[0]
     text = [
-        "# Wie oft ist der Registereintrag wirklich falsch?",
+        "# Labels aus Genf und Zug: Wie oft ist der Registereintrag falsch?",
         "",
-        "Bisher hat dieses Projekt eine Hilfsgrösse gemessen: ob sich zu einem "
-        "Verdachtsfall ein aktiver fossiler Kessel finden lässt. Wo keiner gefunden "
-        "wurde, galt der Verdacht als bestätigt. Das ist zu grosszügig - ein Gebäude "
-        "ohne Kesseleintrag kann auch einfach nicht erfasst sein.",
+        f"Registerstand {stand.strftime('%d.%m.%Y')}. Der Bericht beschreibt die "
+        "Labelsätze, an denen die Verdachtsfälle gemessen werden: Für jedes auswertbare "
+        "Gebäude in Genf und Zug steht fest, ob der GWR-Eintrag zum Wärmeerzeuger passt, "
+        "den eine kantonale Gegenquelle ausweist. Der Bericht ist eine Vorstufe: Die "
+        "Messung je Belegart und Listenstufe steht in [belegwirkung.md](belegwirkung.md).",
         "",
-        "Jetzt gibt es echte Labels. Für jedes auswertbare Gebäude steht fest, ob der "
-        "GWR-Eintrag zum tatsächlich laufenden Wärmeerzeuger passt.",
+        "Ein Label ist strenger als die Hilfsgrösse aus [precision.md](precision.md). "
+        "Dort gilt ein Verdacht schon als gestützt, wenn sich kein aktiver fossiler "
+        "Kessel findet. Ein Gebäude ohne Kesseleintrag kann aber auch nicht erfasst "
+        "sein; hier gilt es deshalb als ungeklärt.",
+        "",
+        "Der Faktor in den Tabellen bezieht sich auf die Gebäude ohne Beleg (erste "
+        "Zeile). In [belegwirkung.md](belegwirkung.md) bezieht er sich auf die "
+        "Grundrate aller auswertbaren Gebäude; die Faktoren der beiden Berichte sind "
+        "deshalb nicht gleich.",
         "",
     ]
 
@@ -126,62 +142,60 @@ def main(argv: list[str] | None = None) -> int:
             f"*{meta['staerke']}*",
             "",
             *([] if verteilung is None else
-              [fmt.md(verteilung.rename(columns={"label": "Label", "n": "Gebäude"})), ""]),
+              [fmt.md(verteilung.assign(label=verteilung["label"].replace(LABEL_TXT))
+                      .rename(columns={"label": "Label", "n": "Gebäude"})), ""]),
             f"Auswertbar sind {fmt.tsd(n)} Gebäude. Davon ist der Eintrag bei "
             f"**{fmt.tsd(falsch)} falsch, also {fmt.de(f'{100 * falsch / n:.1f}')} %.** "
-            "Das ist die Grundrate, gegen die jeder Beleg antreten muss.",
+            "Das ist die Grundrate.",
             "",
             "| Beleg | Gebäude | falsch | Anteil | 95 %-Intervall | Faktor |",
             "|---|---:|---:|---:|---|---:|",
         ]
         for z in je_beleg(con, kt):
-            faktor = fmt.de(str(z["faktor"])) if z["faktor"] is not None else "Grundrate"
+            faktor = fmt.de(str(z["faktor"])) if z["faktor"] is not None else "Bezugswert"
             text.append(
                 f"| {z['beleg']} | {fmt.tsd(z['n'])} | {fmt.tsd(z['falsch'])} "
                 f"| {fmt.de(str(z['pct']))} % "
                 f"| {fmt.de(str(z['lo']))} bis {fmt.de(str(z['hi']))} % | {faktor} |")
         text.append("")
 
-    # Das ist die Zahl, die ein Bauamt wissen will: Was erlebt eine Gemeinde, die die
-    # obersten N Faelle prueft? Gemessen auf v_gold_score, NICHT auf v_gold_verdacht -
-    # letztere filtert mit demselben Genfer Kataster, aus dem die Labels stammen.
+    # Pruefbare Anlagenfaelle je Kanton, fuer den Abschnitt zu den Grenzen
+    anlage = {kt: sum(z["n"] for z in je_beleg(con, kt) if z["beleg"].startswith("Anlage"))
+              for kt in ("GE", "ZG")}
     text += [
-        "## Was eine Gemeinde erlebt",
+        "## Messung je Belegart statt entlang einer Rangfolge",
         "",
-        "Hier stand bis zur Ueberarbeitung eine Top-K-Kurve mit Prosa dazu. Beides ist "
-        "entfallen, und der Grund gehoert in den Bericht:",
+        "Eine Auswertung entlang der Rangfolge nach Punktzahl (Trefferquote der obersten "
+        "20, 100 oder 500 Fälle) enthält dieser Bericht nicht. Der Score kennt nur "
+        "wenige mögliche Summen, viele Fälle teilen dieselbe Punktzahl, und innerhalb "
+        "gleicher Punktzahl entscheidet die Sortierung nach Gebäudenummer. Ein "
+        "Rangschnitt misst dann diese Sortierung. Zudem ordnet die Verdachtsliste nach "
+        "Stufe und Belegklasse, nicht nach Punktzahl.",
         "",
-        "Die Kurve sortierte nach Punktzahl und schnitt bei Rang 20, 100 und 500 ab. "
-        "Der Score kennt aber nur wenige moegliche Summen - in Genf hatten hunderte "
-        "Faelle exakt 45 Punkte. Welche zwanzig davon oben landeten, entschied die "
-        "Sortierung nach Gebaeudenummer. Niedrige Nummer heisst in Genf Innenstadt, "
-        "Innenstadt heisst Fernwaerme. Die Kurve mass den Tiebreak.",
-        "",
-        "Dazu kam: Gemessen wurde nach Punktzahl, die Liste ordnet nach Belegklasse. "
-        "Das sind zwei verschiedene Listen, und die Messung galt der falschen.",
-        "",
-        "Beides ist ersetzt durch eine Messung je Belegart und je Listenstufe, ohne "
-        "Rangfolge und damit ohne Tiebreak. Sie steht in `reports/belegwirkung.md` und "
-        "ist die Leitzahl des Projekts. Dieser Bericht behaelt die Labelsaetze selbst, "
-        "also die Frage, WORAN gemessen wird.",
+        "Die Messung je Belegart und je Listenstufe steht in "
+        "[belegwirkung.md](belegwirkung.md). Dieser Bericht dokumentiert die "
+        "Labelsätze, also woran gemessen wird.",
         "",
         "## Was diese Messung nicht kann",
         "",
         "1. **Das Baugesuch bleibt ungemessen.** In Genf und Zug gibt es keinen "
-        "einzigen zugeordneten Baugesuchsfall. Ausgerechnet der Beleg, auf dem die "
-        "ganze Idee steht, laesst sich hier nicht pruefen.",
-        "2. **Ungeklaerte Faelle bleiben ungeklaert.** In Genf ist ein Drittel der "
-        "Gebaeude gar nicht oder nur mit Warmwasseranlagen erfasst. Der Anteil ist "
-        "zwischen den Belegarten nicht gleich - bei den Anlagenfaellen liegt er hoeher "
-        "als bei den uebrigen. Eine Verzerrung ist damit nicht ausgeschlossen.",
-        "3. **Genf misst den staerksten Beleg nicht mehr.** Sein Bohrungsregister fuehrt "
-        "fuer fast alle Bohrungen den Status \"Inconnu\" oder \"Exploitable\", also "
-        "eine Einstufung der Ressource statt einer laufenden Anlage. Seit solche "
-        "Eintraege nicht mehr als Beleg gelten, bleiben in Genf drei pruefbare Faelle.",
-        "4. **Ein Kanton ist nicht die Schweiz.** Damit steht die ganze Messung des "
-        "Liste auf Zug: ein kleiner Kanton, ein Oeltankkataster, 109 pruefbare "
-        "Faelle. Ob die Quoten in Zuerich gelten, ist offen - dazu braucht es eine "
-        "Pruefung durch eine Zuercher Gemeinde.",
+        "zugeordneten Baugesuchsfall mit Label. Der Beleg, von dem die Studie ausgeht, "
+        "lässt sich hier nicht prüfen.",
+        "2. **Ungeklärte Fälle bleiben ungeklärt.** Ein Teil der Gebäude ist in den "
+        "Gegenquellen nicht oder nur mit Warmwasseranlagen erfasst (Label "
+        "\"ungeklärt\" in den Tabellen oben). Der Anteil ist zwischen den Belegarten "
+        "nicht gleich: In Zug liegt er bei Gebäuden mit Beleg höher als bei Gebäuden "
+        "ohne ([belegwirkung.md](belegwirkung.md)). Eine Verzerrung ist damit nicht "
+        "ausgeschlossen.",
+        "3. **Genf misst den Anlagenbeleg nicht.** Das Genfer Bohrungsregister führt "
+        "für fast alle Bohrungen den Status \"Inconnu\" oder \"Exploitable\", also "
+        "eine Einstufung der Ressource statt einer laufenden Anlage. Solche Einträge "
+        f"gelten nicht als Beleg. In Genf bleiben {fmt.tsd(anlage['GE'])} prüfbare "
+        "Anlagenfälle.",
+        "4. **Ein Kanton ist nicht die Schweiz.** Die Messung des Anlagenbelegs beruht "
+        f"damit auf Zug: ein kleiner Kanton, ein Öltankkataster, {fmt.tsd(anlage['ZG'])} "
+        "prüfbare Fälle mit Anlagenbeleg. Ob die Quoten in Zürich gelten, ist offen; "
+        "klären liesse sich das nur durch eine Prüfung vor Ort.",
         "",
     ]
 

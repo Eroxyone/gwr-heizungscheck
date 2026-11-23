@@ -190,7 +190,10 @@ def main(argv: list[str]) -> int:
             kt = auftraege[fertig]
             try:
                 eintraege.append(fertig.result())
-            except Exception as ausnahme:  # noqa: BLE001
+            # Bewusst breit: Was auch immer bei einem Kanton scheitert (Netz, ZIP, CSV,
+            # Platte), darf die uebrigen 25 nicht abbrechen und das Manifest der
+            # gelungenen nicht verhindern. Der Fehler wird gemeldet, der Lauf endet mit 1.
+            except Exception as ausnahme:
                 fehler.append(f"{kt}: {ausnahme}")
                 _log(kt, f"FEHLER: {ausnahme}")
 

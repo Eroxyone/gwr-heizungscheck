@@ -126,7 +126,8 @@ def schreibe_tabelle(bewegung: pd.DataFrame, korrigiert: pd.DataFrame) -> None:
               "| Kanton | " + " | ".join(piv.columns) + " |",
               "|---|" + "---:|" * len(piv.columns)]
     for k, r in piv.iterrows():
-        zellen = [f"{r[c]:.2f}" if c == "je 1'000 und Woche"
+        # Dezimalkomma wie in allen anderen Berichten
+        zellen = [f"{r[c]:.2f}".replace(".", ",") if c == "je 1'000 und Woche"
                   else f"{int(r[c]):,}".replace(",", "'") for c in piv.columns]
         zeilen.append(f"| {k} | " + " | ".join(zellen) + " |")
     if len(korrigiert):

@@ -13,12 +13,20 @@ Kantons Zürich, offene Behördendaten. Der Herausgeber hat die
 Personendaten entfernt. Die Texte nennen zum Teil die Lage des Vorhabens (Strasse,
 Kataster- oder Versicherungsnummer), so wie sie amtlich publiziert wurde.
 
-**Stichprobe.** Geschichtet gezogen: 90 Texte, die die Regel als Heizungsereignis erkannte,
+**Stichprobe.** Geschichtet gezogen: 90 Texte, die die Regel als Heizungsereignis erkennt,
 40 nicht erkannte mit heizungsnahen Wörtern, 20 rein zufällige. Precision lässt sich direkt
-ablesen, für den Recall wird auf die Grundgesamtheit zurückgewichtet.
+ablesen, für den Recall wird auf die Grundgesamtheit zurückgewichtet. Grundgesamtheit sind
+die 17'654 Vorhaben mit Projektbeschrieb (Datenstand 11.09.2026), nicht die 22'780
+Publikationen: Mehrfachpublikationen desselben Vorhabens zählen einmal.
 
-**Herkunft der Labels.** Am 13.09.2026 einzeln vergeben, nach Durchsicht des ganzen Texts,
+**Herkunft der Labels.** Am 13.09.2026 einzeln vergeben, jeweils nach dem ganzen Text,
 durch ein Sprachmodell (Claude Opus 5, Feld `gelabelt_von`). Eine Zweitprüfung durch eine
-weitere Person ist nicht dokumentiert. Wer die Zahlen in
-[reports/extraktion_evaluation.md](../../reports/extraktion_evaluation.md) weiterverwendet,
-sollte das wissen: Gemessen wird gegen ein sorgfältiges, aber nicht doppelt geprüftes Urteil.
+Person gibt es nicht. Für die Zahlen in
+[reports/extraktion_evaluation.md](../../reports/extraktion_evaluation.md) heisst das:
+Gemessen wird gegen das Urteil eines Sprachmodells, nicht gegen ein von Menschen geprüftes
+Label.
+
+**Keine unabhängige Teststichprobe.** Der Systemprompt in `src/extract_llm.py` nennt als
+Sonderfälle die Fehlermuster, die in genau diesen Texten gefunden sind. Die Kennzahlen der
+Sprachmodell-Prüfung sind deshalb auf den Texten gemessen, an denen der Prompt entwickelt
+ist, und für neue Texte zu günstig.

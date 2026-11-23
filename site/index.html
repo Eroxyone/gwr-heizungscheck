@@ -1,0 +1,270 @@
+<!-- Inhalt der Startseite. scripts/build_site.py setzt Kopf, Navigation und Fuss darum
+     und ersetzt {{ZEITREIHE}} durch das Diagramm aus reports/zeitreihe.md. -->
+<header class="kopf">
+  <div class="huelle">
+    <h1>Lassen sich veraltete Heizungsangaben im Gebäuderegister aus offenen Daten erkennen?</h1>
+    <p class="antwort">Ja, mit messbarer Trefferquote. Die wöchentlichen Abzüge des Registers
+      zeigen aber auch, dass mehrere Kantone gerade selbst nachführen, und zwar in Schüben
+      von einigen tausend Einträgen.</p>
+    <p class="stand">Validierungsstudie zum eidgenössischen Gebäude- und Wohnungsregister (GWR),
+      September bis November 2026. Abgeschlossen, Datenstand 16.11.2026.</p>
+
+    <figure class="diagramm">
+      <h2>Das Register wird in Wellen nachgeführt</h2>
+      {{ZEITREIHE}}
+      <figcaption>Zürich, Aargau und Basel-Landschaft korrigierten im Herbst 2026 jeweils
+        mehrere tausend Einträge in einer Woche. Die übrigen 23 Kantone bewegen zusammen
+        weniger als einen Eintrag je 1'000 Gebäude und Woche. Verglichen sind zehn
+        Wochenabzüge des GWR;
+        <a href="reports/zeitreihe.html">alle Werte je Kanton</a>.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main id="inhalt">
+<div class="huelle">
+
+<section class="abschnitt" id="frage">
+  <h2>Worum es geht</h2>
+  <p>Das GWR führt zu jedem Gebäude der Schweiz den Energieträger der Heizung, den
+    Wärmeerzeuger, die Herkunft dieser Angabe und ihr Datum. Die Gemeinden sind verpflichtet,
+    die Angaben nachzuführen. Bei 28,6 % der Wohngebäude stammt der Eintrag aber noch aus der
+    Volkszählung 2000 und wurde seither nicht bestätigt. Auf diesen Angaben beruhen
+    kommunale Energieplanungen und kantonale Statistiken.</p>
+  <p>Die Studie prüft, ob sich die tatsächlich falschen Einträge aus frei zugänglichen Daten
+    herausfiltern lassen. Dazu verbindet eine Pipeline das Register mit Belegen: bewilligten
+    Erdwärmesonden aus 13 Kantonen, Baugesuchen und Photovoltaikanlagen. Ob ein so gefundener
+    Verdacht stimmt, wird zweimal gemessen: an den Katastern von Zug und Genf, die laufende
+    Ölheizungen verzeichnen, und an den Korrekturen, die das Register in den folgenden
+    Wochen selbst vornimmt.</p>
+</section>
+
+<section class="abschnitt" id="zahlen">
+  <h2>Das Ergebnis in fünf Zahlen</h2>
+  <dl class="zahlen">
+    <div>
+      <dt>28,6 %</dt>
+      <dd>der Schweizer Wohngebäude tragen bei der Heizung die Volkszählung 2000 als Quelle.
+        <span class="grenze">Das heisst ungeprüft, nicht falsch: Falsch ist der Eintrag nur,
+        wenn die Heizung seither gewechselt hat.</span></dd>
+    </div>
+    <div>
+      <dt>16'025</dt>
+      <dd>Wohngebäude sind fossil eingetragen, obwohl im Umkreis von 20 Metern eine
+        Erdwärmesonde oder eine andere Wärmenutzungsanlage liegt und kein Gebäude dort eine
+        Wärmepumpe ausweist.
+        <span class="grenze">Stand September 2026, 8'773 davon im Kanton Zürich. Die
+        Verdachtsliste zählt enger: nur Anlagen, die genau einem Gebäude zugeordnet
+        sind.</span></dd>
+    </div>
+    <div>
+      <dt>80,8 %<small>63 von 78 Fällen</small></dt>
+      <dd>der Verdachtsfälle treffen zu, wenn der Beleg jünger ist als der Registereintrag.
+        Liegt der Beleg vor dem Eintrag, sind es 13,3 %, kaum mehr als die Grundrate von 8,8 %.
+        <span class="grenze">Gemessen am Öltankkataster eines einzigen Kantons (Zug),
+        Vertrauensbereich 71 bis 88 %.</span></dd>
+    </div>
+    <div>
+      <dt>682 von 697</dt>
+      <dd>Fällen der Liste vom 14.09.2026, die das Register bis zum 16.11.2026 korrigierte,
+        erhielten den vorgeschlagenen Energieträger, davon 645 von 650 im Kanton Zürich.
+        <span class="grenze">Vorschlag und Korrektur stützen sich in Zürich auf dasselbe
+        kantonale Sondenregister. Die Zahl belegt die Übereinstimmung, keine unabhängige
+        Trefferquote, und sagt nichts über die rund 2'700 Fälle, die noch offen sind.</span></dd>
+    </div>
+    <div>
+      <dt>2'000 bis 5'000<small>Einträge je Woche</small></dt>
+      <dd>ändert ein Kanton, wenn er nachführt: Zürich 4'284 Anfang November, Aargau 5'148
+        Mitte November, Basel-Landschaft 2'329 Ende Oktober.
+        <span class="grenze">Das Register wird in Wellen gepflegt, nicht laufend.</span></dd>
+    </div>
+  </dl>
+</section>
+
+<section class="abschnitt" id="reihenfolge">
+  <h2>Entscheidend ist, was zuerst kam</h2>
+  <p>Eine bewilligte Erdwärmesonde neben einem Gebäude mit eingetragener Ölheizung ist für
+    sich allein ein schwacher Hinweis. Aussagekräftig wird sie durch die Reihenfolge: Entstand
+    der Beleg nach der letzten Änderung des Registereintrags, hat seither niemand mehr
+    nachgeschaut. Entstand er davor, wurde der Eintrag nach der Bohrung bearbeitet und die
+    Ölheizung trotzdem bestätigt.</p>
+  <div class="balken" role="img"
+       aria-label="Anteil zutreffender Verdachtsfälle: 80,8 Prozent, wenn der Beleg jünger ist als der Eintrag; 13,3 Prozent, wenn er älter ist; 8,8 Prozent Grundrate ohne Beleg.">
+    <div class="name">Beleg jünger als der Eintrag<small>63 von 78 Fällen</small></div>
+    <div class="spur"><div class="strich treffer" style="width:80.8%"></div><span class="wert">80,8 %</span></div>
+    <div class="name">Beleg älter als der Eintrag<small>4 von 30 Fällen</small></div>
+    <div class="spur"><div class="strich" style="width:13.3%"></div><span class="wert">13,3 %</span></div>
+    <div class="name">Grundrate<small>fossil eingetragen, ohne Beleg</small></div>
+    <div class="spur"><div class="strich" style="width:8.8%"></div><span class="wert">8,8 %</span></div>
+  </div>
+  <p>Zutreffend heisst hier: Der Zuger Tankkataster führt für das Gebäude keinen Öltank in
+    Betrieb mehr. Die Reihenfolge trennt stärker als die Art des Belegs. Dieselbe Regel
+    erklärt, warum die Quelle "Volkszählung 2000" allein nichts aussagt, zusammen mit einem
+    jüngeren Beleg aber das trennschärfste Merkmal ist.
+    <a href="reports/belegwirkung.html">Die Messung im Einzelnen</a>.</p>
+</section>
+
+<section class="abschnitt" id="zeitreihe">
+  <h2>Die Kantone führen selbst nach</h2>
+  <p>Ein einzelner Abzug des Registers zeigt nur seinen heutigen Zustand. Aufschlussreicher
+    ist die Bewegung, und die lässt sich nachträglich nicht beschaffen. Die Pipeline legt
+    deshalb jede Woche einen Abzug aller 26 Kantone ab und vergleicht ihn mit dem vorherigen.</p>
+  <p>In neun Wochen stellte der Kanton Zürich 2'720 Wohngebäude von fossil auf nicht fossil
+    um, Gemeinde für Gemeinde, nach seinem eigenen Leitfaden. 650 davon standen auf der Liste
+    dieser Studie, also 24 %. Die übrigen drei Viertel erreicht sie nicht: Der Kanton kennt
+    zu jeder Sonde das Datum und das zugehörige Gebäude, die offenen Daten geben nur
+    Koordinate und Laufnummer her.</p>
+  <p>Daraus folgt die Einordnung der ganzen Arbeit. Wo ein Kanton eigene Vollzugsdaten hat
+    und sie einsetzt, braucht es keine Vorauswahl von aussen. Nützlich bleibt die Methode für
+    Kantone und Gemeinden ohne solche Daten, und die Zeitreihe als unabhängige Messung
+    dafür, wie viel sich im Register tatsächlich bewegt.</p>
+</section>
+
+<section class="abschnitt" id="aufbau">
+  <h2>Wie es gebaut ist</h2>
+  <p>Python und DuckDB, lokal lauffähig ohne Dienst und ohne Zugang. Die Fachlogik steht in
+    SQL, je Schritt eine Datei. Python lädt die Quellen, führt die Schritte in der richtigen
+    Reihenfolge aus und erzeugt die Berichte.</p>
+  <div class="schichten breit">
+    <div>
+      <h3>Quellen</h3>
+      <p class="rolle">offene Behördendaten</p>
+      <ul>
+        <li>GWR Stufe A, 26 Kantone</li>
+        <li>Wärmenutzungsanlagen, 13 Kantone</li>
+        <li>Baugesuche, Zürich und Amtsblattportal</li>
+        <li>Photovoltaikanlagen, BFE</li>
+        <li>Kataster Zug und Genf als Vergleich</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Bronze</h3>
+      <p class="rolle">unverändert abgelegt</p>
+      <ul>
+        <li>Parquet-Abzug je Woche und Kanton</li>
+        <li>Rohdateien mit Manifest und SHA-256</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Silver</h3>
+      <p class="rolle">bereinigt und verknüpft</p>
+      <ul>
+        <li>Gebäude typisiert, Codes aufgelöst</li>
+        <li>Heizungsereignisse aus Baugesuchstexten</li>
+        <li>Zuordnung der Anlagen zum Gebäude</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Gold</h3>
+      <p class="rolle">ausgewertet</p>
+      <ul>
+        <li>Kennzahlen je Gemeinde und Kanton</li>
+        <li>Verdachtsliste mit Beleg und Vorschlag</li>
+        <li>Zeitreihe: was das Register korrigiert</li>
+      </ul>
+    </div>
+  </div>
+  <ul class="fakten breit">
+    <li><b>3,17 Mio</b>Gebäude in allen 26 Kantonen</li>
+    <li><b>30</b>Quellen, jede in eigenem Format</li>
+    <li><b>22</b>SQL-Schritte in fester Reihenfolge</li>
+    <li><b>85</b>Prüfungen auf den echten Daten</li>
+  </ul>
+  <p>Die Qualität sichern drei Ebenen. Automatische Tests führen die SQL-Schritte unverändert
+    über ein erfundenes Register aus, in dem sich jede erwartete Zahl von Hand nachzählen
+    lässt. 85 Prüfungen laufen nach jedem Pipelinelauf über die echten Daten: Schlüssel,
+    Wertebereiche, Summen, festgeschriebene Vergleichswerte. Und die Ergebnisse selbst werden
+    gegen fremde Daten gemessen. Gebäudegenaue Listen und Rohdaten sind nicht Teil des
+    Repositories.</p>
+  <p><a href="docs/methode.html">Methode</a>,
+    <a href="docs/datenquellen.html">Datenquellen</a>,
+    <a href="{{REPO}}#loslegen">Anleitung zum Nachrechnen</a>.</p>
+</section>
+
+<section class="abschnitt" id="grenzen">
+  <h2>Grenzen</h2>
+  <ul>
+    <li><b>Ein Kanton als Massstab.</b> Die Trefferquote von 80,8 % stammt aus Zug, einem
+      kleinen Kanton mit Tankkataster. Von 144 Zuger Fällen liessen sich 79 prüfen, Gasheizungen
+      gar nicht.</li>
+    <li><b>Zuordnung über Koordinaten.</b> Liegt nur der Standort einer Anlage vor, findet ein
+      Umkreis von 20 Metern das richtige Gebäude in 73,8 % der Fälle; das nächstgelegene
+      Gebäude ist nur in 64,7 % das richtige. Gemessen an den amtlichen Gebäudenummern des
+      Kantons Zug.</li>
+    <li><b>Textauswertung nicht unabhängig geprüft.</b> Die Erkennung von Heizungswechseln in
+      Baugesuchen erreicht 98,7 % Precision (78 von 79), gemessen an 150 Texten, die ein
+      Sprachmodell gelabelt hat und an denen auch die Anweisung für das prüfende Modell
+      entwickelt wurde. Eine frische, von einer Person gelabelte Stichprobe fehlt.</li>
+    <li><b>Keine Prüfung vor Ort.</b> Keine Gemeinde hat eine Stichprobe der Liste am Gebäude
+      kontrolliert. Die Aussagen beruhen auf dem Vergleich von Registern.</li>
+    <li><b>Offene Quellen bleiben nicht immer offen.</b> Am 22.11.2026 verlangte der Geodienst
+      von St. Gallen und Appenzell Innerrhoden eine Anmeldung, im September noch nicht.</li>
+  </ul>
+</section>
+
+<section class="abschnitt" id="berichte">
+  <h2>Berichte</h2>
+  <h3>Interaktiv</h3>
+  <ul class="berichte">
+    <li><a href="reports/dashboard.html">Dashboard</a>
+      <span>Pflege-Index der Heizungsangaben für 26 Kantone und 2'110 Gemeinden, Stand 14.09.2026</span></li>
+    <li><a href="reports/befund.html">Zwischenbericht</a>
+      <span>Der Stand vom 14.09.2026 auf einer Seite, vor der Messung der Belegwirkung und vor der Zeitreihe</span></li>
+  </ul>
+  <h3>Ergebnisse</h3>
+  <ul class="berichte">
+    <li><a href="docs/befunde.html">Befunde im Detail</a>
+      <span>Die acht Befunde mit Zahlen und Grenzen</span></li>
+    <li><a href="reports/zeitreihe.html">Zeitreihe</a>
+      <span>Bewegung im Register je Woche und Kanton, Korrekturen der Listenfälle</span></li>
+    <li><a href="reports/belegwirkung.html">Belegwirkung</a>
+      <span>Was ein Beleg wert ist, je Belegart und je Stufe gemessen</span></li>
+    <li><a href="reports/kantonsvergleich.html">Kantonsvergleich</a>
+      <span>Pflege-Index, Pflegemuster und Rangfolge der Kantone</span></li>
+    <li><a href="reports/report.html">Detailauswertung Zürich</a>
+      <span>Baugesuche gegen Registerstand, die ursprünglichen Tests der Studie</span></li>
+  </ul>
+  <h3>Messungen der Methode</h3>
+  <ul class="berichte">
+    <li><a href="reports/zuordnung_zg.html">Genauigkeit der Zuordnung</a>
+      <span>Umkreis-Zuordnung gegen die amtlichen Gebäudenummern des Kantons Zug</span></li>
+    <li><a href="reports/extraktion_evaluation.html">Auswertung der Baugesuchstexte</a>
+      <span>Stichwortregel und Sprachmodell gegen 150 gelabelte Texte</span></li>
+    <li><a href="reports/precision.html">Vorstufe: Verdacht gegen aktive Kessel</a>
+      <span>Erste Messung in Genf und Zug, abgelöst durch die Belegwirkung;
+        dazu die <a href="reports/groundtruth.html">Vergleichsdaten</a></span></li>
+  </ul>
+  <h3>Grundlagen</h3>
+  <ul class="berichte">
+    <li><a href="docs/methode.html">Methode</a>
+      <span>Vom Registerabzug zur Liste: Schichten, Zuordnung, Belegstufen, Zeitreihe</span></li>
+    <li><a href="docs/datenquellen.html">Datenquellen</a>
+      <span>Jede Quelle mit Adresse, Format und Eigenheiten, auch die verworfenen</span></li>
+    <li><a href="reports/quellenmatrix.html">Quellenmatrix</a>
+      <span>Welche Daten es je Kanton gibt und welche Prüftiefe daraus folgt</span></li>
+    <li><a href="reports/quellenvergleich.html">Quellenvergleich</a>
+      <span>Was der Kanton Luzern in seinem Projekt verwendet hat und was offen fehlt</span></li>
+    <li><a href="reports/lizenzen.html">Lizenzlage</a>
+      <span>Nutzungsbedingungen je Quelle</span></li>
+  </ul>
+</section>
+
+<section class="abschnitt" id="entstehung">
+  <h2>Zur Entstehung</h2>
+  <p>Code, SQL und Berichtstexte sind zu einem grossen Teil im Dialog mit einem
+    KI-Codierassistenten (Claude Code) entstanden. Die 150 Baugesuchstexte der Stichprobe hat
+    ein Sprachmodell gelabelt. Die veröffentlichte Fassung ist ein bereinigter Export: Die
+    Arbeitshistorie enthält gebäudegenaue Zwischenstände und bleibt deshalb privat.</p>
+  <div class="english" lang="en">
+    <p><b>In English.</b> A validation study on Switzerland's Federal Register of Buildings
+      and Dwellings: can outdated heating entries be detected from open data alone? A DuckDB
+      pipeline over 3.17 million buildings in all 26 cantons joins the register with cantonal
+      geothermal registries, building permit notices and solar installations, and takes
+      weekly snapshots to measure how fast the register is corrected anyway. Where the
+      evidence is newer than the register entry, 81 % of the flagged entries were wrong
+      (63 of 78 checkable cases, one canton). The documentation is in German.</p>
+  </div>
+</section>
+
+</div>
+</main>

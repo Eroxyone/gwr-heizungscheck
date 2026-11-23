@@ -8,6 +8,7 @@ from __future__ import annotations
 import duckdb
 
 import config
+import pipeline
 
 RAW = config.RAW
 DB = config.DB
@@ -16,7 +17,7 @@ DB = config.DB
 def main() -> None:
     DB.parent.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(str(DB))
-    con.execute("INSTALL spatial; LOAD spatial;")
+    pipeline.lade_spatial(con)
 
     gwr = RAW / "gwr_zh"
     print("-> bronze_gwr_gebaeude")

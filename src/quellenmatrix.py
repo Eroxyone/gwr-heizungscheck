@@ -1,8 +1,7 @@
 """Welche Datenquelle gibt es in welchem Kanton - und was folgt daraus?
 
 Das GWR gibt es ueberall. Alles, womit sich das GWR pruefen laesst, gibt es nur
-stellenweise. Diese Ungleichheit ist kein Randproblem, sondern bestimmt, welche Aussage
-ueber einen Kanton ueberhaupt moeglich ist:
+stellenweise. Diese Ungleichheit bestimmt, welche Aussage ueber einen Kanton moeglich ist:
 
   Stufe 0  nur GWR              -> man sieht, wie gepflegt das Register aussieht,
                                    nicht, ob es stimmt
@@ -10,8 +9,8 @@ ueber einen Kanton ueberhaupt moeglich ist:
   Stufe 2  + Anlagen mit Datum  -> "seit wann nicht nachgefuehrt" wird beantwortbar
   Stufe 3  + Baugesuche         -> auch Anlagen ohne Bohrung (Luft/Wasser, Fernwaerme)
 
-Wer die Kantone vergleicht, ohne diese Stufen zu nennen, vergleicht in Wahrheit die
-Datenlage und nicht die Registerqualitaet. Genau davor warnt dieser Bericht.
+Ein Kantonsvergleich ohne diese Stufen vergleicht die Datenlage und nicht die
+Registerqualitaet.
 
     python src/quellenmatrix.py
 """
@@ -28,30 +27,30 @@ import pipeline
 # hier steht nur, was sich nicht ausrechnen laesst: warum eine Quelle fehlt.
 BEFUND = {
     "ZH": "Vier Layer des AWEL, dazu der OGD-Baugesuchsdatensatz des Statistischen Amts",
-    "BE": "AGI-Anlagenregister mit Ausfuehrungsstatus; Baugesuche im Amtsblattportal",
-    "LU": "Reichster Kantonsdatensatz: Sonden mit Bohrdatum plus als einziger Kanton "
-          "Luft-Wasser-Waermepumpen. Die Koordinaten sind aber nicht gebaeudegenau "
-          "(Median 24 m zum naechsten Gebaeude statt 8 bis 9 m) - Luzern ist deshalb "
-          "aus den auswertenden Sichten ausgeschlossen",
-    "SG": "Anlagenregister statt Sondenkataster - fuehrt die Waermepumpe selbst. "
-          "84 % der Gebaeude neben einer Anlage haben sie schon im GWR: Der Kanton "
-          "fuehrt offenbar bereits nach",
-    "SO": "AFU-Sonden ab 1986, Abgabe auf 5000 Objekte begrenzt",
+    "BE": "AGI-Anlagenregister mit Ausführungsstatus; Baugesuche im Amtsblattportal",
+    "LU": "Sonden mit Bohrdatum und als einziger Kanton Luft-Wasser-Wärmepumpen. Die "
+          "Koordinaten sind nicht gebäudegenau (Median 24 m zum nächsten Gebäude statt "
+          "8 bis 9 m); Luzern ist deshalb aus den auswertenden Sichten ausgeschlossen",
+    "SG": "Anlagenregister statt Sondenkataster, führt die Wärmepumpe selbst. 84 % der "
+          "Gebäude neben einer Anlage tragen sie schon im GWR; der Kanton führt "
+          "offenbar bereits nach",
+    "SO": "AFU-Sonden ab 1986, Abgabe auf 5'000 Objekte je Anfrage begrenzt",
     "TG": "Sonden mit Bohrdatum und Status",
     "GE": "SITG-CSV mit Realisierungsdatum",
     "ZG": "Einziger Kanton mit EGID an der Anlage",
-    "BL": "Bohrregister mit Bohrjahr - Ausfuehrung, nicht Bewilligung",
-    "AI": "Bohrkataster mit Erstelljahr. Wie St. Gallen: 86 % stehen schon im GWR",
-    "SZ": "Nur ueber map.geo.sz.ch/mapserv_proxy erreichbar, nicht ueber wfs.geo.sz.ch",
+    "BL": "Bohrregister mit Bohrjahr (Ausführung, nicht Bewilligung)",
+    "AI": "Bohrkataster mit Erstelljahr. Wie in St. Gallen stehen 86 % schon im GWR",
+    "SZ": "Nur über map.geo.sz.ch/mapserv_proxy erreichbar, nicht über wfs.geo.sz.ch",
     "SH": "Sonden ohne Datum, in WGS84",
-    "UR": "Nur Konzessionen - bewilligt, nicht nachweislich gebaut",
+    "UR": "Nur Konzessionen (bewilligt, nicht nachweislich gebaut)",
     "AG": "Keine Anlagendaten als Vektor, nur Eignungskarten als WMS. Der Kanton "
-          "uebertraegt Energiemerkmale seit 2026 direkt aus dem Bewilligungssystem ins GWR",
+          "überträgt Energiemerkmale seit 2026 direkt aus dem Bewilligungssystem ins GWR",
     "VD": "Geothermie-Kataster vorhanden, aber kostenpflichtig (10 CHF/km2)",
-    "JU": "Nur Bohrbeschraenkungszonen",
-    "AR": "Nur Zulaessigkeitsbereiche. Das kantonale EnergyGIS fuehrt eine Heizungs-"
-          "kategorie je Gebaeude, leitet sie aber aus dem GWR ab - als Beleg zirkulaer",
-    "BS": "Nur Energierichtplan-Flaechen",
+    "JU": "Nur Bohrbeschränkungszonen",
+    "AR": "Nur Zulässigkeitsbereiche. Das kantonale EnergyGIS führt eine "
+          "Heizungskategorie je Gebäude, leitet sie aber aus dem GWR ab und ist als "
+          "Beleg zirkulär",
+    "BS": "Nur Energierichtplan-Flächen",
     "NW": "Erdsondenkataster vorhanden, aber nur als WMS-Bild",
     "OW": "Erdsondenkataster vorhanden, aber nur als WMS-Bild",
     "GR": "Nichts gefunden; die Baugesuch-Subrubrik AA-GR10 ist angemeldet, aber leer",
@@ -69,6 +68,8 @@ BAUGESUCHE = {
     "AR": "portal", "SZ": "portal", "BL": "portal", "SO": "portal", "NW": "portal",
     "OW": "portal", "SH": "portal", "VS": "portal",
 }
+# Wie die Baugesuch-Quelle in der Tabelle heisst.
+BAUGESUCHE_TXT = {"ogd": "OGD Kanton Zürich", "portal": "Amtsblattportal", "-": "–"}
 
 
 def _tabelle_da(con, name: str) -> bool:
@@ -140,17 +141,23 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", default=str(config.ROOT / "reports" / "quellenmatrix.md"))
     a = p.parse_args(argv)
 
-    con = pipeline.connect()
+    con = pipeline.connect(schreibend=False)
+    stand = con.execute("SELECT max(stand) FROM silver_gebaeude_ch").fetchone()[0]
     zeilen = sammeln(con)
 
     text = [
-        "# Welche Daten gibt es in welchem Kanton?",
+        "# Quellenmatrix: Welche Daten gibt es in welchem Kanton?",
+        "",
+        f"Stand {stand.strftime('%d.%m.%Y')}. Die Tabelle zeigt je Kanton, welche offenen "
+        "Daten neben dem GWR vorliegen (Wärmenutzungsanlagen, Heizungs-Baugesuche) und "
+        "welche Prüfung des Registers damit möglich ist.",
         "",
         "Das GWR deckt die ganze Schweiz ab. Alles, womit sich das GWR **prüfen** lässt, "
-        "gibt es nur stellenweise. Diese Tabelle sagt deshalb weniger über die Kantone "
+        "gibt es nur stellenweise. Die Tabelle sagt deshalb weniger über die Kantone "
         "aus als über die Grenzen dieser Auswertung.",
         "",
-        "| Kt | Gebäude | Anlagen | davon datiert | Heizungs-Baugesuche | Quelle | Stufe |",
+        "| Kanton | Gebäude | Anlagen | davon datiert | Heizungs-Baugesuche "
+        "| Quelle der Baugesuche | Stufe |",
         "|---|---:|---:|---:|---:|---|---|",
     ]
     for z in zeilen:
@@ -159,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
             f"{fmt.tsd(z['anlagen']) if z['anlagen'] else '–'} | "
             f"{fmt.tsd(z['anlagen_datiert']) if z['anlagen_datiert'] else '–'} | "
             f"{fmt.tsd(z['baugesuche_heizung']) if z['baugesuche_heizung'] else '–'} | "
-            f"{z['baugesuch_quelle']} | {z['stufe']} |")
+            f"{BAUGESUCHE_TXT[z['baugesuch_quelle']]} | {z['stufe']} |")
 
     verteilung = {s: sum(1 for z in zeilen if z["stufe"] == s) for s in (3, 2, 1, 0)}
     text += [
@@ -168,31 +175,31 @@ def main(argv: list[str] | None = None) -> int:
         "",
         "| Stufe | Was möglich ist | Kantone |",
         "|---|---|---:|",
-        f"| 3 | {STUFEN_TEXT[3]} – auch Anlagen ohne Bohrung werden sichtbar | {verteilung[3]} |",
-        f"| 2 | {STUFEN_TEXT[2]} – \"seit wann nicht nachgeführt\" ist beantwortbar | {verteilung[2]} |",
-        f"| 1 | {STUFEN_TEXT[1]} – Widersprüche sichtbar, aber nicht datierbar | {verteilung[1]} |",
-        f"| 0 | {STUFEN_TEXT[0]} – man sieht, wie gepflegt das Register *aussieht*, nicht ob es stimmt | {verteilung[0]} |",
+        f"| 3 | {STUFEN_TEXT[3]}: auch Anlagen ohne Bohrung werden sichtbar | {verteilung[3]} |",
+        f"| 2 | {STUFEN_TEXT[2]}: \"seit wann nicht nachgeführt\" ist beantwortbar | {verteilung[2]} |",
+        f"| 1 | {STUFEN_TEXT[1]}: Widersprüche sichtbar, aber nicht datierbar | {verteilung[1]} |",
+        f"| 0 | {STUFEN_TEXT[0]}: sichtbar ist, wie gepflegt das Register aussieht, nicht ob es stimmt | {verteilung[0]} |",
         "",
-        "**Das ist die wichtigste Einschränkung des ganzen Projekts.** Ein Kanton auf "
-        f"Stufe 0 – davon gibt es {verteilung[0]} – kann in keiner Rangliste schlecht "
-        "abschneiden, weil es nichts gibt, woran er scheitern könnte. Umgekehrt sieht "
-        "ein Kanton mit guter Datenlage zwangsläufig schlechter aus: Wer hinschauen "
-        "lässt, bei dem wird etwas gefunden. Jede Kantonsrangliste in diesem Projekt "
-        "ist zuerst eine Rangliste der Offenheit.",
+        "**Diese Ungleichheit begrenzt jeden Kantonsvergleich der Studie.** Ein Kanton auf "
+        f"Stufe 0 (davon gibt es {verteilung[0]}) kann in keiner Rangliste schlecht "
+        "abschneiden, weil eine Gegenquelle fehlt. Umgekehrt sieht ein Kanton mit guter "
+        "Datenlage zwangsläufig schlechter aus, weil nur bei ihm etwas gefunden werden "
+        "kann. Jede Kantonsrangliste der Studie ist deshalb zuerst eine Rangliste der "
+        "Datenoffenheit.",
         "",
         "## Befund je Kanton",
         "",
-        "| Kt | Stufe | Befund |",
+        "| Kanton | Stufe | Befund |",
         "|---|---|---|",
     ]
     for z in sorted(zeilen, key=lambda x: x["kanton"]):
         text.append(f"| {z['kanton']} | {z['stufe']} | {z['befund']} |")
     text += [
         "",
-        "Gesucht wurde über den nationalen Metadatenkatalog geocat.ch (deutsch, "
-        "französisch, italienisch), über opendata.swiss, über den Themenkatalog von "
-        "geodienste.ch und über einen Endpunkt-Scan aller 26 Kantone. Ein leerer Befund "
-        "heisst \"auf diesen Wegen nicht gefunden\", nicht \"existiert nicht\".",
+        "Die Suche umfasst den nationalen Metadatenkatalog geocat.ch (deutsch, "
+        "französisch, italienisch), opendata.swiss, den Themenkatalog von geodienste.ch "
+        "und einen Endpunkt-Scan aller 26 Kantone. Ein leerer Befund heisst \"auf diesen "
+        "Wegen nicht gefunden\", nicht \"existiert nicht\".",
         "",
     ]
 

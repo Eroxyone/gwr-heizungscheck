@@ -7,9 +7,22 @@ from __future__ import annotations
 import datetime as dt
 import shutil
 
-import config
 import pipeline
-from conftest import STAND_ALT, STAND_NEU, baue_register
+from conftest import (
+    FERNWAERME,
+    GAS_BEWILLIGT,
+    KODES,
+    OEL_VZ,
+    SONDE,
+    STAND_ALT,
+    STAND_NEU,
+    _gebaeude,
+    baue_register,
+    datenverzeichnis,
+    schreibe_adressen,
+    schreibe_gebaeude,
+    schreibe_kodes,
+)
 
 
 def zeile(con, sql: str) -> dict:
@@ -98,6 +111,127 @@ def test_gemeindesummen_ergeben_die_kantonssummen(register):
     assert register.execute("SELECT count(*) FROM gold_kanton").fetchone()[0] == 2
 
 
+KENNZAHLEN = [
+    "wohngebaeude", "mit_angabe", "aktuell_5j", "aktuell_15j", "aus_vz2000", "fossil", "waermepumpe",
+    "kandidaten", "median_alter_jahre", "aktualisiert_12m",
+    "pct_vollstaendig", "pct_aktuell_5j", "pct_aktuell_15j", "pct_vz2000", "pct_ohne_vz2000",
+    "pct_fossil", "pct_waermepumpe", "pct_kandidaten", "pct_bewegung_12m", "pflege_index",
+]
+
+
+def spalten(con, tabelle: str) -> list[str]:
+    return [s[0] for s in con.execute(f"DESCRIBE {tabelle}").fetchall()]
+
+
+def test_gold_gemeinde_fuehrt_jede_kennzahl(register):
+    # Testwil am 12.01.2026, elf Wohngebaeude (Endziffern der EGID):
+    #   01, 02      Heizoel, Volkszaehlung, 29.11.2001       25 Jahre alt
+    #   03, 04      Erdwaermesonde, Kanton, 08.01.2026        0 Jahre
+    #   05          Gas, Baubewilligung, 09.01.2026           0 Jahre
+    #   06          Gas, Baubewilligung, 01.05.2020           6 Jahre
+    #   07, 08, 09  Erdwaermesonde, Baubewilligung, 2023      3 Jahre
+    #   10          unbestimmt, andere Quelle, 01.01.2012    14 Jahre
+    #   13          Luft, Baubewilligung, 01.12.2025          1 Jahr
+    r = zeile(register, "SELECT * EXCLUDE (kanton, gemeinde, stand) FROM gold_gemeinde WHERE bfs_nr = 9001")
+    assert {k: float(w) if k.startswith("pct_") or k == "pflege_index" else w for k, w in r.items()} == {
+        "bfs_nr": 9001,
+        "wohngebaeude": 11,
+        "mit_angabe": 10,               # alle ausser 10
+        "aktuell_5j": 7,                # ab 12.01.2021: 03, 04, 05, 07, 08, 09, 13
+        "aktuell_15j": 9,               # ab 12.01.2011: dazu 06 und 10
+        "aus_vz2000": 2,
+        "fossil": 4,                    # 01, 02, 05, 06
+        "waermepumpe": 6,               # 03, 04, 07, 08, 09, 13
+        "fernwaerme": 0,
+        "holz": 0,
+        "kandidaten": 2,                # 01, 02
+        "median_alter_jahre": 3.0,      # 0, 0, 0, 1, 3, [3], 3, 6, 14, 25, 25
+        "anzahl_quellen": 4,            # 859, 860, 864, 869
+        "aktualisiert_12m": 4,          # ab 12.01.2025: 03, 04, 05, 13
+        "pct_vollstaendig": 90.9,       # 10 von 11
+        "pct_aktuell_5j": 63.6,         # 7 von 11
+        "pct_aktuell_15j": 81.8,        # 9 von 11
+        "pct_vz2000": 18.2,             # 2 von 11
+        "pct_ohne_vz2000": 81.8,
+        "pct_fossil": 36.4,             # 4 von 11
+        "pct_waermepumpe": 54.5,        # 6 von 11
+        "pct_kandidaten": 18.2,
+        "pct_bewegung_12m": 36.4,
+        "pflege_index": 84.8,           # (90,91 + 81,82 + 81,82) / 3
+    }
+
+
+def test_kanton_mit_einer_gemeinde_traegt_deren_kennzahlen(register):
+    # Beide Kantone des Registers bestehen aus einer Gemeinde. Jede Kennzahl, die auf
+    # beiden Ebenen gefuehrt wird, muss dort uebereinstimmen.
+    assert spalten(register, "gold_kanton") == ["kanton", "stand", "gemeinden", *KENNZAHLEN]
+    gemeinsam = ", ".join(["kanton", "stand", *KENNZAHLEN])
+    kantone = register.execute(f"SELECT {gemeinsam} FROM gold_kanton ORDER BY kanton").fetchall()
+    gemeinden = register.execute(f"SELECT {gemeinsam} FROM gold_gemeinde ORDER BY kanton").fetchall()
+    assert kantone == gemeinden
+    assert [k[0] for k in kantone] == ["AI", "ZG"]
+    assert register.execute("SELECT DISTINCT gemeinden FROM gold_kanton").fetchall() == [(1,)]
+
+
+def test_kanton_fasst_seine_gemeinden_zusammen(tmp_path, monkeypatch):
+    """Ein Kanton mit zwei Gemeinden: Der Kanton rechnet ueber alle Gebaeude, nicht ueber
+    die Kennzahlen der Gemeinden. Am Median zeigt sich der Unterschied.
+
+        Oberdorf   zweimal Heizoel aus der Volkszaehlung (25 Jahre), eine Sonde von 2023 (3)
+        Unterdorf  Fernwaerme von 2024 (2 Jahre), Gas mit Baubewilligung von 2020 (6)
+    """
+    ober = lambda egid, heizung: _gebaeude(egid, "GL", 9003, "Oberdorf", heizung)       # noqa: E731
+    unter = lambda egid, heizung: _gebaeude(egid, "GL", 9004, "Unterdorf", heizung)     # noqa: E731
+    schreibe_gebaeude(tmp_path, STAND_NEU, "GL", [
+        ober(900000201, OEL_VZ), ober(900000202, OEL_VZ), ober(900000203, SONDE),
+        unter(900000204, FERNWAERME), unter(900000205, GAS_BEWILLIGT)])
+    schreibe_adressen(tmp_path, STAND_NEU, "GL", [{"EGID": "900000201", "STRNAME": "Dorfplatz", "DEINR": "1"}])
+    schreibe_kodes(tmp_path, KODES)
+    datenverzeichnis(monkeypatch, tmp_path)
+
+    con = pipeline.run("ch")
+    try:
+        assert spalten(con, "gold_gemeinde") == [
+            "kanton", "bfs_nr", "gemeinde", "stand", *KENNZAHLEN[:7], "fernwaerme", "holz", "kandidaten",
+            "median_alter_jahre", "anzahl_quellen", *KENNZAHLEN[9:]]
+        gemeinden = con.execute("""
+            SELECT gemeinde, wohngebaeude, fossil, fernwaerme, kandidaten, median_alter_jahre,
+                   anzahl_quellen, pflege_index::DOUBLE
+            FROM gold_gemeinde ORDER BY bfs_nr""").fetchall()
+        assert gemeinden == [
+            # Vollstaendigkeit 100, Aktualitaet 33,3 (die Sonde), Herkunft 33,3
+            ("Oberdorf", 3, 2, 0, 2, 25.0, 2, 55.6),
+            # 100, 100, 100
+            ("Unterdorf", 2, 1, 1, 0, 4.0, 2, 100.0),
+        ]
+        r = zeile(con, "SELECT * EXCLUDE (kanton, stand) FROM gold_kanton")
+        assert {k: float(w) if k.startswith("pct_") or k == "pflege_index" else w for k, w in r.items()} == {
+            "gemeinden": 2,
+            "wohngebaeude": 5,
+            "mit_angabe": 5,
+            "aktuell_5j": 2,                # Sonde 2023, Fernwaerme 2024
+            "aktuell_15j": 3,               # dazu Gas 2020
+            "aus_vz2000": 2,
+            "fossil": 3,
+            "waermepumpe": 1,
+            "kandidaten": 2,
+            "median_alter_jahre": 6.0,      # 2, 3, [6], 25, 25 - nicht das Mittel aus 25 und 4
+            "aktualisiert_12m": 0,
+            "pct_vollstaendig": 100.0,
+            "pct_aktuell_5j": 40.0,
+            "pct_aktuell_15j": 60.0,
+            "pct_vz2000": 40.0,
+            "pct_ohne_vz2000": 60.0,
+            "pct_fossil": 60.0,
+            "pct_waermepumpe": 20.0,
+            "pct_kandidaten": 40.0,
+            "pct_bewegung_12m": 0.0,
+            "pflege_index": 73.3,           # (100 + 60 + 60) / 3
+        }
+    finally:
+        con.close()
+
+
 # --------------------------------------------------------------------------- Zeitreihe
 
 def test_zeitreihe_findet_genau_die_eingebauten_aenderungen(register):
@@ -145,11 +279,7 @@ def test_ein_einzelner_kanton_und_ein_einzelner_stand_reichen(tmp_path, monkeypa
     baue_register(tmp_path)
     shutil.rmtree(tmp_path / "snapshots" / "gwr" / f"snapshot_date={STAND_ALT}")
     shutil.rmtree(tmp_path / "snapshots" / "gwr" / f"snapshot_date={STAND_NEU}" / "kanton=ZG")
-    monkeypatch.setattr(config, "DATA", tmp_path)
-    monkeypatch.setattr(config, "RAW", tmp_path / "raw")
-    monkeypatch.setattr(config, "SNAPSHOTS", tmp_path / "snapshots")
-    monkeypatch.setattr(config, "PROCESSED", tmp_path / "processed")
-    monkeypatch.setattr(config, "DB", tmp_path / "processed" / "gwr.duckdb")
+    datenverzeichnis(monkeypatch, tmp_path)
 
     con = pipeline.run("ch")
     try:

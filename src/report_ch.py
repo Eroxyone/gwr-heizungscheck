@@ -1,6 +1,7 @@
 """Erzeugt reports/kantonsvergleich.md aus dem Gold-Layer.
 
-Alle Zahlen kommen aus der Pipeline, nichts ist von Hand eingetragen.
+Tabellen und Kennzahlen kommen aus der Pipeline. Fest in der Vorlage
+(src/report_ch_template.md) stehen die Zuger Zuordnungswerte und die Basler Werte.
 """
 from __future__ import annotations
 
@@ -9,6 +10,16 @@ import pipeline
 from fmt import de, md, tsd
 
 ZIEL = config.REPORTS / "kantonsvergleich.md"
+
+# Die Sichten fuehren das Pflegemuster ohne Umlaut; im Bericht steht es ausgeschrieben.
+MUSTER_TXT = {"Rueckstand": "Rückstand"}
+
+
+def muster_lesbar(df):
+    """Setzt in der Spalte Pflegemuster den lesbaren Namen ein."""
+    df = df.copy()
+    df["Pflegemuster"] = df["Pflegemuster"].replace(MUSTER_TXT)
+    return df
 
 
 def main() -> None:
@@ -62,16 +73,16 @@ def main() -> None:
     """).iloc[0]
 
     rang = q("""
-        SELECT kanton AS KT, note AS Note, pflege_index AS "Index", pflegemuster AS Pflegemuster,
+        SELECT kanton AS "Kanton", note AS Note, pflege_index AS "Index", pflegemuster AS Pflegemuster,
                wohngebaeude AS "Wohngebäude", pct_vollstaendig AS "% vollständig",
                pct_aktuell_15j AS "% aktuell", pct_vz2000 AS "% VZ 2000",
                median_alter_jahre AS "Alter (J.)", pct_fossil AS "% fossil",
-               pct_waermepumpe AS "% WP", pct_kandidaten AS "% Verdacht"
+               pct_waermepumpe AS "% WP", pct_kandidaten AS "% Kandidaten"
         FROM v_gold_kanton ORDER BY pflege_index DESC
     """)
     muster = q("""
-        SELECT pflegemuster AS Pflegemuster, count(*) AS Kantone,
-               string_agg(kanton, ' ' ORDER BY pflege_index DESC) AS "welche"
+        SELECT pflegemuster AS Pflegemuster, count(*) AS "Anzahl",
+               string_agg(kanton, ' ' ORDER BY pflege_index DESC) AS "Kantone"
         FROM v_gold_kanton GROUP BY 1 ORDER BY 2 DESC
     """)
     gem_noten = q("""
@@ -82,30 +93,30 @@ def main() -> None:
     """)
     gem_muster = q("""
         SELECT pflegemuster AS Pflegemuster, count(*) AS Gemeinden,
-               sum(wohngebaeude) AS "Wohngebäude", sum(kandidaten) AS "Verdachtsfälle"
+               sum(wohngebaeude) AS "Wohngebäude", sum(kandidaten) AS "Kandidaten"
         FROM v_gold_gemeinde GROUP BY 1 ORDER BY 2 DESC
     """)
     schlecht = q("""
-        SELECT kanton AS KT, gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
+        SELECT kanton AS "Kanton", gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
                pflege_index AS "Index", pct_vz2000 AS "% VZ 2000",
-               median_alter_jahre AS "Alter (J.)", kandidaten AS "Verdachtsfälle"
+               median_alter_jahre AS "Alter (J.)", kandidaten AS "Kandidaten"
         FROM v_gold_gemeinde WHERE wohngebaeude >= 500 ORDER BY pflege_index LIMIT 15
     """)
     gut = q("""
-        SELECT kanton AS KT, gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
+        SELECT kanton AS "Kanton", gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
                pflege_index AS "Index", pflegemuster AS Pflegemuster,
                aktive_tage_24m AS "aktive Tage 24 Mt."
         FROM v_gold_gemeinde WHERE wohngebaeude >= 500 AND pflegemuster = 'laufend'
         ORDER BY pflege_index DESC LIMIT 12
     """)
     absolut = q("""
-        SELECT kanton AS KT, gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
-               kandidaten AS "Verdachtsfälle", pct_kandidaten AS "% Verdacht",
+        SELECT kanton AS "Kanton", gemeinde AS Gemeinde, wohngebaeude AS "Wohngebäude",
+               kandidaten AS "Kandidaten", pct_kandidaten AS "% Kandidaten",
                pflege_index AS "Index"
         FROM v_gold_gemeinde ORDER BY kandidaten DESC LIMIT 15
     """)
     bulk = q("""
-        SELECT kanton AS KT, pct_groesstes_datum AS "% am selben Tag",
+        SELECT kanton AS "Kanton", pct_groesstes_datum AS "% am selben Tag",
                verschiedene_daten AS "verschiedene Daten", aktive_tage_24m AS "aktive Tage 24 Mt."
         FROM v_gold_kanton WHERE pflegemuster = 'Sammelimport' ORDER BY 2 DESC
     """)
@@ -134,11 +145,11 @@ def main() -> None:
         pv AS (
             SELECT kanton, count(DISTINCT egid) AS pv_verdacht FROM v_test4_ch GROUP BY 1
         )
-        SELECT k.kanton AS KT,
+        SELECT k.kanton AS "Kanton",
                COALESCE(a.anlagen, 0)     AS "Anlagen",
                COALESCE(a.datiert, 0)     AS "davon datiert",
                COALESCE(w.widerspruch, 0) AS "Widerspruch Anlage",
-               COALESCE(p.pv_verdacht, 0) AS "Verdacht Solar"
+               COALESCE(p.pv_verdacht, 0) AS "Solaranlage und Quelle 860"
         FROM v_gold_kanton k
         LEFT JOIN anl a ON a.kanton = k.kanton
         LEFT JOIN wid w ON w.kanton = k.kanton
@@ -160,11 +171,12 @@ def main() -> None:
         median_alter=de(str(ch.median_alter)),
         wp=tsd(ch.waermepumpe), pct_wp=de(f"{100*ch.waermepumpe/ch.wohngebaeude:.1f}"),
         gemeinden=tsd(v1("SELECT count(*) FROM gold_gemeinde")),
-        rang=md(rang), muster=md(muster), gem_noten=md(gem_noten), gem_muster=md(gem_muster),
-        schlecht=md(schlecht), gut=md(gut), absolut=md(absolut), bulk=md(bulk),
+        rang=md(muster_lesbar(rang)), muster=md(muster_lesbar(muster)),
+        gem_noten=md(gem_noten), gem_muster=md(muster_lesbar(gem_muster)),
+        schlecht=md(schlecht), gut=md(muster_lesbar(gut)), absolut=md(absolut), bulk=md(bulk),
         quellen_ch=md(quellen_ch),
-        best_kt=rang.iloc[0]["KT"], best_idx=de(str(rang.iloc[0]["Index"])),
-        schlecht_kt=rang.iloc[-1]["KT"], schlecht_idx=de(str(rang.iloc[-1]["Index"])),
+        best_kt=rang.iloc[0]["Kanton"], best_idx=de(str(rang.iloc[0]["Index"])),
+        schlecht_kt=rang.iloc[-1]["Kanton"], schlecht_idx=de(str(rang.iloc[-1]["Index"])),
         n_rueckstand=v1("SELECT count(*) FROM v_gold_kanton WHERE pflegemuster='Rueckstand'"),
         n_gem_rueckstand=tsd(v1("SELECT count(*) FROM v_gold_gemeinde WHERE pflegemuster='Rueckstand'")),
         n_gem_de=tsd(v1("SELECT count(*) FROM v_gold_gemeinde WHERE note IN ('D','E')")),

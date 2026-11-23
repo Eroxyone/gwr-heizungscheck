@@ -1,8 +1,8 @@
 """Wie gut trifft die raeumliche Zuordnung Anlage -> Gebaeude?
 
-Bisher liess sich das nur behaupten. Der Kanton Zug fuehrt an seinen Erdwaerme-
-sondenanlagen die EGID mit - 805 Anlagen mit amtlicher Zuordnung. Das ist eine
-unabhaengige Wahrheit, gegen die sich der eigene Umkreis-Join messen laesst.
+Der Kanton Zug fuehrt an seinen Erdwaermesondenanlagen die EGID mit: 805 Anlagen mit
+amtlicher Zuordnung. Das ist eine unabhaengige Referenz, gegen die sich der eigene
+Umkreis-Join messen laesst.
 
 Zwei Groessen, die nicht verwechselt werden duerfen:
   Recall     Ist die amtliche EGID unter meinen Kandidaten? Fehlt sie, geht ein
@@ -10,9 +10,8 @@ Zwei Groessen, die nicht verwechselt werden duerfen:
   Kandidaten Wie viele Gebaeude haenge ich je Anlage an? Jeder Kandidat zu viel ist
              ein Gebaeude, das faelschlich unter Verdacht geraet.
 
-Beide ziehen in entgegengesetzte Richtungen: Ein grosser Radius findet mehr, aber
-belastet mehr Unschuldige. Der Lauf zeigt den Zielkonflikt in Zahlen, statt den
-gewaehlten Radius nachtraeglich zu begruenden.
+Beide ziehen in entgegengesetzte Richtungen: Ein grosser Radius findet mehr, zieht
+aber mehr Nachbargebaeude hinein. Der Lauf zeigt den Zielkonflikt in Zahlen.
 
     python src/eval_zuordnung.py
     python src/eval_zuordnung.py --radien 10 20 30
@@ -92,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", default=str(config.ROOT / "reports" / "zuordnung_zg.md"))
     a = p.parse_args(argv)
 
-    con = pipeline.connect()
+    con = pipeline.connect(schreibend=False)
     gesamt = _amtliche(con)
     if not gesamt:
         print("Keine amtlichen EGID in silver_waermenutzung - erst test5.sql laufen lassen.")
@@ -114,54 +113,68 @@ def main(argv: list[str] | None = None) -> int:
 
     gewaehlt = next((z for z in zeilen if z["radius_m"] == 20), zeilen[0])
     weitest = max(zeilen, key=lambda z: z["radius_m"])
+    stand = con.execute("SELECT max(stand) FROM silver_gebaeude_ch").fetchone()[0]
+
+    def je_anlage(z: dict) -> str:
+        return f"{z['kandidaten_je_anlage']:.2f}"
+
     text = [
-        "# Wie gut trifft die Zuordnung Anlage -> Gebäude?",
+        "# Zuordnung von Anlagen zu Gebäuden: Prüfung an den amtlichen EGID des Kantons Zug",
         "",
-        f"Der Kanton Zug führt an seinen Erdwärmesondenanlagen die EGID mit: "
-        f"{fmt.tsd(gesamt)} Anlagen mit amtlicher Zuordnung. Damit lässt sich der eigene "
-        "Umkreis-Join gegen eine unabhängige Referenz halten statt gegen eine Vermutung.",
+        f"Registerstand {stand.strftime('%d.%m.%Y')}. Gemessen wird, wie oft der Umkreis "
+        "einer Erdwärmesondenanlage das Gebäude enthält, das der Kanton Zug der Anlage "
+        f"amtlich zuordnet. Der Kanton führt an {fmt.tsd(gesamt)} Anlagen die EGID mit; "
+        "das ist die einzige unabhängige Referenz für die räumliche Zuordnung in dieser "
+        "Studie.",
         "",
-        "| Radius | Anlagen | mit Kandidat | amtliche EGID dabei | Recall | nächstes Gebäude richtig | Kandidaten je Anlage |",
+        "| Radius | Anlagen | mit Gebäude im Umkreis | amtliche EGID dabei | Recall "
+        "| nächstes Gebäude richtig | Gebäude je Anlage |",
         "|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for z in zeilen:
         text.append(
             f"| {z['radius_m']} m | {fmt.tsd(z['anlagen'])} | {fmt.tsd(z['mit_kandidat'])} "
             f"| {fmt.tsd(z['amtliche_egid_dabei'])} | {z['recall_pct']} % "
-            f"| {z['genauigkeit_naechstes_pct']} % | {z['kandidaten_je_anlage']} |")
+            f"| {z['genauigkeit_naechstes_pct']} % | {je_anlage(z)} |")
     text += [
         "",
         "## Was daraus folgt",
         "",
         f"Beim gewählten Radius von 20 m liegt die amtliche EGID in "
-        f"{gewaehlt['recall_pct']} % der Fälle unter den Kandidaten, bei im Schnitt "
-        f"{gewaehlt['kandidaten_je_anlage']} Gebäuden je Anlage. Nimmt man nur das "
-        f"nächstgelegene Gebäude, trifft es in "
-        f"{gewaehlt['genauigkeit_naechstes_pct']} % der Fälle - deutlich weniger. "
-        "Die Anlage liegt also oft näher bei einem Nachbargebäude als bei dem, das sie "
-        "heizt. Das ist der Grund, warum die Pipeline alle Gebäude im Umkreis als "
-        "Kandidaten führt und die Entscheidung nicht der Distanz allein überlässt.",
+        f"{gewaehlt['recall_pct']} % der Fälle unter den Gebäuden im Umkreis, bei im "
+        f"Schnitt {je_anlage(gewaehlt)} Gebäuden je Anlage. Das nächstgelegene Gebäude "
+        f"allein trifft in {gewaehlt['genauigkeit_naechstes_pct']} % der Fälle. Die "
+        "Anlage liegt also oft näher bei einem Nachbargebäude als bei dem Gebäude, das "
+        "sie heizt.",
         "",
-        f"Wichtiger ist die zweite Beobachtung: Auch bei {weitest['radius_m']} m Radius "
-        f"steigt der Recall nur auf {weitest['recall_pct']} %. Bei rund "
+        "Die Pipeline verlässt sich deshalb nicht auf das nächstgelegene Gebäude. Sie "
+        "übernimmt eine Zuordnung nur, wenn sie eindeutig ist "
+        "(`sql/zuordnung_anlagen.sql`): zuerst über die amtliche EGID, wenn der Kanton "
+        "genau eine nennt, sonst über die Adresse der Anlage, wenn sie auf genau ein "
+        "Gebäude passt, und sonst über den Umkreis, wenn genau ein Gebäude innerhalb "
+        "von 20 m liegt. Liegen mehrere Gebäude im Umkreis, bleibt die Anlage ohne "
+        "Zuordnung und führt zu keinem Verdachtsfall.",
+        "",
+        f"Auch bei {weitest['radius_m']} m Radius steigt der Recall nur auf "
+        f"{weitest['recall_pct']} %. Bei rund "
         f"{100 - weitest['recall_pct']:.0f} % der Anlagen liegt das amtlich zugeordnete "
         f"Gebäude also weiter entfernt als {weitest['radius_m']} m. Ein grösserer Radius "
-        "löst das nicht, er kauft nur immer mehr Nachbarn dazu - von 1,9 auf "
-        f"{weitest['kandidaten_je_anlage']} Gebäude je Anlage. **Die Zuordnung über "
-        "Koordinaten hat eine Decke bei etwa vier Fünfteln.** Wer höher will, braucht "
-        "Parzellengeometrie oder eine Adresse, nicht mehr Meter.",
+        f"löst das nicht, er nimmt vor allem Nachbargebäude dazu: {je_anlage(gewaehlt)} "
+        f"Gebäude je Anlage bei 20 m, {je_anlage(weitest)} bei {weitest['radius_m']} m. "
+        "**Die Zuordnung über Koordinaten erreicht höchstens etwa vier Fünftel der "
+        "Anlagen.** Mehr braucht Parzellengeometrie oder eine Adresse.",
         "",
-        "Für die Verdachtsliste heisst das: Rund ein Viertel der tatsächlich vorhandenen "
-        "Wärmepumpen findet dieser Weg nicht. Die ausgewiesenen Fallzahlen sind damit "
-        "eher Unter- als Obergrenzen.",
+        "Für die Verdachtsliste heisst das: Bei rund einem Viertel der Anlagen liegt das "
+        "richtige Gebäude nicht im 20-m-Umkreis, und Anlagen mit mehreren Gebäuden im "
+        "Umkreis werden nicht zugeordnet. Die ausgewiesenen Fallzahlen sind damit eher "
+        "Unter- als Obergrenzen.",
         "",
         "## Grenzen",
         "",
         "Zug ist ein dicht bebauter, flacher Kanton. In Streusiedlungsgebieten dürfte "
         "derselbe Radius besser trennen, in Stadtzentren schlechter. Die Zahlen sind "
-        "eine Grössenordnung, keine Konstante. Ausserdem ist die amtliche EGID des "
-        "Kantons Zug selbst nicht fehlerfrei - sie ist die beste verfügbare Referenz, "
-        "nicht die Wahrheit.",
+        "eine Grössenordnung. Die amtliche EGID des Kantons Zug ist die beste "
+        "verfügbare Referenz, aber selbst nicht fehlerfrei.",
         "",
     ]
     ziel = config.ROOT / a.out if not str(a.out).startswith(str(config.ROOT)) else a.out

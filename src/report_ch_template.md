@@ -1,7 +1,12 @@
 # Heizungsangaben im GWR: Wie gut pflegen die Kantone ihr Register?
 
-**Alle 26 Kantone, {gemeinden} Gemeinden, {wohngeb} Wohngebäude. Datenstand {stand}.**
-Erzeugt von `src/report_ch.py` aus den Parquet-Snapshots. Keine Zahl ist von Hand eingetragen.
+Datenstand {stand}, alle 26 Kantone, {gemeinden} Gemeinden, {wohngeb} Wohngebäude. Gemessen
+wird je Kanton und Gemeinde, wie vollständig und wie aktuell die Heizungsangaben im GWR sind
+und aus welcher Quelle sie stammen.
+
+Erzeugt von `src/report_ch.py` aus den Parquet-Snapshots. Tabellen und Kennzahlen kommen aus
+der Pipeline; fest in der Vorlage stehen die Zuger Zuordnungswerte in Abschnitt 5.2
+(aus [zuordnung_zg.md](zuordnung_zg.md)) und die Basler Werte unter "Pflegemuster".
 
 Interaktive Fassung: [dashboard.html](dashboard.html).
 Die Detailauswertung für den Kanton Zürich mit Baugesuchen steht in [report.md](report.md).
@@ -12,21 +17,23 @@ Die Detailauswertung für den Kanton Zürich mit Baugesuchen steht in [report.md
 
 Im Gebäude- und Wohnungsregister trägt jedes Gebäude einen Eintrag zu Energieträger und
 Wärmeerzeuger, dazu eine Informationsquelle und ein Aktualisierungsdatum. Wie gut dieser
-Eintrag gepflegt wird, unterscheidet sich zwischen den Kantonen drastisch.
+Eintrag gepflegt wird, unterscheidet sich stark zwischen den Kantonen.
 
 - **{pct_vz2000} % aller Schweizer Wohngebäude** ({vz2000} Stück) tragen bei der Heizung
-  immer noch die Volkszählung 2000 als Quelle. Der Eintrag wurde seit einem Vierteljahrhundert
+  immer noch die Volkszählung 2000 als Quelle. Der Eintrag ist seit einem Vierteljahrhundert
   nicht bestätigt.
 - Das **Median-Alter** der Heizungsangabe liegt schweizweit bei **{median_alter} Jahren**.
 - **{pct_fossil} %** der Wohngebäude sind fossil beheizt ({fossil} mit Öl oder Gas),
   **{pct_wp} %** haben eine Wärmepumpe.
-- **{kandidaten} Gebäude** ({pct_kandidaten} %) sind Verdachtsfälle: fossil beheizt und der
-  Eintrag entweder ungeprüft oder älter als 15 Jahre.
+- **{kandidaten} Gebäude** ({pct_kandidaten} %) sind Kandidaten: fossil beheizt und der
+  Eintrag entweder ungeprüft (Quelle 860) oder älter als 15 Jahre. Ein Kandidat ist noch
+  kein Verdachtsfall. Als Verdachtsfall gilt in dieser Studie nur ein Gebäude, zu dem ein
+  Beleg vorliegt ([docs/methode.md](../docs/methode.md)).
 - Die Spannweite zwischen den Kantonen reicht von **{best_kt} mit {best_idx} Punkten** bis
   **{schlecht_kt} mit {schlecht_idx}**. In **{n_rueckstand} Kantonen** überwiegt der
   unbearbeitete Altbestand.
 
-Ein Befund vorweg, der die ganze Auswertung relativiert: **Der Index misst Pflege, nicht
+Eine Einschränkung gilt für die ganze Auswertung: **Der Index misst Pflege, nicht
 Richtigkeit.** Wie weit beides auseinanderliegt, zeigt Abschnitt 5.
 
 ---
@@ -41,8 +48,8 @@ Drei Anteile über alle Wohngebäude, gemittelt:
 | Aktualität | Anteil mit Aktualisierungsdatum jünger als 15 Jahre |
 | Herkunft | Anteil, der **nicht** aus der Volkszählung 2000 stammt |
 
-Quelle 860 (Volkszählung 2000) heisst nicht falsch, sondern ungeprüft. Ob der Eintrag
-stimmt, weiss niemand, weil ihn seit 2000 niemand bestätigt hat.
+Quelle 860 (Volkszählung 2000) heisst ungeprüft, nicht falsch: Der Eintrag ist seit 2000
+nicht bestätigt.
 
 Notenklassen: A ab 90, B ab 75, C ab 60, D ab 45, E darunter.
 
@@ -70,8 +77,8 @@ Die Kantone mit Sammelimport im Detail:
 {bulk}
 
 Basel-Stadt ist der Extremfall: 99,1 % aller Wohngebäude tragen dasselbe Aktualisierungsdatum,
-Quelle ist zu 99,7 % die Feuerungskontrolle. Der Index von 100 Punkten steht für einen
-einzigen Schreibvorgang, nicht für einen laufenden Prozess.
+Quelle ist zu 99,7 % die Feuerungskontrolle. Der Index von 100 Punkten steht dort für einen
+einzigen Schreibvorgang.
 
 ### Informationsquellen schweizweit
 
@@ -96,10 +103,10 @@ Gemeinden sind im Rückstand.
 
 {gut}
 
-### Meiste Verdachtsfälle in absoluten Zahlen
+### Meiste Kandidaten in absoluten Zahlen
 
-Diese Liste ist für die Praxis interessanter als die Prozentwerte: Hier liegt die grösste
-Menge an Gebäuden, bei denen der Heizungseintrag fossil und ungeprüft ist.
+Die Tabelle zeigt, wo absolut die meisten Gebäude mit fossilem Heizungseintrag liegen, der
+ungeprüft oder älter als 15 Jahre ist.
 
 {absolut}
 
@@ -110,8 +117,8 @@ Menge an Gebäuden, bei denen der Heizungseintrag fossil und ungeprüft ist.
 Vor jedem Report läuft `python src/checks.py`, eine Reihe von Datenqualitäts- und
 Regressionsprüfungen. Was dabei aufgefallen ist:
 
-- **{zukunft} Einträge tragen ein Aktualisierungsdatum in der Zukunft**, im Extremfall neun
-  Monate. Erfassungsfehler in der Quelle, nicht korrigierbar, aber überwacht.
+- **{zukunft} Einträge tragen ein Aktualisierungsdatum in der Zukunft.** Das sind
+  Erfassungsfehler in der Quelle; eine Prüfung überwacht ihre Zahl.
 - **{ohne_datum} Gebäude haben überhaupt kein Aktualisierungsdatum.** Das sind überwiegend
   Gebäude ohne Wohnnutzung und ohne Wärmeerzeuger.
 - Ein Regressionstest hält die Zürcher Zahlen aus der Detailauswertung fest. Ändert sich die
@@ -128,15 +135,16 @@ einen Heizungsersatz wurden mit dem Registerstand verglichen.
 Ergebnis: **Bei {t3_luecke} % der Fälle zeigt das GWR weiterhin den alten Energieträger**, obwohl das
 Baugesuch mindestens ein halbes Jahr zurückliegt. Bei Gesuchen ab 18 Monaten sind es noch {t3_luecke18} %.
 
-Der entscheidende Punkt: **Die Stadt Zürich hat null Einträge aus der Volkszählung 2000.** Nach
-dieser Auswertung ist sie sauber. In der Gegenprobe verfehlt sie bei rund zwei Dritteln der
-Heizungs-Baugesuche die Nachführung. Metadaten zählen ersetzt nicht, Ereignisse zu prüfen.
+**Die Stadt Zürich hat null Einträge aus der Volkszählung 2000.** Nach dieser Auswertung
+ist sie sauber. In der Gegenprobe fehlt bei gut zwei Dritteln ihrer Heizungs-Baugesuche die
+Nachführung ([report.md](report.md), Abschnitt 2.3). Die Metadaten zeigen das nicht.
 
 Daraus folgt für die Lesart dieses Reports:
 
-1. Ein hoher Index heisst: Das Register wurde angefasst. Nicht: Die Einträge stimmen.
+1. Ein hoher Index heisst, dass das Register bearbeitet ist. Er heisst nicht, dass die
+   Einträge stimmen.
 2. Ein niedriger Index ist dagegen aussagekräftig. Wo die Volkszählung 2000 noch die
-   Hauptquelle ist, wurde tatsächlich nichts geprüft.
+   Hauptquelle ist, ist der Bestand ungeprüft.
 3. Das Pflegemuster trägt mehr Information als der Index. Laufende Pflege über viele Tage
    ist ein besseres Zeichen als ein hoher Punktwert aus einem Import.
 
@@ -150,11 +158,16 @@ Die Gegenprobe braucht eine zweite Quelle - und die gibt es nur stellenweise:
 
 {belege}
 
-Ein leeres Feld heisst **nicht**, dass der Kanton sauber ist. Es heisst, dass niemand
-nachsehen kann. Umgekehrt sieht ein Kanton mit offenen Anlagendaten zwangsläufig
-schlechter aus, weil bei ihm überhaupt etwas gefunden werden kann. **Jede Rangliste in
-diesem Report ist zuerst eine Rangliste der Datenoffenheit.** Die vollständige
-Quellenlage je Kanton steht in `reports/quellenmatrix.md`.
+"Widerspruch Anlage" zählt fossil eingetragene Wohngebäude, denen eine Wärmenutzungsanlage
+eindeutig zugeordnet ist. "Solaranlage und Quelle 860" zählt Wohngebäude mit
+Photovoltaikanlage und fossilem Eintrag aus der Volkszählung 2000; das ist nur ein schwaches
+Indiz.
+
+Eine Null heisst nicht, dass der Kanton sauber ist, sondern dass eine offene Gegenquelle
+fehlt. Umgekehrt sieht ein Kanton mit offenen Anlagendaten zwangsläufig schlechter aus,
+weil nur bei ihm etwas gefunden werden kann. **Jede Rangliste in diesem Report ist zuerst
+eine Rangliste der Datenoffenheit.** Die vollständige Quellenlage je Kanton steht in
+[quellenmatrix.md](quellenmatrix.md).
 
 ### 5.2 Wie zuverlässig die Zuordnung ist
 
@@ -169,24 +182,24 @@ dazu, mit sehr unterschiedlichem Ergebnis:
 Der Unterschied hat einen einfachen Grund: **Eine Solaranlage liegt auf dem Gebäude, eine
 Erdsonde daneben.** Bei der Photovoltaik ist die Koordinate praktisch das Gebäude, bei der
 Sonde ist sie ein Punkt im Garten - und der kann näher beim Nachbarn liegen. Auch bei 50 m
-Radius steigt der Sonden-Recall nur auf 80 %; ein grösserer Umkreis kauft vor allem
-Nachbarn dazu (`reports/zuordnung_zg.md`).
+Radius steigt der Sonden-Recall nur auf 80 %; ein grösserer Umkreis nimmt vor allem
+Nachbargebäude dazu ([zuordnung_zg.md](zuordnung_zg.md)).
 
 Für die Fallzahlen heisst das: Bei den Sonden sind sie eher Unter- als Obergrenzen, weil
 rund ein Viertel der echten Fälle gar nicht gefunden wird.
 
 ---
 
-## 6 Was als Nächstes gemessen werden sollte
+## 6 Bewegung im Register
 
-Ein einzelner Snapshot zeigt einen Zustand. Die interessantere Grösse ist die Bewegung:
-Wie viele Heizungseinträge ändert ein Kanton pro Monat tatsächlich?
+Ein einzelner Snapshot zeigt einen Zustand. Wie viele Heizungseinträge ein Kanton
+tatsächlich ändert, zeigt erst der Vergleich mehrerer Stände.
 
 Die Pipeline legt deshalb bei jedem Lauf einen Parquet-Snapshot pro Kanton ab
 (`data/snapshots/gwr/snapshot_date=.../kanton=.../data.parquet`, rund 60 MB für die ganze
-Schweiz). Sobald zwei Stände vorliegen, liefert `v_gold_veraenderung` die Änderungsrate je
-Kanton und Zeitraum. Diese Kennzahl lässt sich nicht nachträglich beschaffen, sie entsteht
-nur durch Sammeln ab jetzt.
+Schweiz). Aus zwei oder mehr Ständen liefert `v_gold_veraenderung` die Änderungsrate je
+Kanton und Zeitraum. Die Auswertung der Wochen-Snapshots steht in
+[zeitreihe.md](zeitreihe.md).
 
 ---
 

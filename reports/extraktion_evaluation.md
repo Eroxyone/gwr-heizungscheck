@@ -1,42 +1,47 @@
-# Wie gut ist die Stichwortsuche? Evaluation an einem Gold-Set
+# Texterkennung in Baugesuchen: Evaluation an 150 gelabelten Texten
 
-Die Erkennung von Heizungsereignissen in Baugesuchstexten läuft bisher über Stichwörter
-und Regeln (`sql/silver_baugesuche.sql`). Diese Auswertung misst, wie gut das ist, und
-schätzt damit ab, was eine LLM-Extraktion zusätzlich bringen würde.
+Stand: Baugesuche des Kantons Zürich bis 11.09.2026, Labels vom 13.09.2026. Gemessen wird,
+wie zuverlässig die Stichwortregel (`sql/silver_baugesuche.sql`) Heizungsereignisse in
+Baugesuchstexten erkennt und was eine nachgeschaltete Prüfung durch ein Sprachmodell
+(`src/extract_llm.py`) daran ändert.
 
 ## Vorgehen
 
-150 Baugesuchstexte wurden einzeln gelabelt (Volltext gelesen, nicht nur der Anfang). Die Labels
-stammen aus einer Durchsicht durch ein Sprachmodell (Claude Opus 5, siehe `gelabelt_von` in
-`data/labels/gold_labels.json`); eine Zweitprüfung durch eine weitere Person ist nicht
-dokumentiert.
+150 Baugesuchstexte sind einzeln gelabelt (Volltext, nicht nur der Anfang). Die Labels
+stammen von einem Sprachmodell (Feld `gelabelt_von` in `data/labels/gold_labels.json`:
+"Sprachmodell (Claude Opus 5), jeder Text einzeln im Volltext beurteilt; keine Zweitprüfung durch eine Person").
 Die Stichprobe ist geschichtet gezogen, damit sowohl Fehltreffer als auch übersehene
 Fälle sichtbar werden:
 
-| Schicht     |   gezogen |   in Grundgesamtheit |   Gewicht |
-|:------------|----------:|---------------------:|----------:|
-| erkannt     |        90 |                 1427 |      15,9 |
-| verdaechtig |        40 |                 2670 |      66,8 |
-| zufall      |        20 |                13557 |     677,9 |
+| Schicht                            |   gezogen |   Vorhaben in der Grundgesamtheit |   Gewicht |
+|:-----------------------------------|----------:|----------------------------------:|----------:|
+| von der Regel erkannt              |        90 |                              1427 |      15,9 |
+| nicht erkannt, heizungsnahe Wörter |        40 |                              2670 |      66,8 |
+| nicht erkannt, Zufallsauswahl      |        20 |                             13557 |     677,9 |
 
-Weil die Schichten unterschiedlich stark gezogen wurden, muss der Recall auf die
-Grundgesamtheit hochgerechnet werden. Die Precision lässt sich direkt ablesen.
+Die Schichten zählen Vorhaben mit Projektbeschrieb und summieren deshalb auf 17'654, nicht
+auf die 22'780 Publikationen des Datensatzes: Mehrfachpublikationen desselben Vorhabens
+sind zusammengefasst (17'680 Vorhaben), und 26 Vorhaben ohne Projektbeschrieb
+fallen in keine Schicht.
 
-Gelabelt wurden fünf Felder: ob es überhaupt um einen Wärmeerzeuger geht, ob daraus ein
+Weil die Schichten unterschiedlich stark gezogen sind, wird der Recall auf die
+Grundgesamtheit hochgerechnet. Die Precision lässt sich direkt ablesen.
+
+Gelabelt sind fünf Felder: ob es um einen Wärmeerzeuger geht, ob daraus ein
 Trägerwechsel folgt (also etwas, das im GWR nachgeführt werden müsste), der neue und der
 bisherige Energieträger, und ob es ein Neubau ist.
 
-## Ergebnis
+## Ergebnis der Stichwortregel
 
 | Aufgabe                                                       |   TP |   FP |   FN |   Precision |   Recall |    F1 |
 |:--------------------------------------------------------------|-----:|-----:|-----:|------------:|---------:|------:|
 | Heizungsereignis erkennen (ungewichtet)                       |   86 |    4 |    2 |        95,6 |     97,7 |  96,6 |
 | Heizungsereignis erkennen (auf Grundgesamtheit hochgerechnet) | 1364 |   63 |  134 |        95,6 |     91,1 |  93,3 |
-| Traegerwechsel erkennen (ungewichtet)                         |   82 |    8 |    1 |        91,1 |     98,8 |  94,8 |
+| Trägerwechsel erkennen (ungewichtet)                          |   82 |    8 |    1 |        91,1 |     98,8 |  94,8 |
 | neuen Energieträger benennen (76 Fälle mit Träger im Text)    |   76 |    0 |    0 |       100,0 |     –    |  –    |
 | bisherigen Energieträger benennen (16 Fälle im Gold-Set)      |   13 |    0 |    3 |        –    |     81,2 |  –    |
 
-## Die 10 Fehler im Einzelnen
+## Die 10 Fehler der Stichwortregel im Einzelnen
 
 |   Nr. | Fehlertyp                              | Projektbeschrieb                                                                                                    |
 |------:|:---------------------------------------|:--------------------------------------------------------------------------------------------------------------------|
@@ -53,10 +58,9 @@ bisherige Energieträger, und ob es ein Neubau ist.
 
 ## Was daraus folgt
 
-Die Stichwortsuche findet Heizungsereignisse zuverlässig. Ihre Schwäche liegt woanders:
-Sie kann nicht unterscheiden, ob eine Heizung **neu gebaut** oder nur **erwähnt** wird.
-
-Drei Fehlermuster, die eine Regel prinzipiell nicht löst:
+Die Stichwortsuche findet Heizungsereignisse zuverlässig. Sie unterscheidet aber nicht,
+ob eine Heizung **neu gebaut** oder nur **erwähnt** wird. Drei Fehlermuster kann eine
+Stichwortregel nicht lösen:
 
 1. **Bestehende Anlagen.** "Bestehende Pelletsheizung im Hauptgebäude" beschreibt den
    Ist-Zustand, kein Vorhaben.
@@ -65,9 +69,10 @@ Drei Fehlermuster, die eine Regel prinzipiell nicht löst:
 3. **Wärmepumpen ohne Gebäudebezug.** Pool-Wärmepumpen, Klimageräte, Rückkühler und
    Erdgasleitungen im Boden lösen dieselben Stichwörter aus.
 
-## Gemessen: was die LLM-Extraktion wirklich bringt
+## Prüfung durch ein Sprachmodell
 
-Dieselben 150 Texte, durch `src/extract_llm.py` mit einem lokalen qwen2.5:7b:
+Dieselben 150 Texte, durch `src/extract_llm.py` mit einem lokalen `qwen2.5:7b`. Gemessen
+ist die Aufgabe "Trägerwechsel erkennen":
 
 | Verfahren                           |   TP |   FP |   FN |   Precision |   Recall |   F1 |
 |:------------------------------------|-----:|-----:|-----:|------------:|---------:|-----:|
@@ -76,31 +81,42 @@ Dieselben 150 Texte, durch `src/extract_llm.py` mit einem lokalen qwen2.5:7b:
 | Regel als Vorfilter, LLM als Prüfer |   78 |    1 |    5 |        98,7 |     94,0 | 96,3 |
 | Regel oder LLM                      |   82 |    9 |    1 |        90,1 |     98,8 | 94,3 |
 
-**Das LLM sortierte sieben der acht Fehltreffer der Regel korrekt aus** - genau die drei Muster
-oben. Dafür übersieht es mehr: fünf Trägerwechsel, die die Regel gefunden hätte.
+**Das Sprachmodell sortiert 7 der 8 Fehltreffer der Regel aus**, und zwar
+Fälle aus den drei Mustern oben. Dafür übersieht es 5 Trägerwechsel, die Regel 1.
 
-Zwei dieser Auslassungen sind echte Modellfehler, bei denen sich die Ausgabe selbst
+Zwei dieser Auslassungen sind Modellfehler, bei denen sich die Ausgabe selbst
 widerspricht. Bei "Erstellung von 18 Erdwärmesonden" schreibt das Modell als Begründung
-"Erdwärmesonden bedeuten eine Wärmepumpe" und setzt das Flag trotzdem auf falsch. Das ist
-typisch für ein 7B-Modell; ein grösseres würde das vermutlich vermeiden.
+"Erdwärmesonden bedeuten eine Wärmepumpe" und setzt das Merkmal trotzdem auf falsch. Ob ein
+grösseres Modell das vermeidet, ist nicht gemessen.
 
-**Die Kaskade schlägt beide Einzelverfahren.** Die Regel als Vorfilter, das LLM als Prüfer:
-Precision steigt von 91,1 % auf 98,7 %, bei gleichem Recall wie das LLM allein. Das ist auch
-betrieblich die richtige Anordnung - die Regel läuft ohne Aufwand über alle 22'780 Texte, das LLM
-muss dann nur noch die rund 1'750 Treffer prüfen. Das ist ein dreizehnmal kleinerer
-Rechenaufwand als eine LLM-Extraktion über den ganzen Bestand.
+**In dieser Messung hat die Kaskade die höchste Precision.** Regel als Vorfilter,
+Sprachmodell als Prüfer: Die Precision steigt von 91,1 % auf 98,7 %
+(78 von 79 positiven Urteilen richtig, 1 falsch;
+Wilson-Intervall zu 95 %: 93,2 bis 99,8 %), bei gleichem Recall wie das
+Sprachmodell allein. Der Wert gilt nur mit den Vorbehalten im Abschnitt "Grenzen dieser
+Messung". Die Anordnung spart Rechenaufwand: Die Regel läuft über alle 22'780
+Publikationen, das Sprachmodell prüft nur die 1'753 Treffer der Regel.
 
-**Für die Anwendung zählt Precision mehr als Recall.** Ein Fehltreffer in einer
-Verdachtsliste kostet Vertrauen bei der Gemeinde, die ihn prüft. Ein übersehener Fall
-kostet nur einen entgangenen Treffer.
+**Für eine Verdachtsliste zählt Precision mehr als Recall.** Ein Fehltreffer erzeugt
+Prüfaufwand ohne Ergebnis, ein übersehener Fall fehlt nur.
 
-## Grenzen dieser Evaluation
+## Grenzen dieser Messung
 
-- Die Labels stammen aus einer einzelnen Durchsicht, nicht aus einem Mehrfachurteil.
-  Grenzfälle (Blockheizkraftwerk, Wärmespeicher, Energiezentrale einer Kläranlage) wurden
-  konservativ als "kein Gebäude-Wärmeerzeuger" gewertet.
-- 150 Texte reichen für Precision, aber der hochgerechnete Recall hat eine grosse
-  Unsicherheit: In der Zufallsschicht liegt ein einziger Grenzfall, und dieser eine Fall
-  wird mit einem Gewicht von mehreren Hundert multipliziert.
-- Bei einer Weiterführung sollte das Gold-Set auf rund 500 Texte wachsen und von zwei Personen
-  unabhängig gelabelt werden, damit sich die Übereinstimmung messen lässt.
+1. **Keine unabhängige Teststichprobe.** Der Systemprompt des Sprachmodells
+   (`src/extract_llm.py`) nennt als Sonderfälle genau die Fehlermuster, die in diesem
+   Gold-Set gefunden sind: bestehende Pelletsheizung, Wärmepumpe ersetzt Wärmepumpe,
+   Pool, Rückkühler, Gasleitung im Boden. Die Precision der Kaskade ist damit auf
+   denselben Texten gemessen, an denen der Prompt entwickelt ist. Auf neuen Texten ist
+   ein tieferer Wert zu erwarten; wie viel tiefer, ist nicht gemessen.
+2. **Kleine Fallzahl.** Die Precision der Kaskade beruht auf n = 79 positiven Urteilen (78 richtig, 1 falsch). Ein einzelner weiterer Fehltreffer senkt sie um 1,3 Prozentpunkte.
+3. **Labels von einem Sprachmodell.** Die Labels stammen aus einer einzelnen Durchsicht
+   durch ein Sprachmodell, ohne Zweitprüfung durch eine Person. Grenzfälle
+   (Blockheizkraftwerk, Wärmespeicher, Energiezentrale einer Kläranlage) sind
+   konservativ als "kein Gebäude-Wärmeerzeuger" gewertet.
+4. **Der hochgerechnete Recall ist unsicher.** Übersehene Heizungsereignisse: 2 in der Schicht "nicht erkannt, heizungsnahe Wörter" (Gewicht 66,8).
+   In der Zufallsschicht (20 Texte, Gewicht 677,9) liegt kein Heizungsereignis;
+   ein einziger übersehener Fall dort würde den hochgerechneten Recall deutlich senken.
+
+Eine belastbare Messung braucht eine frische Stichprobe, die erst nach dem Festlegen von
+Regel und Prompt gezogen wird, Labels von einer Person (besser von zwei unabhängig, damit
+sich die Übereinstimmung messen lässt) und ein Vertrauensintervall zur Precision.

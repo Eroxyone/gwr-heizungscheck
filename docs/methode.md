@@ -1,6 +1,7 @@
 # Methode
 
-Wie aus den Quellen ein Verdacht wird, was gemessen ist und was nicht. Die Kurzfassung steht im
+Wie aus den Quellen ein Verdacht wird, was gemessen ist und was nicht. Zahlen mit
+Registerstand 14.09.2026, wo nichts anderes steht. Die Kurzfassung steht im
 [README](../README.md), die Herkunft der Daten in [datenquellen.md](datenquellen.md).
 
 ## Warum Snapshots
@@ -30,9 +31,8 @@ Der Gold-Layer wird aus dem jüngsten Snapshot gerechnet; ein Fall verlässt die
 das Register ihn nicht mehr fossil führt. Damit die Spur nicht verloren geht, hält
 `gold_liste_archiv` je Registerstand fest, was auf der Liste stand, und
 `v_gold_liste_korrigiert` zeigt je archiviertem Fall den ersten späteren Snapshot, in dem der
-Eintrag nicht mehr fossil ist, mit neuem Träger und neuer Quelle. Das ist die natürliche
-Messung des Projekts: Korrekturen, die Gemeinden und Kantone ohne unser Zutun vornehmen,
-gegen die Liste gehalten.
+Eintrag nicht mehr fossil ist, mit neuem Träger und neuer Quelle. Gemessen wird damit an
+Korrekturen, die Gemeinden und Kantone von sich aus vornehmen.
 
 Zwischen dem 14.09. und dem 16.11.2026 hat der Kanton Zürich 2'720 Wohngebäude von fossil auf
 nicht fossil umgestellt, 1'901 davon mit Quelle 864 (kantonale Daten) und 2'201 auf
@@ -54,42 +54,83 @@ Praktische Folge: Nach jedem Snapshot `python src/pipeline.py alle` laufen lasse
 `ch`. Am 02.10.2026 stand der Gold-Layer noch auf dem 14.09., und 240 der 3'423 Listenfälle
 waren im Register bereits erledigt.
 
-## Vom Befund zum Verdachtsscore
+## Belege, Stufen und der Verdachtsscore
 
-`gold_verdacht.sql` führt die Tests zusammen. Ein Gebäude kommt nur auf die Liste, wenn
-es **mindestens einen echten Beleg** gibt:
+`gold_verdacht.sql` führt die Tests zusammen. In `gold_belege` steht ein fossil
+eingetragenes Wohngebäude nur, wenn es **mindestens einen Beleg** gibt: ein nicht
+nachgeführtes Heizungs-Baugesuch, eine Wärmenutzungsanlage, eine Photovoltaikanlage oder
+einen Widerspruch im Register selbst. Daraus entstehen zwei Grössen, die Verschiedenes
+leisten.
 
-| Beleg | Gewicht | gemessene Wirkung |
+**Die Stufe** (Spalte `konfidenz`) entscheidet, ob ein Fall auf die Liste kommt, und sie
+ordnet die Liste. Sie hängt an der Art des Belegs und an der Reihenfolge von Beleg und
+Registereintrag, nicht an Punkten:
+
+| Stufe | Bedingung | auf der Liste |
 |---|---|---|
-| Heizungs-Baugesuch, nicht nachgeführt | 50 bis 55 | **ungemessen** - in keinem Labelkanton kommt ein einziger Fall vor |
+| Reihenfolge belegt | Beleg datiert und jünger als der Registereintrag | ja |
+| Reihenfolge plausibel | Zürcher Sonde ohne Datum, Laufnummer über der Schwelle des Eintragsjahrs | ja |
+| Eintrag alt | Reihenfolge nicht bestimmbar (Beleg oder Eintrag ohne Datum), Eintrag mit Quelle 860 oder älter als 15 Jahre | ja |
+| Eintrag jung | Reihenfolge nicht bestimmbar, Eintrag jünger | ja |
+| Beleg vor Eintrag | Beleg datiert und älter als der Registereintrag | nein |
+| nur Solaranlage, nur Metadaten | kein Beleg zur Heizung (weder Baugesuch noch Anlage noch Erzeuger-Widerspruch) | nein |
+
+**Der Score** ist die Summe der Gewichte unten, begrenzt auf 100. Seine Rolle ist heute
+klein:
+
+- Er entscheidet nicht, ob ein Fall auf die Liste kommt. `v_gold_liste` wählt allein nach
+  der Stufe aus, nach dem Gegenbeleg-Filter von `v_gold_verdacht`.
+- Er bestimmt die Reihenfolge der Liste nicht. `src/pruefliste.py` sortiert nach Stufe,
+  dann nach Belegklasse (ausgeführte Anlage in der Nähe, ausgeführte Anlage, Anlage ohne
+  Status, Baugesuch). Der Score ist erst das dritte Sortiermerkmal, vor der EGID.
+- Sonst erscheint er nur als beschreibende Kennzahl: mittlerer und höchster Score je
+  Gemeinde (`gold_verdacht_gemeinde`), mittlerer Score je Beleglage im HTML-Befund
+  (`src/export_bericht.py`) und eine Bereichsprüfung in `checks.py`.
+- Er schätzt keine Wahrscheinlichkeit, und entlang seiner Rangfolge ist nichts gemessen:
+  Er kennt nur wenige Summen, viele Fälle teilen dieselbe Punktzahl
+  ([reports/belegwirkung.md](../reports/belegwirkung.md)).
+
+Gewichte im Score (`v_gold_score`):
+
+| Merkmal | Punkte | gemessene Wirkung |
+|---|---|---|
+| Heizungs-Baugesuch, nicht nachgeführt | 50, mit Textprüfung durch das Sprachmodell 55 | **ungemessen** - in keinem Labelkanton kommt ein Fall vor |
 | Wärmenutzungsanlage, eindeutig zugeordnet | 40 | 62 bis 64 % falsche Einträge, Faktor 7 (Zug) |
-| Wärmeerzeuger ist Wärmepumpe, Träger ist Heizöl | 15 | ungemessen, aber technisch unmöglich |
 | Photovoltaikanlage | 18 | 13,7 % (Genf) und 17,2 % (Zug), Faktor 2 bis 2,5 - allein zu wenig |
-| Quelle 860 | 12 | nur zusammen mit einem Beleg, siehe unten |
-| Registereintrag älter als 15 Jahre | 8 bis 15 | dito, und nur wo der Beleg undatiert ist |
-| Beleg älter als der Registereintrag | Ausschluss | 13,3 % statt 80,8 %, gemessen in Zug |
-| Laufnummer der Zürcher Sonde über der Jahresschwelle | Stufe "reihenfolge plausibel" | **ungemessen** - kalibriert an Neubauten, `gold_laufnummer_kalibrierung` |
+| Wärmeerzeuger ist Wärmepumpe, Träger ist Heizöl | 15 | ungemessen, aber technisch unmöglich |
+| Quelle 860 | 12 | kein Beleg, nur zusammen mit einem Beleg |
+| Registereintrag 20 Jahre und älter / 15 bis 19 Jahre / ohne Datum | 15 / 8 / 6 | kein Beleg, nur zusammen mit einem Beleg |
+| Warmwasser über Fernwärme oder Wärmepumpe | 0 | Faktor 0,7 bis 0,8, also keine Wirkung |
+| Entfernung der Anlage zum Gebäude | keine Abstufung | kein Gradient zwischen den Distanzklassen |
+| Baujahr | 0 (konstant) | Faktor 0,94, also keine Wirkung |
+
+Das Baujahr steht als konstante Null im Score (`p_baujahr`) und ändert ihn nie. Beim
+Warmwasser-Widerspruch liegt der Grund im Genfer Wärmeerzeuger-Layer: Die
+Fernwärme-Übergabestationen dieser Fälle tragen im Feld `USAGE` den Wert `['ECS']`,
+versorgen also nur das Warmwasser. Der Beleg "das Warmwasser läuft über Fernwärme" und die
+Gegenquelle sagen dann dasselbe, und die Übereinstimmung zweier Register ist kein
+Heizungswechsel. Ohne Auswertung von `USAGE` erscheint dieser Beleg fälschlich stark
+(Faktor 5,1).
+
+Merkmale ausserhalb des Scores:
+
+| Merkmal | Wirkung | Messung |
+|---|---|---|
+| Beleg älter als der Registereintrag | Stufe "Beleg vor Eintrag", nicht auf der Liste | 13,3 % statt 80,8 %, gemessen in Zug |
+| Laufnummer der Zürcher Sonde über der Jahresschwelle | Stufe "Reihenfolge plausibel" | **ungemessen** - kalibriert an Neubauten, `gold_laufnummer_kalibrierung` |
 | Beleg jünger als 18 Monate am Tag des Abzugs | Kennzeichen "im Nachlauf" | Bern: Meldepflicht Heizungsersatz seit 2023, Nachführung bei der Abnahme |
-| GWR-Codes im Korrekturvorschlag | aus `bronze_gwr_kodes` | nicht mehr getippt - 3'419 Vorschläge trugen einmal 7430 statt 7410 |
-| Warmwasser über Fernwärme oder Wärmepumpe | 0 | **widerlegt**, Faktor 0,7 bis 0,8 |
-| Entfernung der Anlage zum Gebäude | 0 | **widerlegt**, kein Gradient zwischen 5 und 20 m |
-| Baujahr | 0 | **widerlegt**, Faktor 0,94 |
 
-Drei Gewichte stehen hier auf null, weil die Messung sie widerlegt hat. Der teuerste
-Irrtum war der Fernwärme-Widerspruch: Er sah mit Faktor 5,1 nach einem starken Beleg
-aus, bis im Genfer Wärmeerzeuger-Layer das Feld `USAGE` ausgewertet wurde. Die
-vermeintlichen Treffer waren Übergabestationen, an denen `['ECS']` steht - sie machen
-nur das Warmwasser. Der Beleg lautete "das Warmwasser läuft über Fernwärme", und die
-Gegenquelle sagte dasselbe. Gemessen wurde die Übereinstimmung zweier Register, nicht
-ein Heizungswechsel. Details in `reports/belegwirkung.md`.
+Die GWR-Codes im Korrekturvorschlag kommen aus dem Merkmalskatalog (`bronze_gwr_kodes`)
+und sind nicht von Hand eingetragen.
 
-**Quelle 860 und ein altes Datum sind ausdrücklich keine Belege.** Das ist der Kernbefund
-des Projekts: Ohne diesen Filter stünden 343'265 Gebäude auf der Liste, 95 % davon ohne
+**Quelle 860 und ein altes Datum sind ausdrücklich keine Belege.** Ohne diese Regel kämen
+alle Kandidaten auf die Liste, am 14.09.2026 sind das 333'680 Gebäude
+([reports/kantonsvergleich.md](../reports/kantonsvergleich.md)), die grosse Mehrheit ohne
 jeden Beleg.
 
-Zusammen mit einem Beleg sind sie allerdings das trennschärfste Merkmal überhaupt -
-und das war die Überraschung der Kalibrierung. Gemessen an den 109 Zuger Fällen, die
-auf der Verdachtsliste stünden:
+Zusammen mit einem Beleg trennt die Reihenfolge von Beleg und Registereintrag am
+stärksten. Gemessen an den 109 prüfbaren Zuger Fällen mit Anlagenbeleg (79 mit Listenstufe
+und 30 der Stufe "Beleg vor Eintrag"):
 
 | Stufe | gemessen | n | Faktor |
 |---|---:|---:|---:|
@@ -97,20 +138,42 @@ auf der Verdachtsliste stünden:
 | Beleg älter als der Registereintrag | 13,3 % | 30 | 1,5 |
 | *Grundrate im Kanton* | *8,8 %* | *4'430* | *1,0* |
 
-Das ist in sich stimmig: Ein Beleg sagt, dass am Gebäude etwas an der Heizung geschehen
-ist. Ob das im Register schon steht, hängt daran, wann das Register zuletzt angefasst
-wurde. Die früheren Stufen ("alter Eintrag", "Solaranlage zusätzlich") waren ein
-Stellvertreter für genau dieses Merkmal - wo die Reihenfolge direkt bekannt ist, braucht
-es ihn nicht mehr.
+Der 109. Fall trägt die Stufe "Eintrag jung" (undatierter Beleg) und trifft zu.
+
+Die Erklärung: Ein Beleg sagt, dass am Gebäude etwas an der Heizung geschehen ist. Ob das
+im Register steht, hängt daran, wann der Eintrag zuletzt bearbeitet wurde. Das Alter des
+Eintrags ist ein Stellvertreter für die Reihenfolge und dient nur dort, wo der Beleg kein
+Datum trägt (Stufen "Eintrag alt" und "Eintrag jung").
+
+### Die Zuger Fallzahlen
+
+Für Zug stehen in den Dokumenten mehrere Fallzahlen. Sie zählen verschiedene Mengen, alle
+zum Registerstand 14.09.2026:
+
+| Zahl | Was sie zählt | Herkunft |
+|---:|---|---|
+| 144 | Zuger Fälle mit Listenstufe vor dem Gegenbeleg-Filter, Öl- und Gaseinträge | `v_gold_score`; 122 Öl + 22 Gas |
+| 129 | Zuger Fälle auf der Liste: die 144 ohne die 15 mit Öltank in Betrieb (Gegenbeleg) | `v_gold_liste`, archiviert in `gold_liste_archiv`; 107 Öl + 22 Gas |
+| 122 | die Öleinträge unter den 144; nur über sie sagt der Tankkataster etwas | Tabelle "Wer aus der Messung fällt" in [reports/belegwirkung.md](../reports/belegwirkung.md) |
+| 79 | die prüfbaren unter den 122: Der Kataster kennt einen Tank (64 ausser Betrieb, 15 in Betrieb); bei 43 kennt er keinen | Messung der Liste, 64 von 79 = 81,0 % |
+| 109 | alle prüfbaren Zuger Fälle mit Anlagenbeleg: die 79 mit Listenstufe und 30 der Stufe "Beleg vor Eintrag", die nicht auf der Liste steht | Messung je Belegart (44 + 65) und je Stufe (78 + 30 + 1) |
+
+"Von 144 Zuger Fällen liessen sich 79 prüfen" und "64 von 79 treffen zu" beziehen sich
+also auf dieselbe Menge. Die 129 der Liste und die 79 der Messung überschneiden sich nur
+zum Teil: Die 15 Fälle mit Tank in Betrieb sind gemessen (als Fehltreffer), stehen aber
+nicht auf der Liste, und die 65 nicht prüfbaren Fälle (43 Öl ohne Tankeintrag, 22 Gas)
+stehen auf der Liste, sind aber nicht gemessen. Die Zahl 144 ist aus 122 und 22
+hergeleitet und mit dem Archiv abgeglichen (129 + 15); einzeln nachrechnen lässt sie sich
+in der Datenbank nicht mehr, weil `v_gold_score` nur den jüngsten Stand führt.
 
 ## Was auf die Liste kommt
 
 `v_gold_verdacht` enthält rund 88'000 Fälle, aber über 95 % davon beruhen allein auf
-einer Photovoltaikanlage oder auf Metadaten. Bei 13,7 bis 17,2 % Trefferquote ist das keine
-Liste, die jemand abarbeiten kann. **`v_gold_liste` ist deshalb die engere Sicht: 3'423
-Fälle in 526 Gemeinden am 14.09.2026, 2'738 am 16.11.2026.** Zwei Filter machen den Unterschied: Es braucht einen Beleg, der
-etwas über die Heizung sagt, und dieser Beleg darf nicht älter sein als der
-Registereintrag.
+einer Photovoltaikanlage oder auf Metadaten. Bei 13,7 bis 17,2 % Trefferquote ist das für
+eine Prüfliste zu wenig. **`v_gold_liste` ist deshalb die engere Sicht: 3'423 Fälle in
+526 Gemeinden am 14.09.2026, 2'738 am 16.11.2026.** Zwei Filter machen den Unterschied:
+Es braucht einen Beleg, der etwas über die Heizung sagt, und dieser Beleg darf nicht
+älter sein als der Registereintrag.
 
 Stand 14.09.2026:
 
@@ -145,14 +208,16 @@ Heizungsersatz über eBau, Zürich das Meldeverfahren für Wärmepumpen, und nac
 wird bei der Abnahme. Solche Fälle bleiben auf der Liste, sind aber in der Spalte
 "Hinweis" gekennzeichnet.
 
-Gemessen an Zug trifft die ganze Liste in 81,0 % der prüfbaren Fälle zu (64 von 79,
-Vertrauensbereich 71 bis 88 %), die Stufe mit belegter Reihenfolge in 80,8 % (63 von
-78). Die Grundrate liegt bei 8,8 %.
+Gemessen an Zug treffen die Fälle mit Listenstufe in 81,0 % der prüfbaren Fälle zu (64
+von 79, Vertrauensbereich 71 bis 88 %), die Stufe mit belegter Reihenfolge in 80,8 % (63
+von 78). Die Grundrate liegt bei 8,8 %. Prüfbar sind 79 der 144 Zuger Fälle mit
+Listenstufe; wie sich das zu den 129 Zuger Fällen der Tabelle verhält, steht im Abschnitt
+"Die Zuger Fallzahlen".
 
-Die Spalte "Reihenfolge belegt" ist die entscheidende: Sie zählt die Fälle,
-bei denen der Beleg datiert und nachweislich jünger ist als der Registereintrag. Wo ein
-Kanton zu seinen Anlagen kein Datum veröffentlicht - Zürich ist der grosse Fall -,
-bleibt nur das Alter des Eintrags als Stellvertreter.
+Die Spalte "Reihenfolge belegt" zählt die Fälle, bei denen der Beleg datiert und
+nachweislich jünger ist als der Registereintrag. Wo ein Kanton zu seinen Anlagen kein
+Datum veröffentlicht, vor allem in Zürich, bleiben die Laufnummer oder das Alter des
+Eintrags als Stellvertreter.
 
 Neben jedem Fall stehen die **Stufe** und ein **Belegtext** in einem Satz:
 
@@ -169,8 +234,8 @@ ausserhalb des Git.
 
 ## Textextraktion und ihre Evaluation
 
-Heizungsereignisse werden heute über Stichwörter erkannt (`silver_baugesuche.sql`).
-Wie gut das ist, wurde an 150 einzeln gelabelten Baugesuchstexten gemessen
+Heizungsereignisse werden zuerst über Stichwörter erkannt (`silver_baugesuche.sql`).
+Wie gut das ist, ist an 150 einzeln gelabelten Baugesuchstexten gemessen
 (`data/labels/`, geschichtete Stichprobe; Herkunft der Labels in
 [data/labels/README.md](../data/labels/README.md)):
 
@@ -181,9 +246,9 @@ Wie gut das ist, wurde an 150 einzeln gelabelten Baugesuchstexten gemessen
 | neuen Energieträger benennen | 100 % | – |
 | bisherigen Energieträger benennen | – | 81,2 % |
 
-Die Schwäche der Regel ist nicht das Finden, sondern das Unterscheiden: Sie erkennt
-nicht, ob eine Anlage neu gebaut oder nur erwähnt wird ("bestehende Pelletsheizung"),
-ob eine Wärmepumpe eine Wärmepumpe ersetzt, oder ob die Wärmepumpe zu einem Pool gehört.
+Die Regel findet zuverlässig, unterscheidet aber schlecht: Sie erkennt nicht, ob eine
+Anlage neu gebaut oder nur erwähnt wird ("bestehende Pelletsheizung"), ob eine Wärmepumpe
+eine Wärmepumpe ersetzt, oder ob die Wärmepumpe zu einem Pool gehört.
 
 `src/extract_llm.py` löst das über eine LLM-Extraktion mit Structured Outputs. Zwei
 Backends: die Claude API oder ein lokales Modell über Ollama. **Gemessen** an denselben
@@ -195,15 +260,22 @@ Backends: die Claude API oder ein lokales Modell über Ollama. **Gemessen** an d
 | nur LLM | 97,5 % | 94,0 % | 95,7 |
 | **Regel als Vorfilter, LLM als Prüfer** | **98,7 %** | 94,0 % | **96,3** |
 
-Das LLM sortierte sieben der acht Fehltreffer der Regel korrekt aus. Die Kaskade ist auch
-betrieblich richtig: Die Regel läuft ohne Aufwand über alle 22'780 Texte, das LLM prüft nur
-noch die wenigen hundert, die als Beleg in Frage kommen.
+Das Sprachmodell sortiert sieben der acht Fehltreffer der Regel aus. Die Regel läuft über
+alle 22'780 Publikationen (17'654 Vorhaben mit Projektbeschrieb, die Grundgesamtheit der
+Stichprobe), das Sprachmodell prüft nur die Treffer der Regel.
 
-**Die Kaskade läuft produktiv** (`sql/silver_llm.sql`). Test 3 und der Verdachtsscore
-bauen auf `v_baugesuch_geprueft` auf: Regel als Vorfilter, LLM als Prüfer, beide müssen
-zustimmen. Liegt kein LLM-Urteil vor - weil die Extraktion noch nicht lief oder das
-Modell einen Fehler lieferte - gilt die Regel allein. Das Verfahren degradiert also
-sauber, statt Fälle stillschweigend zu verlieren; zwei Checks wachen darüber.
+**Vorbehalt zu den 98,7 %:** Der Wert ist auf denselben 150 Texten gemessen, an denen der
+Prompt des Sprachmodells entwickelt ist (keine unabhängige Teststichprobe), er beruht auf
+n = 79 positiven Urteilen, und die Labels stammen von einem Sprachmodell. Eine belastbare
+Messung braucht eine frische, von einer Person gelabelte Stichprobe
+([reports/extraktion_evaluation.md](../reports/extraktion_evaluation.md), Abschnitt
+"Grenzen dieser Messung").
+
+**Die Pipeline verwendet die Kaskade** (`sql/silver_llm.sql`). Test 3 und die Belege aus
+Baugesuchen bauen auf `v_baugesuch_geprueft` auf: Regel als Vorfilter, Sprachmodell als
+Prüfer, beide müssen zustimmen. Liegt kein Urteil des Sprachmodells vor, weil die
+Extraktion nicht gelaufen ist oder das Modell einen Fehler liefert, gilt die Regel allein.
+So gehen keine Fälle stillschweigend verloren; zwei Prüfungen in `checks.py` überwachen das.
 
 ```bash
 python src/extract_llm.py --test3 --backend ollama --model qwen2.5:7b --cpu     --out data/processed/llm_extraktion.jsonl

@@ -1,29 +1,24 @@
-"""Was ist ein Beleg wert - und gilt das auch dort, wo die Liste benutzt werden soll?
+"""Belegwirkung: Wie oft ist der Registereintrag falsch, wenn ein Beleg vorliegt?
 
-Dieser Bericht ersetzt die Top-K-Kurve aus reports/precision.md als Leitzahl des
-Projekts. Der Grund steht ausfuehrlich in sql/belegwirkung.sql: Die Kurve wurde von
-einem zufaelligen Tiebreak erzeugt, weil auf den obersten Raengen hunderte Faelle
-denselben Score hatten und die Sortierung nach EGID entschied, welche zwanzig oben
-landen. In Genf heisst niedrige EGID Innenstadt, Innenstadt heisst Fernwaerme - und
-schon steht eine Trefferquote von 70 Prozent im Bericht, die nichts misst.
+Gemessen wird je Belegart und je Stufe der Verdachtsliste, nicht entlang einer Rangfolge
+nach Punktzahl. Der Score kennt nur wenige Summen, viele Faelle teilen dieselbe Punktzahl,
+und innerhalb gleicher Punktzahl entscheidet die Sortierung nach EGID. Ein Rangschnitt
+(Top-K) misst dann diese Sortierung. Die Herleitung steht in sql/belegwirkung.sql.
 
-Je Belegart gemessen gibt es dieses Problem nicht: ein Topf, eine Quote, kein Rang.
+Der Bericht trennt ausserdem zwei Dinge:
 
-Zwei Dinge macht dieser Bericht ausserdem, die vorher fehlten:
-
-  1. Er trennt, WORAN ein Beleg gemessen wurde. Genfs Bohrungsregister fuehrt 3'668
-     Bohrungen, davon 145 mit dem Status "in Betrieb". Der Rest ist eine Einstufung
-     der Ressource. Wer damit misst, misst nicht dieselbe Sache wie in Zug.
-  2. Er rechnet vor, was in Zuerich davon uebrig bleibt. Zug ordnet ueber amtliche
-     EGID zu, Zuerich kann das nicht. Also wird dieselbe Zuger Messung noch einmal
-     mit dem Zuercher Verfahren gerechnet.
+  1. Woran ein Beleg gemessen wird. Genfs Bohrungsregister fuehrt 3'668 Bohrungen, davon
+     145 mit einem Status, der einen Betrieb belegt. Der Rest ist eine Einstufung der
+     Ressource und zaehlt nicht als Beleg.
+  2. Was davon auf Zuerich uebertragbar ist. Zug ordnet ueber amtliche EGID zu, Zuerich
+     kann das nicht. Deshalb wird dieselbe Zuger Messung noch einmal nur ueber den
+     Umkreis gerechnet.
 
     python src/report_belegwirkung.py
 """
 from __future__ import annotations
 
 import argparse
-from datetime import date
 from math import sqrt
 
 import config
@@ -32,14 +27,33 @@ import pipeline
 
 ZIEL = config.ROOT / "reports" / "belegwirkung.md"
 
+# Stufen, mit denen ein Fall auf der Verdachtsliste steht (v_gold_liste).
+STUFEN = "('reihenfolge belegt', 'reihenfolge plausibel', 'eintrag alt', 'eintrag jung')"
+
+# Spaltentitel der Tabellen. Die Sichten liefern technische Namen.
+KOPF = {
+    "kanton": "Kanton", "belegart": "Belegart", "n": "Fälle", "falsch": "davon falsch",
+    "praezision": "Trefferquote %", "grundrate": "Grundrate %", "faktor": "Faktor",
+    "von_%": "von %", "bis_%": "bis %", "status": "Status", "anlagen": "Anlagen",
+    "zaehlt_als_beleg": "zählt als Beleg", "konfidenz": "Stufe",
+    "eindeutigkeit": "Eindeutigkeit", "distanz": "Distanz", "faelle": "Fälle",
+    "stark": "davon Reihenfolge belegt", "gemeinden": "Gemeinden", "gruppe": "Gruppe",
+    "ungeklaert": "ungeklärt", "anteil": "Anteil %",
+}
+STUFE_TXT = {
+    "reihenfolge belegt": "Reihenfolge belegt",
+    "reihenfolge plausibel": "Reihenfolge plausibel",
+    "eintrag alt": "Eintrag alt", "eintrag jung": "Eintrag jung",
+}
+# Zwei Kantone tragen diesen Status ohne Umlaut (gesetzt in sql/test5.sql).
+STATUS_TXT = {"Bohrung ausgefuehrt": "Bohrung ausgeführt"}
+
 
 def wilson(treffer: int, n: int, z: float = 1.96) -> tuple[float, float]:
-    """Vertrauensbereich fuer einen Anteil.
+    """Vertrauensbereich fuer einen Anteil nach Wilson.
 
-    Bei n = 11 und null Treffern ist der naive Anteil 0 Prozent - eine Zahl, die
-    Sicherheit vortaeuscht, wo keine ist. Wilson sagt stattdessen: irgendwo zwischen
-    0 und 26 Prozent. Genau dieser Unterschied hat in diesem Projekt fast zu einem
-    falschen Urteil ueber den staerksten Beleg gefuehrt.
+    Bei kleinen Fallzahlen ist der blosse Anteil irrefuehrend: null Treffer auf elf Faelle
+    sind nicht 0 Prozent, sondern irgendwo zwischen 0 und 26 Prozent.
     """
     if n == 0:
         return (0.0, 0.0)
@@ -62,10 +76,22 @@ def _mit_ci(df, spalte_n="n", spalte_treffer="falsch"):
     return df
 
 
+def _tab(df, **eigene) -> str:
+    """Markdown-Tabelle mit lesbaren Spaltentiteln und Zellwerten."""
+    df = df.copy()
+    if "konfidenz" in df.columns:
+        df["konfidenz"] = df["konfidenz"].replace(STUFE_TXT)
+    if "status" in df.columns:
+        df["status"] = df["status"].replace(STATUS_TXT)
+    return fmt.md(df.rename(columns={**KOPF, **eigene}))
+
+
 def main(argv: list[str] | None = None) -> int:
     argparse.ArgumentParser(description=__doc__).parse_args(argv)
     con = pipeline.connect(schreibend=False)
 
+    # Registerstand der ausgewerteten Faelle, nicht das Datum des Laufs
+    stand = con.execute("SELECT max(stand) FROM gold_belege").fetchone()[0]
     wirkung = con.execute("""
         SELECT label_kanton AS kanton, belegart, n, falsch, praezision, grundrate, faktor
         FROM v_belegwirkung WHERE n >= 5
@@ -80,17 +106,16 @@ def main(argv: list[str] | None = None) -> int:
         SELECT kanton, konfidenz, n, falsch, praezision, grundrate, faktor
         FROM v_verdachtsliste_wirkung ORDER BY kanton,
              list_position(['reihenfolge belegt', 'reihenfolge plausibel', 'eintrag alt', 'eintrag jung'], konfidenz)""").df()
-    liefer_gesamt = con.execute("""
+    liefer_gesamt = con.execute(f"""
         SELECT l.label_kanton AS kanton, count(*) AS n,
                sum(l.eintrag_falsch::INT) AS falsch,
                round(100.0 * avg(l.eintrag_falsch::INT), 1) AS praezision
         FROM v_gold_score s JOIN v_label_alle l USING (egid)
-        WHERE s.konfidenz IN ('reihenfolge belegt', 'reihenfolge plausibel', 'eintrag alt', 'eintrag jung')
+        WHERE s.konfidenz IN {STUFEN}
         GROUP BY 1 ORDER BY n DESC""").df()
-    ungeklaert = con.execute("""
+    ungeklaert = con.execute(f"""
         SELECT CASE WHEN s.egid IS NULL THEN 'kein Beleg'
-                    WHEN s.konfidenz IN ('reihenfolge belegt', 'reihenfolge plausibel', 'eintrag alt', 'eintrag jung')
-                         THEN 'auf der Verdachtsliste'
+                    WHEN s.konfidenz IN {STUFEN} THEN 'mit Listenstufe'
                     WHEN s.hat_pv THEN 'nur Photovoltaik'
                     ELSE 'sonstiger Beleg' END                  AS gruppe,
                count(*)                                         AS n,
@@ -106,138 +131,192 @@ def main(argv: list[str] | None = None) -> int:
         HAVING sum(belegt_anlage::INT) <> count(*) OR count(*) > 500
         ORDER BY 1, 3 DESC""").df()
 
-    text = f"""# Was ein Beleg wert ist
+    # Zuger Fallzahlen fuer die Ueberleitung: Faelle mit Listenstufe vor dem
+    # Gegenbeleg-Filter (v_gold_score), davon Gas, Oel und mit Tank in Betrieb.
+    zg_stufe, zg_gas, zg_oel, zg_tank_aktiv = con.execute(f"""
+        SELECT count(*), count(*) FILTER (WHERE energie_klasse = 'gas'),
+               count(*) FILTER (WHERE energie_klasse = 'oel'),
+               count(*) FILTER (WHERE kessel_aktiv)
+        FROM v_gold_score WHERE kanton = 'ZG' AND konfidenz IN {STUFEN}""").fetchone()
+    vor_n, vor_falsch = con.execute("""
+        SELECT count(*), coalesce(sum(l.eintrag_falsch::INT), 0)
+        FROM v_gold_score s JOIN v_label_alle l USING (egid)
+        WHERE l.label_kanton = 'ZG' AND s.konfidenz = 'beleg vor eintrag'""").fetchone()
+    liste_n, liste_gas, liste_baugesuch = con.execute("""
+        SELECT count(*), count(*) FILTER (WHERE energie_klasse = 'gas'),
+               count(*) FILTER (WHERE hat_baugesuch)
+        FROM v_gold_liste""").fetchone()
+    zg_stillgelegt = con.execute("""
+        SELECT count(*) FROM v_zg_label WHERE label = 'veraltet_stillgelegt'""").fetchone()[0]
+    ge_stufe = con.execute(f"""
+        SELECT count(*) FROM v_gold_score s JOIN v_label_alle l USING (egid)
+        WHERE l.label_kanton = 'GE' AND s.konfidenz IN {STUFEN}""").fetchone()[0]
 
-Stand {date.today().strftime('%d.%m.%Y')}. Gemessen an zwei kantonalen Gegenquellen:
-dem Genfer Waermeerzeuger-Layer (61'895 Anlagen mit EGID, darunter 9'615 Waermepumpen
-und 3'181 Fernwaerme-Uebergabestationen) und dem Zuger Tankkataster (nur Oel).
+    zg = liefer_gesamt[liefer_gesamt["kanton"] == "ZG"]
+    zg_pruefbar = int(zg["n"].iloc[0]) if len(zg) else 0
+    zg_falsch = int(zg["falsch"].iloc[0]) if len(zg) else 0
+    stufe_oel = ungeklaert[ungeklaert["gruppe"] == "mit Listenstufe"]
+    zg_ungeklaert = int(stufe_oel["ungeklaert"].iloc[0]) if len(stufe_oel) else 0
+    t = fmt.tsd
+    ueberleitung = "\n".join([
+        "| Zuger Fälle | Anzahl |",
+        "|---|---:|",
+        f"| mit Listenstufe, Öl- und Gaseinträge (`v_gold_score`) | {t(zg_stufe)} |",
+        f"| davon Gaseinträge, am Tankkataster nicht prüfbar | {t(zg_gas)} |",
+        f"| davon Öleinträge | {t(zg_oel)} |",
+        f"| Öleinträge ohne Tank im Kataster (ungeklärt) | {t(zg_ungeklaert)} |",
+        f"| Öleinträge mit Tank im Kataster (prüfbar) | {t(zg_pruefbar)} |",
+        f"| davon Eintrag falsch (Tank ausser Betrieb) | {t(zg_falsch)} |",
+        f"| davon Eintrag stimmt (Tank in Betrieb) | {t(zg_pruefbar - zg_falsch)} |",
+        f"| auf der Verdachtsliste (`v_gold_liste`: mit Listenstufe, ohne Tank in Betrieb) "
+        f"| {t(zg_stufe - zg_tank_aktiv)} |",
+    ])
 
-## Warum dieser Bericht die Top-K-Kurve ersetzt
+    text = f"""# Belegwirkung: Trefferquote der Verdachtsfälle je Belegart
 
-Der frueher berichtete Wert "die obersten 20 Raenge treffen zu 70 Prozent" war ein
-Artefakt. Der Score kennt nur wenige mögliche Summen; in Genf hatten hunderte Faelle
-exakt 45 Punkte, und welche davon auf den Raengen 13 bis 20 landeten, entschied die
-Sortierung nach EGID. Niedrige EGID heisst in Genf Innenstadt, Innenstadt heisst
-Fernwaerme. Die Zahl mass den Tiebreak, nicht das Verfahren.
+Registerstand {stand.strftime('%d.%m.%Y')}. Gemessen wird, wie oft der Registereintrag falsch
+ist, wenn zu einem Gebäude ein Beleg vorliegt: je Belegart und für die Verdachtsliste.
+Gegenquellen sind der Genfer Wärmeerzeuger-Layer (61'895 Anlagen mit EGID, darunter 9'615
+Wärmepumpen und 3'181 Fernwärme-Übergabestationen) und der Zuger Tankkataster (nur Heizöl).
 
-Je Belegart gibt es keine Rangfolge und damit keinen Tiebreak. Die Quoten unten sind
-reproduzierbar.
+## Warum je Belegart und nicht nach Rang gemessen wird
+
+Der Verdachtsscore kennt nur wenige mögliche Summen, und viele Fälle teilen dieselbe
+Punktzahl, in Genf mehrere hundert. Bei einem Rangschnitt (die obersten 20, 100 oder 500
+Fälle) entscheidet innerhalb gleicher Punktzahl die Sortierung nach EGID, welche Fälle oben
+stehen. Eine Trefferquote entlang der Rangfolge misst dann diese Sortierung und nicht das
+Verfahren.
+
+Eine Belegart ist klar abgegrenzt und kommt ohne Rangfolge aus. Die Quoten unten sind
+deshalb reproduzierbar.
 
 ## Trefferquote je Belegart
 
-"Falsch" heisst: Die Gegenquelle zeigt einen anderen Waermeerzeuger als das Register.
-"Faktor" ist der Abstand zur Grundrate desselben Kantons - das ist die Zahl, die zaehlt.
-Der Vertrauensbereich ist Wilson, 95 Prozent.
+"Davon falsch" heisst: Die Gegenquelle zeigt einen anderen Wärmeerzeuger als das Register.
+Die Grundrate ist der Anteil falscher Einträge unter allen auswertbaren Gebäuden des Kantons,
+der Faktor das Verhältnis der Trefferquote zu dieser Grundrate. Der Vertrauensbereich
+(von, bis) ist das Wilson-Intervall zu 95 Prozent. Gezeigt sind Belegarten ab fünf Fällen.
 
-{fmt.md(_mit_ci(wirkung))}
+{_tab(_mit_ci(wirkung))}
 
-## Der Status der Anlage entscheidet, nicht der Kanton
+## Der Status der Anlage entscheidet
 
-Eine erste Fassung mass in Genf 2 Treffer auf 30 Faelle und in Zug 40 auf 51 - und
-haette beinahe zum Schluss gefuehrt, das Verfahren sei nicht uebertragbar. Der
-Unterschied lag woanders: Alle 30 Genfer Faelle hingen an Bohrungen mit Status
-"Exploitable" oder "Inconnu". Das ist eine Einstufung der Ressource, keine laufende
-Anlage.
+Als Beleg zählt eine Anlage nur, wenn ihr Status eine laufende oder entstehende Wärmepumpe
+belegt (Merkmal `belegt_anlage` in `sql/test5.sql`). Der Grund ist Genf: Das dortige
+Bohrungsregister führt für fast alle Bohrungen den Status "Inconnu" oder "Exploitable".
+"Exploitable" stuft die Ressource ein und sagt, dass dort gebohrt werden könnte; eine
+laufende Anlage belegt dieser Status nicht. Ohne die Einschränkung treffen in Genf 2 von
+30 Anlagenfällen zu, und der Unterschied zu Zug sähe aus wie ein Unterschied zwischen den
+Kantonen.
 
-Die Zuger Gegenprobe ist dagegen gemischt, und das gehoert genannt: 24 der 51 Faelle
-tragen "in Betrieb" (22 davon treffen zu), 27 tragen "unbekannt" (18 treffen zu). Eine
-frueher hier stehende Behauptung, alle 51 seien betriebsbestaetigt, war falsch. Der Statusunterschied erklaert den Genfer Ausfall
-trotzdem: "unbekannt" heisst in Zug, dass der Kanton den Betriebszustand nicht fuehrt,
-waehrend "Exploitable" in Genf ausdruecklich sagt, dass hier nur gebohrt werden
-KOENNTE.
+Die Zuger Anlagen sind gemischt. Von den 51 Fällen mit genau einem Gebäude im Umkreis
+(Abschnitt "Übertragbarkeit auf Zürich") tragen 24 den Status "in Betrieb" (22 davon
+treffen zu) und 27 den Status "unbekannt" (18 treffen zu). "Unbekannt" heisst in Zug, dass
+der Kanton den Betriebszustand nicht führt; diese Anlagen zählen deshalb als Beleg.
 
-Seitdem zaehlt eine Anlage nur noch als Beleg, wenn ihr Status eine laufende oder
-entstehende Waermepumpe belegt. Genf verliert damit fast seinen ganzen Bestand an
-pruefbaren Anlagenfaellen - und damit die Faehigkeit, diesen Beleg zu messen. Das ist
-kein Verlust an Substanz, sondern die Korrektur einer Scheinmessung.
+Mit dem Statusfilter verliert Genf fast alle prüfbaren Anlagenfälle. Der Anlagenbeleg
+lässt sich dort nicht messen.
 
-{fmt.md(status)}
+Anlagen je Status (Zeilen mit mehr als 500 Anlagen oder mit Anlagen, die nicht als Beleg
+zählen):
 
-Zuerich, Schwyz und Zuerichs Nachbarn fuehren gar kein Statusfeld. Dort gelten alle
-veroeffentlichten Anlagen als bestehend - eine Annahme, die nicht geprueft werden kann
-und offengelegt gehoert.
+{_tab(status)}
 
-## Die Verdachtsliste selbst
+Zürich und Schwyz führen kein Statusfeld, in St. Gallen fehlt es bei einem Teil der Anlagen.
+Dort gelten alle veröffentlichten Anlagen als bestehend. Diese Annahme lässt sich nicht
+prüfen. In Schaffhausen und Solothurn nennt das Feld die Anlagenart ("Erdsonde",
+"WP mit Erdwärmesonde") und keinen Betriebszustand; auch diese Anlagen zählen als Beleg.
 
-Die Tabelle oben misst Belegarten. Benutzt wird aber eine Liste, und die ist eine
-Auswahl aus mehreren Belegarten in einer bestimmten Reihenfolge. Deshalb dasselbe noch
-einmal fuer genau das, was in der Mappe steht:
+## Die Verdachtsliste
 
-{fmt.md(_mit_ci(liefer_gesamt))}
+Die Tabelle oben misst Belegarten. Die Verdachtsliste ist eine Auswahl aus mehreren
+Belegarten, gegliedert nach Stufen. Deshalb dieselbe Messung für die Fälle mit Listenstufe:
 
-Und je Stufe, so wie sie in der Mappe benannt sind:
+{_tab(_mit_ci(liefer_gesamt))}
 
-{fmt.md(_mit_ci(liefer))}
+Je Stufe:
 
-Der eigentliche Befund ist, was NICHT in dieser Tabelle steht. Die Stufe "Beleg aelter
-als der Eintrag" fehlt, weil sie seit einer Korrektur gar nicht mehr auf der Liste steht:
-Sie traf in Zug in 4 von 30 Faellen zu, also fast auf Grundratenniveau. Uebrig bleibt
-eine Liste, deren Stufen sich in der Trefferquote kaum noch unterscheiden - der Filter
-hat die Arbeit getan, die vorher die Stufen tun mussten.
+{_tab(_mit_ci(liefer))}
 
-Nicht die Belegart trennt am staerksten, sondern die Reihenfolge: Ein Beleg sagt, dass
-am Gebaeude etwas an der Heizung geschehen ist. Ob das im Register steht, haengt daran,
-ob jemand das Register danach noch angefasst hat.
+Gemessen wird auf `v_gold_score`, also vor dem Gegenbeleg-Filter der Liste: Der Filter
+benutzt dieselben Kataster, aus denen die Labels stammen, die Messung wäre sonst zirkulär.
 
-Genf steht in dieser Tabelle nicht mehr sinnvoll: Nach dem Statusfilter bleiben dort
-drei pruefbare Faelle. Das ist keine Messung und wird auch nicht als eine ausgewiesen.
+Die Stufe "Beleg vor Eintrag" steht nicht auf der Liste und fehlt deshalb in der Tabelle.
+Liegt der Beleg vor dem Registereintrag, trifft der Verdacht in Zug in {vor_falsch} von
+{vor_n} prüfbaren Fällen zu, also nahe der Grundrate. Zusammen mit diesen Fällen sind in Zug
+{t(zg_pruefbar + vor_n)} Fälle mit Anlagenbeleg prüfbar.
 
-## Was davon in Zuerich uebrig bleibt
+Am stärksten trennt damit die Reihenfolge von Beleg und Registereintrag, stärker als die
+Belegart. Ein Beleg sagt, dass am Gebäude etwas an der Heizung geschehen ist. Ob das im
+Register steht, hängt daran, ob der Eintrag danach noch bearbeitet wurde.
 
-Zug ordnet seine Anlagen ueber die amtliche EGID oder die Adresse zu - der Kanton sagt
-also selbst, zu welchem Gebaeude die Sonde gehoert. Zuerich liefert das nicht: 38'553
-Bohrungen ohne EGID, ohne Adresse, ohne Status. Dort bleibt nur der 20-Meter-Umkreis.
+Für Genf ist die Tabelle keine Messung: Nach dem Statusfilter bleibt dort kaum ein
+prüfbarer Fall mit Listenstufe (Anzahl: {ge_stufe}).
 
-Deshalb dieselbe Zuger Messung noch einmal, aber ausschliesslich ueber den Umkreis -
-also mit dem Verfahren, das in Zuerich laufen wuerde:
+### Überleitung der Zuger Fallzahlen
 
-{fmt.md(_mit_ci(umkreis))}
+Die Berichte nennen für Zug mehrere Fallzahlen. Sie zählen verschiedene Mengen:
 
-Das Ergebnis ist der wichtigste Satz dieses Berichts: **Die Eindeutigkeit des Umkreises
-entscheidet.** Liegt genau ein Gebaeude im 20-Meter-Umkreis der Anlage, trifft der
-Verdacht in rund vier von fuenf Faellen zu - auch ohne amtliche Zuordnung. Liegen drei
-oder mehr Gebaeude darin, faellt die Quote auf das Niveau der Grundrate.
+{ueberleitung}
 
-Die Zuercher Liste enthaelt ausschliesslich Faelle mit genau einem Gebaeude im Umkreis.
+## Übertragbarkeit auf Zürich
+
+Zug ordnet seine Anlagen über die amtliche EGID oder die Adresse zu; der Kanton nennt also
+selbst das Gebäude zur Sonde. Zürich liefert das nicht: 38'553 Bohrungen ohne EGID, ohne
+Adresse, ohne Status. Dort bleibt nur der 20-Meter-Umkreis.
+
+Deshalb dieselbe Zuger Messung noch einmal, ausschliesslich über den Umkreis zugeordnet,
+also mit dem Verfahren, das für Zürich gilt:
+
+{_tab(_mit_ci(umkreis))}
+
+**Die Eindeutigkeit des Umkreises entscheidet.** Liegt genau ein Gebäude im
+20-Meter-Umkreis der Anlage, trifft der Verdacht in rund vier von fünf Fällen zu, auch ohne
+amtliche Zuordnung. Liegen drei oder mehr Gebäude darin, fällt die Quote in die Nähe der
+Grundrate.
+
+Die Zuordnung übernimmt eine Zürcher Anlage deshalb nur, wenn genau ein Gebäude in ihrem
+Umkreis liegt (`sql/zuordnung_anlagen.sql`).
 
 ## Woraus die Listen bestehen
 
-Ein Bauamt darf erwarten, dass wir sagen, worauf SEINE Liste beruht.
+Zusammensetzung der Verdachtsliste je Kanton nach Belegart (Zeilen ab fünf Fällen):
 
-{fmt.md(aufbau)}
+{_tab(aufbau)}
 
-## Die unbequeme Zahl: wer aus der Messung faellt
+## Wer aus der Messung fällt
 
-Gemessen werden kann nur, wozu der Tankkataster etwas sagt. Wo er gar keinen Tank kennt,
-gilt der Fall als ungeklaert und faellt heraus. Das ist nicht gleichmaessig verteilt:
+Gemessen werden kann nur, wozu der Tankkataster etwas sagt. Kennt er zu einem Gebäude
+keinen Tank, gilt der Fall als ungeklärt und fällt heraus. Das ist nicht gleichmässig
+verteilt (Zuger Wohngebäude mit Öleintrag):
 
-{fmt.md(ungeklaert)}
+{_tab(ungeklaert, n="Gebäude")}
 
-Gebaeude mit einem Beleg fallen haeufiger aus der Messung als Gebaeude ohne - rund ein
-Drittel gegenueber einem Viertel. Beide Lesarten sind moeglich, und keine laesst sich
-mit diesen Daten entscheiden:
+Gebäude mit einem Beleg fallen häufiger aus der Messung als Gebäude ohne, rund ein Drittel
+gegenüber einem Viertel. Zwei Lesarten sind möglich, und mit diesen Daten lässt sich keine
+ausschliessen:
 
-- **Zugunsten der Liste:** Wer von Oel auf eine Waermepumpe wechselt, laesst den Tank
-  ausbauen. Gebaeude ohne jeden Tankeintrag waeren dann ueberdurchschnittlich oft
-  genau die gesuchten Faelle - und die gemessene Quote waere zu tief.
-- **Zuungunsten der Liste:** Der Kataster fuehrt stillgelegte Tanks ausdruecklich
-  weiter (388 Stueck). "Kein Tank" heisst dann eher "nie erfasst", und die
-  Herausgefallenen sind eine Mischung wie alle anderen auch.
+- **Zugunsten der Liste:** Wer von Öl auf eine Wärmepumpe wechselt, lässt den Tank
+  ausbauen. Gebäude ohne Tankeintrag wären dann überdurchschnittlich oft die gesuchten
+  Fälle, und die gemessene Quote wäre zu tief.
+- **Zuungunsten der Liste:** Der Kataster führt stillgelegte Tanks weiter
+  ({t(zg_stillgelegt)} Gebäude mit stillgelegtem Tank). "Kein Tank" heisst dann eher
+  "nie erfasst", und die herausgefallenen Fälle sind eine Mischung wie alle anderen.
 
-Dazu kommt eine zweite Luecke derselben Art: Ein Fuenftel der Verdachtsliste sind
-Gaseintraege, und ein Oeltankkataster sagt ueber Gas nichts. Auch sie sind ungeprueft.
+Dazu kommt eine zweite Lücke derselben Art: {t(liste_gas)} der {t(liste_n)} Fälle der
+Verdachtsliste sind Gaseinträge, in Zug {t(zg_gas)} von {t(zg_stufe)} Fällen mit Listenstufe.
+Ein Öltankkataster sagt über Gas nichts; auch diese Fälle sind ungeprüft.
 
-Festhalten laesst sich nur: Ein erheblicher Teil der Faelle auf der Verdachtsliste ist in
-Zug nicht pruefbar, und dieser Anteil ist hoeher als bei Gebaeuden ohne Beleg. Wer die
-gemessene Quote zitiert, muss diesen Satz mitzitieren.
+Ein erheblicher Teil der Fälle mit Listenstufe ist in Zug also nicht prüfbar, und dieser
+Anteil ist höher als bei Gebäuden ohne Beleg. Die gemessene Quote gilt nur zusammen mit
+dieser Einschränkung.
 
 ## Was ungemessen bleibt
 
-Das Baugesuch ist der Beleg, der den neuen Energietraeger im Klartext nennt und datiert
-ist - und der einzige, fuer den es keine einzige Messung gibt. In Genf und Zug ist kein
-einziger Baugesuchsfall zugeordnet, weil beide Kantone nicht im Amtsblatt-Abzug mit
-verwertbarem Objektbeschrieb liegen. Die 228 schweizweiten Faelle mit Baugesuch-Beleg
-stehen also auf einer Annahme, nicht auf einer Messung. Das gehoert zu jeder Liste dazu.
+Das Baugesuch nennt den neuen Energieträger im Klartext und ist datiert. Für diesen Beleg
+gibt es keine Messung: In den beiden Labelkantonen Genf und Zug kommt kein prüfbarer Fall
+mit Baugesuch-Beleg vor. Die {t(liste_baugesuch)} Fälle der Verdachtsliste mit
+Baugesuch-Beleg beruhen damit auf einer Annahme.
 """
     ZIEL.write_text(fmt.de(text), encoding="utf-8")
     print(f"{ZIEL} geschrieben")

@@ -1,12 +1,10 @@
-"""Welche Quelle darf weitergegeben werden - und welche ist ungeprueft?
+"""Lizenzlage der Quellen: Welche darf weiterverwendet werden, welche ist ungeprueft?
 
-Solange dieses Projekt eine Validierung war, genuegte "alles offene Daten". Sobald eine
-Liste das Haus verlaesst, genuegt es nicht mehr: Frei herunterladbar ist
-nicht dasselbe wie frei weiterverwertbar. Das Manifest fuehrt zu jeder Quelle URL,
-Groesse, Pruefsumme und Zeitpunkt - aber von sich aus keine Lizenz.
+Frei herunterladbar ist nicht dasselbe wie frei weiterverwertbar. Das Manifest fuehrt zu
+jeder Quelle URL, Groesse, Pruefsumme und Zeitpunkt, aber keine Lizenz.
 
-Dieser Bericht macht die Luecke sichtbar und gewichtet sie: Nicht jede ungepruefte
-Quelle ist gleich wichtig. Entscheidend ist, wie viele weitergegebene Faelle an ihr haengen.
+Dieser Bericht weist die Lizenzangaben aus config.LIZENZEN je Quelle aus und gewichtet
+die offenen Punkte danach, wie viele Faelle der Verdachtsliste an der Quelle haengen.
 
     python src/report_lizenzen.py
 """
@@ -66,16 +64,17 @@ def main(argv: list[str] | None = None) -> int:
 
     text = f"""# Lizenzlage der Quellen
 
-Stand {date.today().strftime('%d.%m.%Y')}.
+Stand {date.today().strftime('%d.%m.%Y')}. Geprüft ist je Quelle, unter welchen Nutzungsbedingungen sie
+veröffentlicht ist und ob die benutzte Ebene selbst belegt ist.
 
 ## Warum das zählt
 
-Frei herunterladbar ist nicht dasselbe wie frei weiterverwertbar. Solange dieses Projekt
-eine Validierung war, genügte die Pauschalaussage "alles offene Daten". Für eine Liste
-für eine Weitergabe genügt sie nicht: Wer die Liste weiterverwendet, erhält ein Werk, das auf diesen Quellen
-beruht, und darf erwarten, dass er es benutzen darf.
+Frei herunterladbar ist nicht dasselbe wie frei weiterverwertbar. Die Pauschalaussage
+"alles offene Daten" genügt nicht, sobald Ergebnisse weitergegeben werden: Wer eine
+Auswertung weiterverwendet, die auf diesen Quellen beruht, muss wissen, unter welchen
+Bedingungen er das darf.
 
-## Wie das geprüft wurde
+## Wie geprüft ist
 
 Über die CKAN-Schnittstelle von opendata.swiss. Dort trägt jede Ressource einen von vier
 Standardtermen:
@@ -87,8 +86,7 @@ Standardtermen:
 | `terms_ask` | kommerzielle Nutzung nur mit Bewilligung | **nicht** ohne Rückfrage |
 | `terms_by_ask` | beides | **nicht** ohne Rückfrage |
 
-**Keine einzige der verwendeten Quellen trägt `terms_ask`.** Das ist das eigentliche
-Ergebnis dieser Prüfung.
+**Keine der verwendeten Quellen trägt `terms_ask`.**
 
 ## Stand
 
@@ -99,19 +97,19 @@ Datenportals belegt, die Ebene selbst ist dort nicht einzeln aufgeführt - das b
 
 {fmt.md(df)}
 
-## Was noch zu tun ist
+## Offene Punkte
 
 Für Solothurn, Zug und Basel-Landschaft gilt die kantonsweite Regel ihres Datenportals,
-aber die benutzte Ebene ist dort nicht einzeln gelistet. Das ist ein schwächerer Beleg
-als eine eigene Datensatzseite, und der Unterschied gehört genannt statt geglättet.
+die benutzte Ebene ist dort aber nicht einzeln aufgeführt. Das ist ein schwächerer Beleg
+als eine eigene Datensatzseite.
 
-Je Kanton genügt eine Mail ans Amt für Geoinformation: ob die bezogene Ebene
-weiterverwendet und weitergegeben werden darf. Die Antwort gehört mit Datum in
-`config.LIZENZEN`, Feld `beleg`.
+Klären lässt sich das durch eine Anfrage beim jeweiligen Amt für Geoinformation, ob die
+bezogene Ebene weiterverwendet und weitergegeben werden darf. Die Antwort gehört mit Datum
+in `config.LIZENZEN`, Feld `beleg`.
 
-Für den Vertrag gilt unabhängig davon: Es gehört hinein, auf welchen Quellen die Liste
-beruht und welche davon eine Quellenangabe verlangen. Eine Pauschalzusicherung, dass
-alles frei weiterverwertbar sei, gehört nicht hinein.
+Für jede Weitergabe von Ergebnissen gilt: Zu nennen ist, auf welchen Quellen sie beruhen
+und welche davon eine Quellenangabe verlangen. Eine pauschale Zusicherung, dass alles frei
+weiterverwertbar sei, ist durch diese Prüfung nicht gedeckt.
 """
     ZIEL.write_text(fmt.de(text), encoding="utf-8")
     print(f"{ZIEL} geschrieben - {len(offen)} ungeprüfte Quellen, "

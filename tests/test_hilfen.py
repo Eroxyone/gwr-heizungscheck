@@ -5,6 +5,7 @@ import re
 
 import duckdb
 import pandas as pd
+import pytest
 
 import config
 import fmt
@@ -104,6 +105,56 @@ def test_datenpfade_in_sql_zeigen_ins_datenverzeichnis(monkeypatch, tmp_path):
     sql = pipeline._sql("silver_ch.sql")
     assert f"'{tmp_path.as_posix()}/snapshots/gwr/**/*.parquet'" in sql
     assert "'data/" not in sql
+
+
+# --------------------------------------------------------------------------- Spatial-Erweiterung
+
+class _Verbindung:
+    """Attrappe einer DuckDB-Verbindung: schreibt die Anweisungen mit und laesst die
+    genannten scheitern."""
+
+    def __init__(self, scheitert: list[str]):
+        self.scheitert = list(scheitert)
+        self.anweisungen: list[str] = []
+
+    def execute(self, sql: str):
+        self.anweisungen.append(sql)
+        if self.scheitert and self.scheitert[0] == sql:
+            self.scheitert.pop(0)
+            raise duckdb.IOException(f"{sql} nicht moeglich")
+
+
+def test_installierte_erweiterung_wird_nur_geladen():
+    # Der Normalfall braucht kein Netz: INSTALL wird gar nicht erst versucht.
+    con = _Verbindung(scheitert=[])
+    pipeline.lade_spatial(con)
+    assert con.anweisungen == ["LOAD spatial"]
+
+
+def test_fehlende_erweiterung_wird_installiert_und_dann_geladen():
+    con = _Verbindung(scheitert=["LOAD spatial"])
+    pipeline.lade_spatial(con)
+    assert con.anweisungen == ["LOAD spatial", "INSTALL spatial", "LOAD spatial"]
+
+
+def test_ohne_erweiterung_und_ohne_netz_gibt_es_eine_verstaendliche_meldung():
+    con = _Verbindung(scheitert=["LOAD spatial", "INSTALL spatial"])
+    with pytest.raises(RuntimeError) as fehler:
+        pipeline.lade_spatial(con)
+    meldung = str(fehler.value)
+    assert "weder laden noch installieren" in meldung
+    # Beide Ursachen und der Ausweg stehen in der Meldung
+    assert "LOAD spatial nicht moeglich" in meldung and "INSTALL spatial nicht moeglich" in meldung
+    assert "duckdb.connect().execute('INSTALL spatial')" in meldung
+
+
+def test_verbindung_laedt_die_erweiterung(monkeypatch, tmp_path):
+    monkeypatch.setattr(config, "DB", tmp_path / "processed" / "gwr.duckdb")
+    con = pipeline.connect()
+    try:
+        assert con.execute("SELECT ST_X(ST_Point(2700000, 1200000))").fetchone()[0] == 2700000
+    finally:
+        con.close()
 
 
 # --------------------------------------------------------------------------- entbehrliche Quellen

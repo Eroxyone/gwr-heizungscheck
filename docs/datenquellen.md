@@ -1,7 +1,7 @@
 # Datenquellen
 
-Jede Quelle mit Adresse, Herausgeber, Umfang und den Eigenheiten, die beim Einlesen Zeit
-gekostet haben. Die Lizenzlage steht in [reports/lizenzen.md](../reports/lizenzen.md), die
+Jede Quelle mit Adresse, Herausgeber, Umfang und den Eigenheiten beim Einlesen. Stand
+der Abrufe ist September 2026; spätere Änderungen sind datiert. Die Lizenzlage steht in [reports/lizenzen.md](../reports/lizenzen.md), die
 Verfügbarkeit je Kanton in [reports/quellenmatrix.md](../reports/quellenmatrix.md).
 
 Alle Quellen sind offen zugänglich. Die meisten verlangen eine Quellenangabe, bei drei
@@ -63,16 +63,16 @@ geraten, sondern aus `/api/v1/rubrics` gelesen und über `/api/v1/tenants` mit d
 verknüpft: **13 Kantone**. Graubünden (`AA-GR10`) ist im Katalog als aktiv geführt,
 enthält aber keine einzige Publikation.
 
-**Der entscheidende Befund ist, wo der Projektbeschrieb steht.** Die Mandanten zerfallen
-in zwei Gruppen, und wer das übersieht, misst Unsinn:
+**Entscheidend ist, wo der Projektbeschrieb steht.** Die Mandanten zerfallen in zwei
+Gruppen:
 
 | Modus | Mandanten | Titel | Folge |
 |---|---|---|---|
 | `titel` | BL, SO, NW, OW, SH, VS, AM-DA50 | "Baugesuch – Ersatz Ölheizung durch Luft/Wasser-Wärmepumpe, Stans" | Die Listenabfrage reicht als Filter, nur Treffer brauchen einen Detailabruf |
 | `voll` | ZH, BE, BS, TI, ZG, AR, SZ | "Kommunale Baugesuchspublikation: Sprungstrasse 13a, Unterägeri" | Ein Titelfilter findet fast nichts - in Zürich griff er bei **1 von 6'743** Publikationen. Hier muss jedes Detail geholt werden |
 
-Ein naiver schweizweiter Abzug meldet für ZH, BE, BS, TI, ZG, AR und SZ also null
-Heizungsbaugesuche, obwohl sie da sind. Das ist kein Datenproblem, sondern ein Lesefehler.
+Ein Abzug, der nur die Titel filtert, meldet für ZH, BE, BS, TI, ZG, AR und SZ also null
+Heizungsbaugesuche, obwohl sie vorhanden sind.
 
 **Drei weitere Fallen im Detail-XML:**
 
@@ -109,8 +109,8 @@ aktualisiert, in einer Tabelle. Der Portalabzug wäre die schlechtere Kopie und 
 trotzdem holen, etwa um beide Quellen gegeneinander zu prüfen.
 
 Der Lauf schreibt jede Antwort sofort in eine Zwischendatei und nimmt einen
-abgebrochenen Lauf dort wieder auf, wo er stand - bei fünfstelligen Abrufzahlen über
-Stunden ist das kein Komfort, sondern Voraussetzung.
+abgebrochenen Lauf dort wieder auf, wo er stand. Bei fünfstelligen Abrufzahlen über
+Stunden ist das nötig.
 
 ## 3. Wärmenutzungsanlagen weiterer Kantone
 
@@ -143,12 +143,10 @@ bekommt elf statt 13 Kantone: `download.py` meldet die beiden Quellen als nicht 
 nicht für immer offen; genau deshalb hält das Manifest zu jedem Bezug Zeitpunkt und
 Prüfsumme fest.
 
-**Korrektur zu Schwyz.** Eine frühere Fassung dieses Dokuments hielt Schwyz für einen
-Kanton ohne brauchbare Schnittstelle: Der WFS unter `wfs.geo.sz.ch` liefert zwar einen
+**Schwyz: die richtige Adresse.** Der WFS unter `wfs.geo.sz.ch` liefert einen
 vollständigen Capabilities-Katalog mit 1'018 Layern, beantwortet aber jedes `GetFeature`
-erneut mit den Capabilities. Das stimmt weiterhin - nur ist es die falsche Adresse. Die
-Daten kommen unter `map.geo.sz.ch/mapserv_proxy` heraus, demselben Dienst, auf den die
-Capabilities selbst verweisen. Der Fehler lag nicht beim Kanton.
+erneut mit den Capabilities. Die Daten kommen unter `map.geo.sz.ch/mapserv_proxy` heraus,
+dem Dienst, auf den die Capabilities selbst verweisen.
 
 **Nicht jede Koordinate meint dasselbe - der Fall Luzern.**
 
@@ -183,10 +181,9 @@ gewesen wären. `checks.py` misst das Muster nach, damit nicht unbemerkt ein wei
 Kanton in dieselbe Lage gerät.
 
 **St. Gallen und Appenzell Innerrhoden führen ihre Anlagen bereits nach.** Bei 84 bzw.
-86 % der nächstgelegenen Gebäude steht die Wärmepumpe schon im GWR. Das ist das Aargauer
-Modell in freier Wildbahn: Wo ein Kanton die Bewilligungsdaten ins Register überträgt,
-bleibt für einen Dienst wie diesen wenig zu tun. Zürich liegt an derselben Stelle bei
-39,9 % bei einer Hintergrundrate von 15,9 %.
+86 % der nächstgelegenen Gebäude steht die Wärmepumpe schon im GWR. Wo ein Kanton die
+Bewilligungsdaten ins Register überträgt, findet ein Abgleich aus offenen Daten wenig.
+Zürich liegt an derselben Stelle bei 39,9 % bei einer Hintergrundrate von 15,9 %.
 
 **Geprüft und verworfen:**
 
@@ -200,20 +197,21 @@ bleibt für einen Dienst wie diesen wenig zu tun. Zürich liegt an derselben Ste
 | NW, OW | Erdsondenkataster vorhanden, aber ausschliesslich als WMS (Bild) über `gis-daten.ch`; ein WFS existiert nicht, die Vektordaten laufen über einen Bestellshop |
 | GR, GL, FR, NE, TI, VS | über geocat.ch, opendata.swiss, geodienste.ch und die Portal-Endpunkte kein Anlagendatensatz auffindbar |
 
-Die Suche lief diesmal systematisch: über den nationalen Metadatenkatalog
+Die Suche umfasst vier Wege: den nationalen Metadatenkatalog
 [geocat.ch](https://www.geocat.ch) (Elasticsearch-API, deutsch/französisch/italienisch),
-über opendata.swiss, über den Themenkatalog von
-[geodienste.ch](https://geodienste.ch/info/services.json) und über einen Endpunkt-Scan
+opendata.swiss, den Themenkatalog von
+[geodienste.ch](https://geodienste.ch/info/services.json) und einen Endpunkt-Scan
 aller 26 Kantone nach den Mustern `map.geo.<kt>.ch/mapserv_proxy`, `wfs.geo.<kt>.ch`,
 `geo.<kt>.ch/wfs` und ArcGIS-REST. Das harmonisierte Thema "Versorgungsgebiete thermische
 Netze" auf geodienste.ch wäre der naheliegende Weg zu einem schweizweiten Fernwärme-Layer,
 ist aber als "Im Aufbau" gekennzeichnet und liefert noch keine Daten.
 
 **Genf ist ein Sonderfall.** Nur 9,2 % der Genfer Anlagen haben ein Gebäude mit
-Wärmepumpen-Eintrag im Umkreis, gegenüber 45 bis 56 % in den anderen Kantonen. Der Grund
-ist kein schlechteres Register, sondern ein anderes: Bei fast der Hälfte der Gebäude im
-Sondenumkreis steht "Unbestimmt" als Energieträger. Genf erfasst, ohne den Träger zu
-benennen. Ein Check überwacht diese Erklärung.
+Wärmepumpen-Eintrag im Umkreis; die übrigen zwölf Kantone liegen zwischen 25,5 % (UR) und
+94,7 % (SG), Stand 14.09.2026 ([reports/report.md](../reports/report.md), Abschnitt 2.6).
+Der Grund liegt in der Erfassung: Bei fast der Hälfte der Gebäude im Sondenumkreis steht
+"Unbestimmt" als Energieträger. Genf erfasst, ohne den Träger zu benennen. Ein Check
+überwacht diese Erklärung.
 
 ## 3b. Gegenbelege: läuft die fossile Heizung noch?
 
@@ -234,17 +232,17 @@ Der Betriebszustand ist feiner als "an oder aus", und das ist wichtig: Ein Kesse
 réserve"** neben einer Wärmepumpe ist kein Widerspruch, sondern der Normalfall einer
 Hybridanlage. Er zählt hier weder als Beleg noch als Gegenbeleg.
 
-**Was damit messbar wurde, steht in
+**Die Messung an diesen Quellen steht in
 [reports/belegwirkung.md](../reports/belegwirkung.md).** Gemessen am Zuger Tankkataster
 treffen 80,8 % der Fälle zu, bei denen der Beleg jünger ist als der Registereintrag (63 von
-78), gegenüber 13,3 % bei älterem Beleg und einer Grundrate von 8,8 %. Eine erste Auswertung
-([reports/precision.md](../reports/precision.md)) verglich noch gegen eine Grundrate, die
-Öl- und Gaseinträge mischte; sie ist als Vorstufe stehen geblieben und nicht mehr
-massgebend.
+78), gegenüber 13,3 % bei älterem Beleg und einer Grundrate von 8,8 %. Die Vorstufe
+[reports/precision.md](../reports/precision.md) misst nur, ob noch ein aktiver fossiler
+Kessel oder Tank geführt wird, und ist nicht massgebend.
 
 Gegenbelege wirken **filternd, nicht punktend**: Wo ein fossiler Kessel als in Betrieb
-geführt wird, verschwindet der Fall aus `v_gold_verdacht` - in Genf 2'600 von 4'031. Er
-bleibt in `gold_belege` stehen, sonst liesse sich die Wirkung nicht mehr messen.
+geführt wird, verschwindet der Fall aus `v_gold_verdacht`. In Genf sind das am 14.09.2026
+2'365 Fälle, 1'259 bleiben ([reports/precision.md](../reports/precision.md)). Der Fall
+bleibt in `gold_belege` stehen, sonst liesse sich die Wirkung nicht messen.
 
 **Nicht gefunden, und zwar geprüft:** Fernwärme-Hausanschlüsse (der BFE-Layer
 `ch.bfe.thermische-netze` enthält 1'664 Punkte - die Heizzentralen, nicht die Anschlüsse;
@@ -260,8 +258,8 @@ Subrubrik), Minergie-Gebäude (das STAC-Asset liefert 404) und der Zürcher Tank
 - **Layer:** `geodb.erdsond_erdsondb_vw`, 14'661 Bohrungen
 - **Der entscheidende Vorteil:** Bern führt ein **Bewilligungsdatum** (ab 1980) und einen
   **Status**, der "Ausgeführt" von "nur bewilligt" unterscheidet. 11'391 Anlagen sind
-  nachweislich gebaut. Damit lässt sich die Nachführung datieren - das geht mit den
-  Zürcher Daten nicht und macht Bern zur besten Messgrundlage im Projekt.
+  nachweislich gebaut. Damit lässt sich die Nachführung datieren, was mit den Zürcher
+  Daten nicht geht.
 
 ## 5. Wärmenutzungsanlagen Kanton Zürich
 
@@ -289,17 +287,14 @@ enthält alle 333'313 Anlagen und ist aktuell, hat aber keine `EGID`; die Zuordn
 über die Koordinaten `_x`/`_y` (LV95). Beide werden geladen: die vollständige für die
 Auswertung, die gekürzte zur Prüfung der räumlichen Zuordnung.
 
-**Seit `sql/test4_ch.sql` läuft dieser Test schweizweit**, nicht mehr nur für Zürich:
-328'930 Photovoltaikanlagen, zwei getrennt geführte Zuordnungswege (EGID-Spalte und
+**Der Test läuft schweizweit** (`sql/test4_ch.sql`): 328'930 Photovoltaikanlagen, zwei getrennt geführte Zuordnungswege (EGID-Spalte und
 20-m-Umkreis über die Koordinaten). Wo beide greifen - 90'558 Anlagen - nennen sie in
 **99,4 %** der Fälle dasselbe Gebäude.
 
-Diese Zahl ist der interessante Teil. Bei den Erdwärmesonden liegt die vergleichbare
-Trefferquote gegen die amtliche EGID des Kantons Zug bei 65 %. Der Grund ist banal und
-trotzdem leicht zu übersehen: **Eine Solaranlage liegt auf dem Gebäude, eine Erdsonde
-daneben.** Derselbe 20-m-Umkreis ist beim einen Beleg beinahe exakt und beim anderen eine
-Nachbarschaftssuche. Wer beide Belegarten gleich behandelt, behandelt zwei sehr
-verschiedene Genauigkeiten gleich.
+Bei den Erdwärmesonden liegt die vergleichbare Trefferquote gegen die amtliche EGID des
+Kantons Zug bei 65 % ([reports/zuordnung_zg.md](../reports/zuordnung_zg.md)). Der Grund:
+**Eine Solaranlage liegt auf dem Gebäude, eine Erdsonde daneben.** Derselbe 20-m-Umkreis
+ist beim einen Beleg beinahe exakt und beim anderen eine Nachbarschaftssuche.
 
 Deshalb wird bei der Photovoltaik genau **ein** Gebäude je Anlage gezählt. Ohne diese
 Regel steigt der Befund von 22'425 auf 40'586 Gebäude - die Differenz sind Nachbarn.

@@ -1,7 +1,12 @@
 # Heizungsangaben im GWR: Wie gut pflegen die Kantone ihr Register?
 
-**Alle 26 Kantone, 2'110 Gemeinden, 1'808'581 Wohngebäude. Datenstand 2026-09-14.**
-Erzeugt von `src/report_ch.py` aus den Parquet-Snapshots. Keine Zahl ist von Hand eingetragen.
+Datenstand 2026-09-14, alle 26 Kantone, 2'110 Gemeinden, 1'808'581 Wohngebäude. Gemessen
+wird je Kanton und Gemeinde, wie vollständig und wie aktuell die Heizungsangaben im GWR sind
+und aus welcher Quelle sie stammen.
+
+Erzeugt von `src/report_ch.py` aus den Parquet-Snapshots. Tabellen und Kennzahlen kommen aus
+der Pipeline; fest in der Vorlage stehen die Zuger Zuordnungswerte in Abschnitt 5.2
+(aus [zuordnung_zg.md](zuordnung_zg.md)) und die Basler Werte unter "Pflegemuster".
 
 Interaktive Fassung: [dashboard.html](dashboard.html).
 Die Detailauswertung für den Kanton Zürich mit Baugesuchen steht in [report.md](report.md).
@@ -12,21 +17,23 @@ Die Detailauswertung für den Kanton Zürich mit Baugesuchen steht in [report.md
 
 Im Gebäude- und Wohnungsregister trägt jedes Gebäude einen Eintrag zu Energieträger und
 Wärmeerzeuger, dazu eine Informationsquelle und ein Aktualisierungsdatum. Wie gut dieser
-Eintrag gepflegt wird, unterscheidet sich zwischen den Kantonen drastisch.
+Eintrag gepflegt wird, unterscheidet sich stark zwischen den Kantonen.
 
 - **28,6 % aller Schweizer Wohngebäude** (517'478 Stück) tragen bei der Heizung
-  immer noch die Volkszählung 2000 als Quelle. Der Eintrag wurde seit einem Vierteljahrhundert
+  immer noch die Volkszählung 2000 als Quelle. Der Eintrag ist seit einem Vierteljahrhundert
   nicht bestätigt.
 - Das **Median-Alter** der Heizungsangabe liegt schweizweit bei **7,0 Jahren**.
 - **49,4 %** der Wohngebäude sind fossil beheizt (893'136 mit Öl oder Gas),
   **13,2 %** haben eine Wärmepumpe.
-- **333'680 Gebäude** (18,4 %) sind Verdachtsfälle: fossil beheizt und der
-  Eintrag entweder ungeprüft oder älter als 15 Jahre.
+- **333'680 Gebäude** (18,4 %) sind Kandidaten: fossil beheizt und der
+  Eintrag entweder ungeprüft (Quelle 860) oder älter als 15 Jahre. Ein Kandidat ist noch
+  kein Verdachtsfall. Als Verdachtsfall gilt in dieser Studie nur ein Gebäude, zu dem ein
+  Beleg vorliegt ([docs/methode.md](../docs/methode.md)).
 - Die Spannweite zwischen den Kantonen reicht von **BS mit 100,0 Punkten** bis
   **AG mit 50,1**. In **12 Kantonen** überwiegt der
   unbearbeitete Altbestand.
 
-Ein Befund vorweg, der die ganze Auswertung relativiert: **Der Index misst Pflege, nicht
+Eine Einschränkung gilt für die ganze Auswertung: **Der Index misst Pflege, nicht
 Richtigkeit.** Wie weit beides auseinanderliegt, zeigt Abschnitt 5.
 
 ---
@@ -41,8 +48,8 @@ Drei Anteile über alle Wohngebäude, gemittelt:
 | Aktualität | Anteil mit Aktualisierungsdatum jünger als 15 Jahre |
 | Herkunft | Anteil, der **nicht** aus der Volkszählung 2000 stammt |
 
-Quelle 860 (Volkszählung 2000) heisst nicht falsch, sondern ungeprüft. Ob der Eintrag
-stimmt, weiss niemand, weil ihn seit 2000 niemand bestätigt hat.
+Quelle 860 (Volkszählung 2000) heisst ungeprüft, nicht falsch: Der Eintrag ist seit 2000
+nicht bestätigt.
 
 Notenklassen: A ab 90, B ab 75, C ab 60, D ab 45, E darunter.
 
@@ -50,34 +57,34 @@ Notenklassen: A ab 90, B ab 75, C ab 60, D ab 45, E darunter.
 
 ## 2 Kantone
 
-| KT   | Note   |   Index | Pflegemuster   |   Wohngebäude |   % vollständig |   % aktuell |   % VZ 2000 |   Alter (J.) |   % fossil |   % WP |   % Verdacht |
-|:-----|:-------|--------:|:---------------|--------------:|----------------:|------------:|------------:|-------------:|-----------:|-------:|-------------:|
-| BS   | A      |   100,0 | Sammelimport   |         23919 |           100,0 |       100,0 |         0,0 |            0 |       43,8 |    9,9 |          0,0 |
-| SG   | A      |    99,6 | laufend        |        116251 |            99,6 |        99,9 |         0,6 |            2 |       49,4 |   30,4 |          0,4 |
-| BL   | A      |    96,0 | Sammelimport   |         68633 |            98,9 |        93,9 |         4,7 |            4 |       61,9 |   19,8 |          0,9 |
-| AI   | A      |    91,5 | Sammelimport   |          5379 |            96,5 |        88,0 |         9,9 |            1 |       32,2 |   30,6 |          4,0 |
-| GE   | A      |    90,6 | laufend        |         45254 |            87,7 |        89,8 |         5,6 |            2 |       70,3 |    5,2 |          4,1 |
-| NE   | B      |    86,7 | Sammelimport   |         31746 |            96,0 |        78,9 |        14,6 |            1 |       65,3 |   11,9 |         10,6 |
-| FR   | B      |    81,1 | laufend        |         76063 |            72,9 |        80,6 |        10,2 |            8 |       32,6 |   17,4 |          3,0 |
-| ZG   | B      |    78,9 | laufend        |         16257 |            84,6 |        71,9 |        19,7 |            6 |       54,0 |   12,0 |         12,4 |
-| LU   | B      |    78,0 | Sammelimport   |         70855 |            85,0 |        70,2 |        21,2 |            2 |       38,7 |   21,8 |          8,9 |
-| BE   | B      |    77,2 | laufend        |        238969 |            89,3 |        67,7 |        25,3 |            6 |       50,4 |   11,9 |         12,1 |
-| TI   | B      |    76,5 | laufend        |        114920 |            80,9 |        65,3 |        16,6 |            9 |       40,3 |    9,2 |          9,4 |
-| SO   | B      |    76,2 | laufend        |         71254 |            80,3 |        69,9 |        21,7 |            7 |       57,8 |    8,9 |         11,1 |
-| VD   | B      |    75,8 | laufend        |        139519 |            87,9 |        64,6 |        25,1 |            9 |       60,2 |    6,5 |         17,3 |
-| ZH   | C      |    70,8 | laufend        |        228968 |            86,3 |        59,1 |        33,0 |            8 |       55,5 |   15,9 |         27,0 |
-| TG   | C      |    63,3 | Rueckstand     |         68161 |            86,0 |        45,4 |        41,5 |           17 |       51,9 |   17,0 |         37,6 |
-| OW   | C      |    62,8 | Rueckstand     |          9569 |            81,3 |        48,3 |        41,3 |           16 |       25,3 |   10,6 |         17,7 |
-| VS   | C      |    62,5 | Rueckstand     |        122302 |            85,9 |        42,5 |        41,0 |           17 |       36,4 |    9,0 |         21,1 |
-| SZ   | C      |    62,0 | Rueckstand     |         32601 |            83,4 |        45,0 |        42,5 |           17 |       44,6 |    9,8 |         27,7 |
-| JU   | C      |    60,8 | Rueckstand     |         25432 |            89,6 |        41,9 |        49,0 |           25 |       51,3 |   16,1 |         35,4 |
-| SH   | C      |    60,0 | Rueckstand     |         19756 |            85,8 |        40,9 |        46,6 |           20 |       54,3 |   11,5 |         40,4 |
-| UR   | D      |    59,0 | Rueckstand     |         10530 |            83,3 |        41,8 |        48,2 |           24 |       30,3 |    9,3 |         15,4 |
-| GL   | D      |    57,7 | Rueckstand     |         14079 |            88,8 |        38,2 |        53,8 |           25 |       45,7 |    6,0 |         24,6 |
-| GR   | D      |    56,4 | Rueckstand     |         76543 |            85,9 |        35,3 |        52,0 |           25 |       35,5 |    7,9 |         29,7 |
-| NW   | D      |    56,2 | Rueckstand     |          8129 |            78,3 |        39,1 |        48,7 |           24 |       35,3 |   10,0 |         31,1 |
-| AR   | D      |    53,7 | Rueckstand     |         16443 |            87,0 |        33,8 |        59,7 |           25 |       48,1 |    8,0 |         36,9 |
-| AG   | D      |    50,1 | Rueckstand     |        157049 |            77,4 |        30,5 |        57,4 |           25 |       51,1 |    8,9 |         42,8 |
+| Kanton   | Note   |   Index | Pflegemuster   |   Wohngebäude |   % vollständig |   % aktuell |   % VZ 2000 |   Alter (J.) |   % fossil |   % WP |   % Kandidaten |
+|:---------|:-------|--------:|:---------------|--------------:|----------------:|------------:|------------:|-------------:|-----------:|-------:|---------------:|
+| BS       | A      |   100,0 | Sammelimport   |         23919 |           100,0 |       100,0 |         0,0 |            0 |       43,8 |    9,9 |            0,0 |
+| SG       | A      |    99,6 | laufend        |        116251 |            99,6 |        99,9 |         0,6 |            2 |       49,4 |   30,4 |            0,4 |
+| BL       | A      |    96,0 | Sammelimport   |         68633 |            98,9 |        93,9 |         4,7 |            4 |       61,9 |   19,8 |            0,9 |
+| AI       | A      |    91,5 | Sammelimport   |          5379 |            96,5 |        88,0 |         9,9 |            1 |       32,2 |   30,6 |            4,0 |
+| GE       | A      |    90,6 | laufend        |         45254 |            87,7 |        89,8 |         5,6 |            2 |       70,3 |    5,2 |            4,1 |
+| NE       | B      |    86,7 | Sammelimport   |         31746 |            96,0 |        78,9 |        14,6 |            1 |       65,3 |   11,9 |           10,6 |
+| FR       | B      |    81,1 | laufend        |         76063 |            72,9 |        80,6 |        10,2 |            8 |       32,6 |   17,4 |            3,0 |
+| ZG       | B      |    78,9 | laufend        |         16257 |            84,6 |        71,9 |        19,7 |            6 |       54,0 |   12,0 |           12,4 |
+| LU       | B      |    78,0 | Sammelimport   |         70855 |            85,0 |        70,2 |        21,2 |            2 |       38,7 |   21,8 |            8,9 |
+| BE       | B      |    77,2 | laufend        |        238969 |            89,3 |        67,7 |        25,3 |            6 |       50,4 |   11,9 |           12,1 |
+| TI       | B      |    76,5 | laufend        |        114920 |            80,9 |        65,3 |        16,6 |            9 |       40,3 |    9,2 |            9,4 |
+| SO       | B      |    76,2 | laufend        |         71254 |            80,3 |        69,9 |        21,7 |            7 |       57,8 |    8,9 |           11,1 |
+| VD       | B      |    75,8 | laufend        |        139519 |            87,9 |        64,6 |        25,1 |            9 |       60,2 |    6,5 |           17,3 |
+| ZH       | C      |    70,8 | laufend        |        228968 |            86,3 |        59,1 |        33,0 |            8 |       55,5 |   15,9 |           27,0 |
+| TG       | C      |    63,3 | Rückstand      |         68161 |            86,0 |        45,4 |        41,5 |           17 |       51,9 |   17,0 |           37,6 |
+| OW       | C      |    62,8 | Rückstand      |          9569 |            81,3 |        48,3 |        41,3 |           16 |       25,3 |   10,6 |           17,7 |
+| VS       | C      |    62,5 | Rückstand      |        122302 |            85,9 |        42,5 |        41,0 |           17 |       36,4 |    9,0 |           21,1 |
+| SZ       | C      |    62,0 | Rückstand      |         32601 |            83,4 |        45,0 |        42,5 |           17 |       44,6 |    9,8 |           27,7 |
+| JU       | C      |    60,8 | Rückstand      |         25432 |            89,6 |        41,9 |        49,0 |           25 |       51,3 |   16,1 |           35,4 |
+| SH       | C      |    60,0 | Rückstand      |         19756 |            85,8 |        40,9 |        46,6 |           20 |       54,3 |   11,5 |           40,4 |
+| UR       | D      |    59,0 | Rückstand      |         10530 |            83,3 |        41,8 |        48,2 |           24 |       30,3 |    9,3 |           15,4 |
+| GL       | D      |    57,7 | Rückstand      |         14079 |            88,8 |        38,2 |        53,8 |           25 |       45,7 |    6,0 |           24,6 |
+| GR       | D      |    56,4 | Rückstand      |         76543 |            85,9 |        35,3 |        52,0 |           25 |       35,5 |    7,9 |           29,7 |
+| NW       | D      |    56,2 | Rückstand      |          8129 |            78,3 |        39,1 |        48,7 |           24 |       35,3 |   10,0 |           31,1 |
+| AR       | D      |    53,7 | Rückstand      |         16443 |            87,0 |        33,8 |        59,7 |           25 |       48,1 |    8,0 |           36,9 |
+| AG       | D      |    50,1 | Rückstand      |        157049 |            77,4 |        30,5 |        57,4 |           25 |       51,1 |    8,9 |           42,8 |
 
 ### Pflegemuster
 
@@ -90,25 +97,25 @@ die Aktualisierungsdaten verteilen:
 - **Rückstand** - weniger als die Hälfte der Gebäude hat überhaupt eine Angabe aus den letzten 15 Jahren
 - **sporadisch** - weder das eine noch das andere
 
-| Pflegemuster   |   Kantone | welche                              |
-|:---------------|----------:|:------------------------------------|
-| Rueckstand     |        12 | TG OW VS SZ JU SH UR GL GR NW AR AG |
-| laufend        |         9 | SG GE FR ZG BE TI SO VD ZH          |
-| Sammelimport   |         5 | BS BL AI NE LU                      |
+| Pflegemuster   |   Anzahl | Kantone                             |
+|:---------------|---------:|:------------------------------------|
+| Rückstand      |       12 | TG OW VS SZ JU SH UR GL GR NW AR AG |
+| laufend        |        9 | SG GE FR ZG BE TI SO VD ZH          |
+| Sammelimport   |        5 | BS BL AI NE LU                      |
 
 Die Kantone mit Sammelimport im Detail:
 
-| KT   |   % am selben Tag |   verschiedene Daten |   aktive Tage 24 Mt. |
-|:-----|------------------:|---------------------:|---------------------:|
-| BS   |              99,1 |                   63 |                   63 |
-| BL   |              94,3 |                  221 |                  130 |
-| AI   |              89,2 |                  303 |                   43 |
-| NE   |              58,4 |                 2563 |                  389 |
-| LU   |              52,4 |                 4491 |                  592 |
+| Kanton   |   % am selben Tag |   verschiedene Daten |   aktive Tage 24 Mt. |
+|:---------|------------------:|---------------------:|---------------------:|
+| BS       |              99,1 |                   63 |                   63 |
+| BL       |              94,3 |                  221 |                  130 |
+| AI       |              89,2 |                  303 |                   43 |
+| NE       |              58,4 |                 2563 |                  389 |
+| LU       |              52,4 |                 4491 |                  592 |
 
 Basel-Stadt ist der Extremfall: 99,1 % aller Wohngebäude tragen dasselbe Aktualisierungsdatum,
-Quelle ist zu 99,7 % die Feuerungskontrolle. Der Index von 100 Punkten steht für einen
-einzigen Schreibvorgang, nicht für einen laufenden Prozess.
+Quelle ist zu 99,7 % die Feuerungskontrolle. Der Index von 100 Punkten steht dort für einen
+einzigen Schreibvorgang.
 
 ### Informationsquellen schweizweit
 
@@ -143,72 +150,72 @@ einzigen Schreibvorgang, nicht für einen laufenden Prozess.
 **566 Gemeinden (26,8 %) stehen bei Note D oder E**, 771
 Gemeinden sind im Rückstand.
 
-| Pflegemuster   |   Gemeinden |   Wohngebäude |   Verdachtsfälle |
-|:---------------|------------:|--------------:|-----------------:|
-| Rueckstand     |         771 |        623502 |           219868 |
-| sporadisch     |         649 |        241033 |            24651 |
-| laufend        |         376 |        566048 |            63302 |
-| Sammelimport   |         314 |        377998 |            25859 |
+| Pflegemuster   |   Gemeinden |   Wohngebäude |   Kandidaten |
+|:---------------|------------:|--------------:|-------------:|
+| Rückstand      |         771 |        623502 |       219868 |
+| sporadisch     |         649 |        241033 |        24651 |
+| laufend        |         376 |        566048 |        63302 |
+| Sammelimport   |         314 |        377998 |        25859 |
 
 ### Grösster Rückstand (ab 500 Wohngebäuden)
 
-| KT   | Gemeinde           |   Wohngebäude |   Index |   % VZ 2000 |   Alter (J.) |   Verdachtsfälle |
-|:-----|:-------------------|--------------:|--------:|------------:|-------------:|-----------------:|
-| AG   | Remetschwil        |           608 |    38,0 |        70,1 |           25 |              279 |
-| AG   | Bözberg            |           580 |    39,4 |        72,2 |           25 |              218 |
-| ZH   | Freienstein-Teufen |           586 |    39,7 |        63,8 |           25 |              185 |
-| AG   | Berikon            |           946 |    40,8 |        74,4 |           25 |              599 |
-| AG   | Jonen              |           609 |    40,8 |        57,1 |           25 |              199 |
-| ZH   | Grüningen          |           829 |    40,9 |        67,9 |           25 |              328 |
-| ZH   | Neerach            |           792 |    41,0 |        64,0 |           25 |              351 |
-| AG   | Zeiningen          |           749 |    41,1 |        54,1 |           25 |              255 |
-| AG   | Böttstein          |           740 |    41,3 |        78,4 |           25 |              133 |
-| AG   | Safenwil           |          1120 |    41,6 |        64,4 |           25 |              479 |
-| ZH   | Weisslingen        |           969 |    41,9 |        61,5 |           25 |              406 |
-| AG   | Sarmenstorf        |           865 |    42,0 |        59,7 |           25 |              340 |
-| AG   | Herznach-Ueken     |           761 |    42,0 |        56,9 |           25 |              214 |
-| AG   | Boswil             |           741 |    42,1 |        70,4 |           25 |              388 |
-| AG   | Schafisheim        |           856 |    42,2 |        63,6 |           25 |              294 |
+| Kanton   | Gemeinde           |   Wohngebäude |   Index |   % VZ 2000 |   Alter (J.) |   Kandidaten |
+|:---------|:-------------------|--------------:|--------:|------------:|-------------:|-------------:|
+| AG       | Remetschwil        |           608 |    38,0 |        70,1 |           25 |          279 |
+| AG       | Bözberg            |           580 |    39,4 |        72,2 |           25 |          218 |
+| ZH       | Freienstein-Teufen |           586 |    39,7 |        63,8 |           25 |          185 |
+| AG       | Berikon            |           946 |    40,8 |        74,4 |           25 |          599 |
+| AG       | Jonen              |           609 |    40,8 |        57,1 |           25 |          199 |
+| ZH       | Grüningen          |           829 |    40,9 |        67,9 |           25 |          328 |
+| ZH       | Neerach            |           792 |    41,0 |        64,0 |           25 |          351 |
+| AG       | Zeiningen          |           749 |    41,1 |        54,1 |           25 |          255 |
+| AG       | Böttstein          |           740 |    41,3 |        78,4 |           25 |          133 |
+| AG       | Safenwil           |          1120 |    41,6 |        64,4 |           25 |          479 |
+| ZH       | Weisslingen        |           969 |    41,9 |        61,5 |           25 |          406 |
+| AG       | Sarmenstorf        |           865 |    42,0 |        59,7 |           25 |          340 |
+| AG       | Herznach-Ueken     |           761 |    42,0 |        56,9 |           25 |          214 |
+| AG       | Boswil             |           741 |    42,1 |        70,4 |           25 |          388 |
+| AG       | Schafisheim        |           856 |    42,2 |        63,6 |           25 |          294 |
 
 ### Vorbildlich laufende Pflege (ab 500 Wohngebäuden)
 
-| KT   | Gemeinde        |   Wohngebäude |   Index | Pflegemuster   |   aktive Tage 24 Mt. |
-|:-----|:----------------|--------------:|--------:|:---------------|---------------------:|
-| SG   | Sevelen         |          1465 |   100,0 | laufend        |                   32 |
-| SG   | Bad Ragaz       |          1469 |   100,0 | laufend        |                   42 |
-| SG   | Amden           |           991 |    99,9 | laufend        |                   41 |
-| SG   | Gommiswald      |          1700 |    99,9 | laufend        |                   88 |
-| SG   | Oberbüren       |          1101 |    99,9 | laufend        |                   27 |
-| SG   | Wattwil         |          2038 |    99,9 | laufend        |                   76 |
-| SG   | St. Margrethen  |          1244 |    99,9 | laufend        |                   50 |
-| SG   | Degersheim      |          1073 |    99,9 | laufend        |                   58 |
-| ZH   | Zürich          |         36996 |    99,8 | laufend        |                  267 |
-| SG   | Eschenbach (SG) |          2630 |    99,8 | laufend        |                   80 |
-| SG   | Mels            |          2458 |    99,8 | laufend        |                  115 |
-| SG   | Wartau          |          1710 |    99,8 | laufend        |                   75 |
+| Kanton   | Gemeinde        |   Wohngebäude |   Index | Pflegemuster   |   aktive Tage 24 Mt. |
+|:---------|:----------------|--------------:|--------:|:---------------|---------------------:|
+| SG       | Sevelen         |          1465 |   100,0 | laufend        |                   32 |
+| SG       | Bad Ragaz       |          1469 |   100,0 | laufend        |                   42 |
+| SG       | Amden           |           991 |    99,9 | laufend        |                   41 |
+| SG       | Gommiswald      |          1700 |    99,9 | laufend        |                   88 |
+| SG       | Oberbüren       |          1101 |    99,9 | laufend        |                   27 |
+| SG       | Wattwil         |          2038 |    99,9 | laufend        |                   76 |
+| SG       | St. Margrethen  |          1244 |    99,9 | laufend        |                   50 |
+| SG       | Degersheim      |          1073 |    99,9 | laufend        |                   58 |
+| ZH       | Zürich          |         36996 |    99,8 | laufend        |                  267 |
+| SG       | Eschenbach (SG) |          2630 |    99,8 | laufend        |                   80 |
+| SG       | Mels            |          2458 |    99,8 | laufend        |                  115 |
+| SG       | Wartau          |          1710 |    99,8 | laufend        |                   75 |
 
-### Meiste Verdachtsfälle in absoluten Zahlen
+### Meiste Kandidaten in absoluten Zahlen
 
-Diese Liste ist für die Praxis interessanter als die Prozentwerte: Hier liegt die grösste
-Menge an Gebäuden, bei denen der Heizungseintrag fossil und ungeprüft ist.
+Die Tabelle zeigt, wo absolut die meisten Gebäude mit fossilem Heizungseintrag liegen, der
+ungeprüft oder älter als 15 Jahre ist.
 
-| KT   | Gemeinde      |   Wohngebäude |   Verdachtsfälle |   % Verdacht |   Index |
-|:-----|:--------------|--------------:|-----------------:|-------------:|--------:|
-| SH   | Schaffhausen  |          6742 |             3427 |         50,8 |    62,9 |
-| TG   | Frauenfeld    |          4783 |             2407 |         50,3 |    62,1 |
-| AG   | Wettingen     |          3378 |             2200 |         65,1 |    44,9 |
-| AG   | Wohlen (AG)   |          3312 |             2069 |         62,5 |    51,5 |
-| GR   | Chur          |          5066 |             1991 |         39,3 |    67,0 |
-| GL   | Glarus Nord   |          5327 |             1816 |         34,1 |    55,0 |
-| AG   | Brugg         |          2959 |             1793 |         60,6 |    47,4 |
-| BE   | Bern          |         14856 |             1672 |         11,3 |    89,2 |
-| TI   | Lugano        |         10518 |             1636 |         15,6 |    76,7 |
-| VS   | Crans-Montana |          3761 |             1615 |         42,9 |    54,7 |
-| TG   | Kreuzlingen   |          3275 |             1604 |         49,0 |    62,8 |
-| ZH   | Dübendorf     |          3449 |             1551 |         45,0 |    59,4 |
-| VD   | Lausanne      |          9076 |             1549 |         17,1 |    82,1 |
-| AR   | Herisau       |          3223 |             1492 |         46,3 |    58,2 |
-| LU   | Luzern        |          7670 |             1477 |         19,3 |    84,3 |
+| Kanton   | Gemeinde      |   Wohngebäude |   Kandidaten |   % Kandidaten |   Index |
+|:---------|:--------------|--------------:|-------------:|---------------:|--------:|
+| SH       | Schaffhausen  |          6742 |         3427 |           50,8 |    62,9 |
+| TG       | Frauenfeld    |          4783 |         2407 |           50,3 |    62,1 |
+| AG       | Wettingen     |          3378 |         2200 |           65,1 |    44,9 |
+| AG       | Wohlen (AG)   |          3312 |         2069 |           62,5 |    51,5 |
+| GR       | Chur          |          5066 |         1991 |           39,3 |    67,0 |
+| GL       | Glarus Nord   |          5327 |         1816 |           34,1 |    55,0 |
+| AG       | Brugg         |          2959 |         1793 |           60,6 |    47,4 |
+| BE       | Bern          |         14856 |         1672 |           11,3 |    89,2 |
+| TI       | Lugano        |         10518 |         1636 |           15,6 |    76,7 |
+| VS       | Crans-Montana |          3761 |         1615 |           42,9 |    54,7 |
+| TG       | Kreuzlingen   |          3275 |         1604 |           49,0 |    62,8 |
+| ZH       | Dübendorf     |          3449 |         1551 |           45,0 |    59,4 |
+| VD       | Lausanne      |          9076 |         1549 |           17,1 |    82,1 |
+| AR       | Herisau       |          3223 |         1492 |           46,3 |    58,2 |
+| LU       | Luzern        |          7670 |         1477 |           19,3 |    84,3 |
 
 ---
 
@@ -217,8 +224,8 @@ Menge an Gebäuden, bei denen der Heizungseintrag fossil und ungeprüft ist.
 Vor jedem Report läuft `python src/checks.py`, eine Reihe von Datenqualitäts- und
 Regressionsprüfungen. Was dabei aufgefallen ist:
 
-- **7 Einträge tragen ein Aktualisierungsdatum in der Zukunft**, im Extremfall neun
-  Monate. Erfassungsfehler in der Quelle, nicht korrigierbar, aber überwacht.
+- **7 Einträge tragen ein Aktualisierungsdatum in der Zukunft.** Das sind
+  Erfassungsfehler in der Quelle; eine Prüfung überwacht ihre Zahl.
 - **1'044'538 Gebäude haben überhaupt kein Aktualisierungsdatum.** Das sind überwiegend
   Gebäude ohne Wohnnutzung und ohne Wärmeerzeuger.
 - Ein Regressionstest hält die Zürcher Zahlen aus der Detailauswertung fest. Ändert sich die
@@ -235,15 +242,16 @@ einen Heizungsersatz wurden mit dem Registerstand verglichen.
 Ergebnis: **Bei 41 % der Fälle zeigt das GWR weiterhin den alten Energieträger**, obwohl das
 Baugesuch mindestens ein halbes Jahr zurückliegt. Bei Gesuchen ab 18 Monaten sind es noch 36 %.
 
-Der entscheidende Punkt: **Die Stadt Zürich hat null Einträge aus der Volkszählung 2000.** Nach
-dieser Auswertung ist sie sauber. In der Gegenprobe verfehlt sie bei rund zwei Dritteln der
-Heizungs-Baugesuche die Nachführung. Metadaten zählen ersetzt nicht, Ereignisse zu prüfen.
+**Die Stadt Zürich hat null Einträge aus der Volkszählung 2000.** Nach dieser Auswertung
+ist sie sauber. In der Gegenprobe fehlt bei gut zwei Dritteln ihrer Heizungs-Baugesuche die
+Nachführung ([report.md](report.md), Abschnitt 2.3). Die Metadaten zeigen das nicht.
 
 Daraus folgt für die Lesart dieses Reports:
 
-1. Ein hoher Index heisst: Das Register wurde angefasst. Nicht: Die Einträge stimmen.
+1. Ein hoher Index heisst, dass das Register bearbeitet ist. Er heisst nicht, dass die
+   Einträge stimmen.
 2. Ein niedriger Index ist dagegen aussagekräftig. Wo die Volkszählung 2000 noch die
-   Hauptquelle ist, wurde tatsächlich nichts geprüft.
+   Hauptquelle ist, ist der Bestand ungeprüft.
 3. Das Pflegemuster trägt mehr Information als der Index. Laufende Pflege über viele Tage
    ist ein besseres Zeichen als ein hoher Punktwert aus einem Import.
 
@@ -255,40 +263,45 @@ Die Auswertung erfasst ausserdem nur Gebäude mit Wohnnutzung (Gebäudekategorie
 Der Index oben lässt sich für alle 26 Kantone rechnen, weil er nur das GWR braucht.
 Die Gegenprobe braucht eine zweite Quelle - und die gibt es nur stellenweise:
 
-| KT   |   Anlagen |   davon datiert |   Widerspruch Anlage |   Verdacht Solar |
-|:-----|----------:|----------------:|---------------------:|-----------------:|
-| ZH   |     39470 |               0 |                 2013 |             4045 |
-| SG   |     29198 |           29198 |                   93 |               59 |
-| LU   |     21783 |           14664 |                    0 |              489 |
-| BE   |     14661 |           14485 |                  748 |             2648 |
-| SO   |      8863 |            8780 |                  257 |              728 |
-| TG   |      4532 |            4532 |                  121 |             1282 |
-| GE   |      3668 |            3538 |                    3 |              254 |
-| ZG   |      2792 |            2791 |                  210 |              151 |
-| BL   |      2629 |            2629 |                   81 |               40 |
-| AI   |      2419 |            2419 |                   16 |               19 |
-| SZ   |      1675 |            1522 |                   87 |              463 |
-| SH   |      1235 |               0 |                   30 |              255 |
-| UR   |       847 |               0 |                    0 |              110 |
-| AG   |         0 |               0 |                    0 |             4784 |
-| VD   |         0 |               0 |                    0 |             2122 |
-| VS   |         0 |               0 |                    0 |             1271 |
-| GR   |         0 |               0 |                    0 |             1043 |
-| JU   |         0 |               0 |                    0 |              764 |
-| AR   |         0 |               0 |                    0 |              564 |
-| TI   |         0 |               0 |                    0 |              494 |
-| NE   |         0 |               0 |                    0 |              330 |
-| GL   |         0 |               0 |                    0 |              206 |
-| FR   |         0 |               0 |                    0 |              141 |
-| OW   |         0 |               0 |                    0 |               91 |
-| NW   |         0 |               0 |                    0 |               84 |
-| BS   |         0 |               0 |                    0 |                0 |
+| Kanton   |   Anlagen |   davon datiert |   Widerspruch Anlage |   Solaranlage und Quelle 860 |
+|:---------|----------:|----------------:|---------------------:|-----------------------------:|
+| ZH       |     39470 |               0 |                 2013 |                         4045 |
+| SG       |     29198 |           29198 |                   93 |                           59 |
+| LU       |     21783 |           14664 |                    0 |                          489 |
+| BE       |     14661 |           14485 |                  748 |                         2648 |
+| SO       |      8863 |            8780 |                  257 |                          728 |
+| TG       |      4532 |            4532 |                  121 |                         1282 |
+| GE       |      3668 |            3538 |                    3 |                          254 |
+| ZG       |      2792 |            2791 |                  210 |                          151 |
+| BL       |      2629 |            2629 |                   81 |                           40 |
+| AI       |      2419 |            2419 |                   16 |                           19 |
+| SZ       |      1675 |            1522 |                   87 |                          463 |
+| SH       |      1235 |               0 |                   30 |                          255 |
+| UR       |       847 |               0 |                    0 |                          110 |
+| AG       |         0 |               0 |                    0 |                         4784 |
+| VD       |         0 |               0 |                    0 |                         2122 |
+| VS       |         0 |               0 |                    0 |                         1271 |
+| GR       |         0 |               0 |                    0 |                         1043 |
+| JU       |         0 |               0 |                    0 |                          764 |
+| AR       |         0 |               0 |                    0 |                          564 |
+| TI       |         0 |               0 |                    0 |                          494 |
+| NE       |         0 |               0 |                    0 |                          330 |
+| GL       |         0 |               0 |                    0 |                          206 |
+| FR       |         0 |               0 |                    0 |                          141 |
+| OW       |         0 |               0 |                    0 |                           91 |
+| NW       |         0 |               0 |                    0 |                           84 |
+| BS       |         0 |               0 |                    0 |                            0 |
 
-Ein leeres Feld heisst **nicht**, dass der Kanton sauber ist. Es heisst, dass niemand
-nachsehen kann. Umgekehrt sieht ein Kanton mit offenen Anlagendaten zwangsläufig
-schlechter aus, weil bei ihm überhaupt etwas gefunden werden kann. **Jede Rangliste in
-diesem Report ist zuerst eine Rangliste der Datenoffenheit.** Die vollständige
-Quellenlage je Kanton steht in `reports/quellenmatrix.md`.
+"Widerspruch Anlage" zählt fossil eingetragene Wohngebäude, denen eine Wärmenutzungsanlage
+eindeutig zugeordnet ist. "Solaranlage und Quelle 860" zählt Wohngebäude mit
+Photovoltaikanlage und fossilem Eintrag aus der Volkszählung 2000; das ist nur ein schwaches
+Indiz.
+
+Eine Null heisst nicht, dass der Kanton sauber ist, sondern dass eine offene Gegenquelle
+fehlt. Umgekehrt sieht ein Kanton mit offenen Anlagendaten zwangsläufig schlechter aus,
+weil nur bei ihm etwas gefunden werden kann. **Jede Rangliste in diesem Report ist zuerst
+eine Rangliste der Datenoffenheit.** Die vollständige Quellenlage je Kanton steht in
+[quellenmatrix.md](quellenmatrix.md).
 
 ### 5.2 Wie zuverlässig die Zuordnung ist
 
@@ -303,24 +316,24 @@ dazu, mit sehr unterschiedlichem Ergebnis:
 Der Unterschied hat einen einfachen Grund: **Eine Solaranlage liegt auf dem Gebäude, eine
 Erdsonde daneben.** Bei der Photovoltaik ist die Koordinate praktisch das Gebäude, bei der
 Sonde ist sie ein Punkt im Garten - und der kann näher beim Nachbarn liegen. Auch bei 50 m
-Radius steigt der Sonden-Recall nur auf 80 %; ein grösserer Umkreis kauft vor allem
-Nachbarn dazu (`reports/zuordnung_zg.md`).
+Radius steigt der Sonden-Recall nur auf 80 %; ein grösserer Umkreis nimmt vor allem
+Nachbargebäude dazu ([zuordnung_zg.md](zuordnung_zg.md)).
 
 Für die Fallzahlen heisst das: Bei den Sonden sind sie eher Unter- als Obergrenzen, weil
 rund ein Viertel der echten Fälle gar nicht gefunden wird.
 
 ---
 
-## 6 Was als Nächstes gemessen werden sollte
+## 6 Bewegung im Register
 
-Ein einzelner Snapshot zeigt einen Zustand. Die interessantere Grösse ist die Bewegung:
-Wie viele Heizungseinträge ändert ein Kanton pro Monat tatsächlich?
+Ein einzelner Snapshot zeigt einen Zustand. Wie viele Heizungseinträge ein Kanton
+tatsächlich ändert, zeigt erst der Vergleich mehrerer Stände.
 
 Die Pipeline legt deshalb bei jedem Lauf einen Parquet-Snapshot pro Kanton ab
 (`data/snapshots/gwr/snapshot_date=.../kanton=.../data.parquet`, rund 60 MB für die ganze
-Schweiz). Sobald zwei Stände vorliegen, liefert `v_gold_veraenderung` die Änderungsrate je
-Kanton und Zeitraum. Diese Kennzahl lässt sich nicht nachträglich beschaffen, sie entsteht
-nur durch Sammeln ab jetzt.
+Schweiz). Aus zwei oder mehr Ständen liefert `v_gold_veraenderung` die Änderungsrate je
+Kanton und Zeitraum. Die Auswertung der Wochen-Snapshots steht in
+[zeitreihe.md](zeitreihe.md).
 
 ---
 

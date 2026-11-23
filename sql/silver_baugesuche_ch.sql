@@ -69,10 +69,14 @@ WITH b AS (
         -- denen eine Bauverwaltung das Gesuch wiederfindet.
         ref                                      AS publikation_url,
         amt                                      AS publizierendes_amt,
-        versicherungs_nr,
+        -- Ausdruecklich als Text: Ist eine der beiden Angaben im ganzen Abzug leer,
+        -- liest DuckDB die Spalte als JSON, und der Rueckfall von der Parzelle auf die
+        -- Versicherungsnummer (v_test3_ch_gebaeude) scheitert am Typ.
+        CAST(versicherungs_nr AS VARCHAR)         AS versicherungs_nr,
         beschrieb,
         strasse, hausnummer, plz, ort,
-        parzelle, koordinate, adresse_herkunft,
+        CAST(parzelle AS VARCHAR)                 AS parzelle,
+        koordinate, adresse_herkunft,
         COALESCE(heizungsbezug, FALSE)            AS titel_oder_text_heizung,
         -- Titel UND Beschrieb durchsuchen: Bei den "titel"-Mandanten steht der
         -- Beschrieb im Titel, bei den "voll"-Mandanten steht im Titel die Adresse.

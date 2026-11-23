@@ -136,7 +136,11 @@ def extrahiere(text: str, backend: str, modell: str, effort: str, host: str,
         else:
             ergebnis = extrahiere_ollama(text, modell, host, num_gpu)
         return ergebnis.model_dump()
-    except Exception as fehler:  # noqa: BLE001
+    # Bewusst breit: Die beiden Backends scheitern auf verschiedene Arten (Netz, HTTP 500,
+    # ungueltiges JSON, Schemaverletzung, Fehlerklassen des Anthropic-SDK). Ein einzelner
+    # Text darf einen Lauf ueber Tausende nicht abbrechen. Der Fehler steht mit seinem
+    # Typ im Ergebnis, und silver_llm.sql wertet solche Zeilen nicht als Urteil.
+    except Exception as fehler:
         return {"fehler": f"{type(fehler).__name__}: {fehler}"}
 
 

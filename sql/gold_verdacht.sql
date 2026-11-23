@@ -146,9 +146,9 @@ LEFT JOIN widerspruch w ON w.egid = g.egid
 WHERE g.ist_wohngebaeude
   AND g.ist_fossil                    -- nur fossil Eingetragene koennen veraltet sein
   -- Mindestens ein echter Beleg. Quelle 860 und ein altes Datum heissen nur
-  -- "ungeprueft". Ohne diesen Filter stuenden 343'265 Gebaeude auf der Liste, 95 %
-  -- davon ohne jeden Beleg (docs/methode.md). Ein Baugesuch zaehlt nur, wenn es
-  -- nicht nachgefuehrt ist.
+  -- "ungeprueft". Ohne diesen Filter stuende jeder fossile Eintrag mit alter Quelle auf
+  -- der Liste, die allermeisten ohne jeden Beleg (docs/methode.md). Ein Baugesuch zaehlt
+  -- nur, wenn es nicht nachgefuehrt ist.
   AND (COALESCE(b.bg_nicht_nachgefuehrt, FALSE) OR s.egid IS NOT NULL
        OR p.egid IS NOT NULL OR w.egid IS NOT NULL);
 
@@ -425,7 +425,9 @@ GROUP BY 1, 2, 3;
 -- Der Gold-Layer wird mit jedem Snapshot neu gerechnet, und ein Fall verlaesst die
 -- Liste, sobald das Register ihn nicht mehr fossil fuehrt. Das Archiv haelt je
 -- Registerstand einmal fest, was auf der Liste stand, damit sich spaetere Korrekturen
--- im Register gegen die Liste halten lassen. Ein Stand wird nie ueberschrieben.
+-- im Register gegen die Liste halten lassen. Ein Stand wird nie ueberschrieben. Archiviert
+-- wird je Stand und Kanton: Ein Kanton, dessen Snapshot zu einem Stand erst in einem
+-- spaeteren Lauf vorliegt, kommt dann noch ins Archiv dieses Stands.
 CREATE TABLE IF NOT EXISTS gold_liste_archiv AS
 SELECT stand, egid, kanton, bfs_nr, gemeinde, konfidenz, vorschlag,
        energietraeger_txt, quelle_code, quelle_datum, hat_baugesuch, hat_sonde, im_nachlauf
@@ -435,7 +437,8 @@ INSERT INTO gold_liste_archiv
 SELECT stand, egid, kanton, bfs_nr, gemeinde, konfidenz, vorschlag,
        energietraeger_txt, quelle_code, quelle_datum, hat_baugesuch, hat_sonde, im_nachlauf
 FROM v_gold_liste v
-WHERE NOT EXISTS (SELECT 1 FROM gold_liste_archiv a WHERE a.stand = v.stand);
+WHERE NOT EXISTS (SELECT 1 FROM gold_liste_archiv a
+                  WHERE a.stand = v.stand AND a.kanton = v.kanton);
 
 -- Was seit einem archivierten Stand im Register korrigiert wurde: je Fall der erste
 -- juengere Snapshot, in dem der Energietraeger nicht mehr fossil ist. vorschlag_trifft
