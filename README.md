@@ -15,7 +15,7 @@ zugleich, dass mehrere Kantone gerade selbst nachführen.
 Pipeline über 3,17 Mio Gebäude in allen 26 Kantonen, 13 kantonale Anlagenregister,
 Baugesuche aus dem Amtsblattportal und dem Kanton Zürich, Photovoltaikanlagen des BFE.
 Python und DuckDB, Bronze/Silver/Gold, wöchentliche Snapshot-Zeitreihe, 85 Prüfungen auf den
-echten Daten, 132 Tests auf synthetischen Daten.
+echten Daten, 136 Tests auf synthetischen Daten.
 
 **Status:** abgeschlossen. Die Zeitreihe reicht bis zum 16.11.2026, das Repo wird nicht
 aktiv weiterentwickelt. Fragen und Hinweise gern als Issue.
@@ -177,7 +177,7 @@ das Datenverzeichnis fest.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                          # 132 Tests, rund 20 Sekunden, ohne Rohdaten
+pytest                          # 136 Tests, rund 20 Sekunden, ohne Rohdaten
 ruff check .
 python scripts/build_site.py    # Website nach _site/, prüft dabei alle Verweise
 ```
@@ -261,7 +261,7 @@ jüngsten Stand gerechnet; `gold_liste_archiv` hält fest, was je Stand auf der 
 
 | Ebene | Was sie prüft | Wann |
 |---|---|---|
-| `pytest`, 132 Tests | Die SQL-Schritte laufen unverändert über erfundene Register mit zwei Snapshot-Ständen: Silver und Gold des schweizweiten Strangs, die Zuordnung der Anlagen mit allen zehn Entscheidungen der Kaskade, die Verdachtsliste mit jeder Stufe, Archiv und Korrektur-Sicht. Jede erwartete Zahl lässt sich von Hand nachzählen. Dazu die Stichwortregel gegen 150 gelabelte Texte, die Inhaltsprüfung der Downloads, Anonymisierung, fehlende Quellen und der Bau der Website. Nicht abgedeckt: die Messungen gegen die Kataster von Genf und Zug und die Kalibrierung der Zürcher Laufnummer. | bei jedem Push in der CI, ohne Rohdaten, in rund 20 Sekunden |
+| `pytest`, 136 Tests | Die SQL-Schritte laufen unverändert über erfundene Register mit zwei Snapshot-Ständen: Silver und Gold des schweizweiten Strangs, die Zuordnung der Anlagen mit allen zehn Entscheidungen der Kaskade, die Verdachtsliste mit jeder Stufe, Archiv und Korrektur-Sicht. Jede erwartete Zahl lässt sich von Hand nachzählen. Dazu die Stichwortregel gegen 150 gelabelte Texte, die Inhaltsprüfung der Downloads, Anonymisierung, fehlende Quellen und der Bau der Website. Nicht abgedeckt: die Messungen gegen die Kataster von Genf und Zug und die Kalibrierung der Zürcher Laufnummer. | bei jedem Push in der CI, ohne Rohdaten, in rund 20 Sekunden |
 | `python src/checks.py`, 85 Prüfungen | Behauptungen über die echten Daten: Schlüsseleindeutigkeit, Wertebereiche, Koordinaten innerhalb der Schweiz, Codelisten-Abdeckung, Konsistenz von Gemeinde- und Kantonssummen, Snapshot-Integrität, festgeschriebene Regressionswerte. | nach jedem Pipelinelauf; letzter Stand in [reports/checks_baseline.txt](reports/checks_baseline.txt) |
 | Messung gegen Fremddaten | Zuordnung gegen die amtlichen EGID des Kantons Zug, Verdacht gegen die Kataster von Genf und Zug, Liste gegen die Korrekturen, die das Register später selbst vornahm. | je Bericht |
 

@@ -1,0 +1,29 @@
+/* Sprunglink und Navigation, gemeinsam fuer alle Seiten der Website.
+   Die beiden HTML-Berichte (Dashboard, Zwischenbericht) haben ihr eigenes Stylesheet und
+   binden nur diese Datei zusaetzlich ein; die Farbnamen sind dieselben. */
+
+.sprung { position: absolute; left: -9999px; }
+.sprung:focus { left: 12px; top: 12px; background: var(--flaeche); padding: 8px 12px; z-index: 10; }
+
+.nav { background: var(--flaeche); border-bottom: 1px solid var(--linie); }
+.nav > .huelle { max-width: 1120px; margin: 0 auto; padding: 13px 24px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 28px; }
+.nav-marke { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-weight: 700;
+  font-size: 1rem; letter-spacing: -0.01em; color: var(--text); text-decoration: none; margin-right: auto; }
+.nav ul { display: flex; flex-wrap: wrap; gap: 2px 22px; list-style: none; margin: 0; padding: 0; }
+.nav li a { color: var(--text-leise); text-decoration: none; font-size: 0.95rem; padding: 3px 0;
+  border-bottom: 2px solid transparent; }
+.nav li a:hover { color: var(--text); }
+.nav li a[aria-current="page"] { color: var(--text); border-bottom-color: var(--akzent); }
+.nav a:focus-visible, .sprung:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
+
+/* Fuss mit Lizenz und Verweis auf das Repository */
+.fuss-website p { margin: 0 0 0.5em; max-width: 70ch; }
+.fuss-website a { color: var(--akzent); }
+
+@media (max-width: 760px) {
+  .nav > .huelle { padding: 12px 16px; }
+}
+
+/* Verweise im Text in der Akzentfarbe; ohne Spezifitaet, damit eigene Regeln der Seite gewinnen. */
+:where(a) { color: var(--akzent); }

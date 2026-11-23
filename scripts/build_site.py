@@ -69,6 +69,7 @@ KOPIEN = {
     "reports/befund_daten.js": "reports/befund_daten.js",
     "site.css": "site/site.css",
     "fonten.css": "site/fonten.css",
+    "navigation.css": "site/navigation.css",
     "favicon.svg": "site/favicon.svg",
     # Schriften liegen bei der Website selbst, mit ihren Lizenzen
     **{f"fonts/{p.name}": f"site/fonts/{p.name}" for p in sorted((QUELLE / "fonts").iterdir())},
@@ -103,9 +104,11 @@ def relativ(von_seite: str, ziel: str) -> str:
 
 # ---------------------------------------------------------------- Rahmen jeder Seite
 
-def stil_version() -> str:
-    """Kurzer Fingerabdruck des Stylesheets, damit Browser nach einer Aenderung neu laden."""
-    return hashlib.sha256((QUELLE / "site.css").read_bytes()).hexdigest()[:8]
+def stil(seite: str, datei: str) -> str:
+    """Verweis auf ein Stylesheet mit kurzem Fingerabdruck, damit Browser nach einer
+    Änderung neu laden statt eine zwischengespeicherte Fassung zu zeigen."""
+    version = hashlib.sha256((QUELLE / datei).read_bytes()).hexdigest()[:8]
+    return f'<link rel="stylesheet" href="{relativ(seite, datei)}?v={version}">'
 
 
 def navigation(seite: str) -> str:
@@ -119,15 +122,17 @@ def navigation(seite: str) -> str:
             f'<ul>{"".join(punkte)}</ul></div></nav>')
 
 
-def fuss(seite: str) -> str:
-    return (f'<footer class="fuss"><div class="huelle">'
-            f'<p>Code unter der MIT-Lizenz, Berichte und Texte unter CC BY 4.0. Die Quelldaten gehören '
+def fuss_absaetze(seite: str) -> str:
+    return (f'<p>Code unter der MIT-Lizenz, Berichte und Texte unter CC BY 4.0. Die Quelldaten gehören '
             f'ihren Herausgebern; was davon weiterverwendet werden darf, steht in der '
             f'<a href="{relativ(seite, "reports/lizenzen.html")}">Lizenzlage</a>.</p>'
             f'<p>Quelltext, Anleitung zum Nachrechnen und Zitierangaben im '
             f'<a href="{REPO}">Repository auf GitHub</a>. Fragen und Hinweise gern als '
-            f'<a href="{REPO}/issues">Issue</a>.</p>'
-            f'</div></footer>')
+            f'<a href="{REPO}/issues">Issue</a>.</p>')
+
+
+def fuss(seite: str) -> str:
+    return f'<footer class="fuss fuss-website"><div class="huelle">{fuss_absaetze(seite)}</div></footer>'
 
 
 def metadaten(seite: str, titel: str, beschreibung: str) -> str:
@@ -141,10 +146,15 @@ def metadaten(seite: str, titel: str, beschreibung: str) -> str:
 <meta property="og:description" content="{html.escape(beschreibung)}">
 <meta property="og:url" content="{adresse}">
 <meta property="og:image" content="{ADRESSE}reports/zeitreihe.png">
+<meta property="og:image:width" content="1500">
+<meta property="og:image:height" content="780">
+<meta property="og:image:alt" content="Änderungen der Heizungsangabe je Woche: Zürich, Aargau und Basel-Landschaft gegen die übrigen Kantone">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="color-scheme" content="light dark">
 <link rel="canonical" href="{adresse}">
 <link rel="icon" href="{relativ(seite, 'favicon.svg')}" type="image/svg+xml">
-<link rel="stylesheet" href="{relativ(seite, 'fonten.css')}">"""
+{stil(seite, 'fonten.css')}
+{stil(seite, 'navigation.css')}"""
 
 
 def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
@@ -154,7 +164,7 @@ def rahmen(seite: str, titel: str, beschreibung: str, inhalt: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {metadaten(seite, titel, beschreibung)}
-<link rel="stylesheet" href="{relativ(seite, 'site.css')}?v={stil_version()}">
+{stil(seite, 'site.css')}
 </head>
 <body>
 <a class="sprung" href="#inhalt">Zum Inhalt</a>
@@ -226,7 +236,7 @@ def adressen_verlinken(koerper: str) -> str:
     return "".join(teile)
 
 
-_DATEINAME = re.compile(r"^(\.\./)?([\w-]+/)*[\w-]+\.md(#[\w-]+)?$")
+_DATEINAME = re.compile(r"^(\.\./)?([\w-]+/)*[\w-]+\.(md|html)(#[\w-]+)?$")
 
 
 def verweistexte_benennen(md: str, kinder: list) -> None:
@@ -239,7 +249,8 @@ def verweistexte_benennen(md: str, kinder: list) -> None:
         if text.type not in ("text", "code_inline") or not _DATEINAME.match(text.content):
             continue
         ziel = (ROOT / md).parent.joinpath((k.attrGet("href") or "").partition("#")[0]).resolve()
-        name = BERICHTE.get(ziel.relative_to(ROOT).as_posix()) if ziel.is_relative_to(ROOT) else None
+        rel = ziel.relative_to(ROOT).as_posix() if ziel.is_relative_to(ROOT) else ""
+        name = BERICHTE.get(rel) or HTML_BERICHTE.get(rel, (None,))[0]
         if name:
             text.type, text.tag, text.markup, text.content = "text", "", "", name
 
@@ -264,6 +275,8 @@ def typografie(koerper: str) -> str:
             stueck = re.sub(r"(\d) ([%‰])", "\\1&nbsp;\\2", stueck)
             stueck = re.sub(r"\b(20\d\d)-([01]\d)-([0-3]\d)\b", r"\3.\2.\1", stueck)
             stueck = stueck.replace("SHA-256", "SHA‑256").replace(" – ", " - ")
+            # Gerade Anführungszeichen um ein Zitat oder einen Begriff werden zu Guillemets.
+            stueck = re.sub(r'(?:&quot;|")([^"<>&\n]{1,90}?)(?:&quot;|")', "«\\1»", stueck)
             if letztes_tag.startswith("<td") and re.fullmatch(r"\d{5,}", stueck.strip()):
                 stueck = f"{int(stueck):,}".replace(",", "'")
         teile.append(stueck)
@@ -282,9 +295,15 @@ def tabellen_ordnen(koerper: str) -> str:
         server = re.sub(r"^https?://", "", adresse).split("/", 1)[0]
         return f'<a href="{adresse}" title="{adresse}">{server}</a>'
 
+    def zelle(t: str) -> str:
+        t = re.sub(r'<a href="([^"]+)">([^<]+)</a>', kurz, t)
+        # Zellen mit viel Text bekommen auf schmalen Bildschirmen mehr Breite (site.css).
+        if len(html.unescape(re.sub(r"<[^>]+>", "", t))) > 60:
+            t = re.sub(r"^<td\b", '<td class="lang"', t)
+        return t
+
     teile = re.split(r"(<td\b.*?</td>)", koerper, flags=re.S)
-    return "".join(re.sub(r'<a href="([^"]+)">([^<]+)</a>', kurz, t) if t.startswith("<td") else t
-                   for t in teile)
+    return "".join(zelle(t) if t.startswith("<td") else t for t in teile)
 
 
 def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
@@ -320,9 +339,19 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
         koerper = koerper.replace(erzeugt.group(0), "\n", 1)
         herkunft = " " + erzeugt.group(0).strip()[3:-4]
     koerper = tabellen_ordnen(typografie(koerper))
-    # Breite Tabellen rollen in ihrem eigenen Rahmen, nicht die ganze Seite.
-    koerper = koerper.replace("<table>", '<div class="tabelle" tabindex="0" role="region" '
-                              'aria-label="Tabelle"><table>').replace("</table>", "</table></div>")
+    # Breite Tabellen rollen in ihrem eigenen Rahmen, nicht die ganze Seite. Der Rahmen trägt
+    # den Namen des Abschnitts, damit Screenreader die Tabellen unterscheiden können.
+    teile, abschnitt, nummer = [], titel, {}
+    for stueck in re.split(r"(<h[1-4][^>]*>.*?</h[1-4]>|<table>)", koerper, flags=re.S):
+        if re.match(r"<h[1-4]", stueck):
+            abschnitt = html.unescape(re.sub(r"<[^>]+>", "", stueck)).strip()
+        elif stueck == "<table>":
+            nummer[abschnitt] = nummer.get(abschnitt, 0) + 1
+            name = abschnitt + (f", Tabelle {nummer[abschnitt]}" if nummer[abschnitt] > 1 else "")
+            stueck = (f'<div class="tabelle" tabindex="0" role="region" '
+                      f'aria-label="{html.escape(name)}"><table>')
+        teile.append(stueck)
+    koerper = "".join(teile).replace("</table>", "</table></div>")
     # Der Zeitreihenbericht zeigt dasselbe Diagramm wie die Startseite statt des Bildes fürs README.
     if md == "reports/zeitreihe.md":
         koerper, n = re.subn(r'<p><img src="zeitreihe\.png"[^>]*></p>',
@@ -355,26 +384,6 @@ def bericht(md: str, seiten: set[str], dateien: set[str]) -> tuple[str, str]:
 
 # ---------------------------------------------------------------- bestehende HTML-Berichte
 
-def navigation_stil() -> str:
-    """Die Regeln für Sprunglink und Navigation aus site.css, für Seiten mit eigenem Stylesheet.
-
-    Die beiden HTML-Berichte verwenden dieselben Farbnamen wie die Website; deshalb genügt
-    es, diesen Ausschnitt einzusetzen, statt das ganze Stylesheet mit ihrem eigenen zu mischen.
-    """
-    css = (QUELLE / "site.css").read_text(encoding="utf-8")
-    sprung = re.search(r"^\.sprung \{.*?^\.sprung:focus \{.*?\}$", css, re.S | re.M)
-    nav = re.search(r"^/\* -+ Navigation \*/\n(.*?)^/\* -+", css, re.S | re.M)
-    if not sprung or not nav:
-        raise Baufehler("site/site.css: Regeln für Navigation nicht gefunden")
-    # Dieselbe Breite wie auf den übrigen Seiten, damit die Navigation beim Wechsel nicht springt.
-    breite = re.search(r"--breite:\s*(\d+px)", css).group(1)
-    gleich = (f".nav > .huelle {{ max-width: {breite}; margin: 0 auto; padding-left: 24px; padding-right: 24px; }}\n"
-              f"@media (max-width: 760px) {{ .nav > .huelle {{ padding-left: 16px; padding-right: 16px; }} }}\n")
-    # Verweise im Text in der Akzentfarbe; ohne Spezifität, damit eigene Regeln gewinnen.
-    return (f"<style>\n{sprung.group(0)}\n{nav.group(1)}{gleich}"
-            f":where(a) {{ color: var(--akzent); }}\n</style>")
-
-
 def html_bericht(pfad: str) -> str:
     """Übernimmt einen fertigen HTML-Bericht und gibt ihm Navigation, Titel und Metadaten
     der Website."""
@@ -388,8 +397,13 @@ def html_bericht(pfad: str) -> str:
         raise Baufehler(f"{pfad}: bindet site/fonten.css nicht ein")
     text = text.replace(schriften + "\n", "").replace(schriften, "")
     text = re.sub(r"<title>.*?</title>", lambda _: metadaten(pfad, titel, beschreibung), text, count=1, flags=re.S)
-    text = text.replace("</head>", navigation_stil() + "\n</head>", 1)
     text = re.sub(r"<main\b(?![^>]*\bid=)", '<main id="inhalt"', text, count=1)
+    # Der eigene Fuss des Berichts bekommt die Angaben zu Lizenz und Repository dazu.
+    text, n = re.subn(r'<footer class="fuss huelle">(.*?)</footer>',
+                      lambda m: (f'<footer class="fuss fuss-website"><div class="huelle">{m.group(1).strip()}'
+                                 f'{fuss_absaetze(pfad)}</div></footer>'), text, count=1, flags=re.S)
+    if n != 1:
+        raise Baufehler(f"{pfad}: Fuss nicht gefunden")
     kopf = f'<a class="sprung" href="#inhalt">Zum Inhalt</a>\n{navigation(pfad)}'
 
     def umgeschrieben(m: re.Match) -> str:
@@ -529,14 +543,17 @@ def zeitreihe_block() -> str:
     text = (f"Liniendiagramm über {len(wochen)} Wochen. Höchstwerte: {spitzen}. "
             f"Die übrigen {n_rest} Kantone kommen zusammen auf höchstens {rest_max} geänderte "
             f"Einträge je 1'000 Gebäude und Woche.")
-    breit = zeitreihe_svg(1000, 400, 13.5, 1)
+    # Beide Fassungen sind für Screenreader verborgen; die Beschreibung hängt am Rahmen, der
+    # immer sichtbar ist, gleich welche Fassung die Bildschirmbreite zeigt.
+    breit = zeitreihe_svg(1000, 400, 13.5, 1).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
     # Auf dem Handy wird das Diagramm auf rund 340 px verkleinert; die Schrift ist so gewählt,
     # dass sie dort mindestens 12 px gross bleibt.
     schmal = zeitreihe_svg(440, 380, 16.0, 2, absolut=False).replace('aria-labelledby="zr-titel zr-text"', 'aria-hidden="true"')
     return (f'<p class="einheit" id="zr-titel">Geänderte Energieträger je Woche und 1\'000 Gebäude</p>'
             f'<ul class="legende">{legende}</ul>'
             f'<p id="zr-text" hidden>{text}</p>'
-            f'<div class="zr-breit">{breit}</div><div class="zr-schmal">{schmal}</div>')
+            f'<div role="img" aria-labelledby="zr-titel zr-text">'
+            f'<div class="zr-breit">{breit}</div><div class="zr-schmal">{schmal}</div></div>')
 
 
 # ---------------------------------------------------------------- Bau und Prüfung

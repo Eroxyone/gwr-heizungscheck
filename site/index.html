@@ -10,15 +10,22 @@
       September bis November 2026, abgeschlossen. Registerstand der Auswertung 14.09.2026,
       Zeitreihe bis 16.11.2026.</p>
 
-    <figure class="diagramm">
-      <h2>Das Register wird in Wellen nachgeführt</h2>
-      {{ZEITREIHE}}
-      <figcaption>Zürich, Aargau und Basel-Landschaft änderten im Herbst 2026 in einzelnen
-        Wochen mehrere tausend Energieträger. In Zürich stellten diese Wellen in neun Wochen
-        2'720 Wohngebäude von fossil auf nicht fossil um; im Aargau wurden vor allem bisher
-        unbestimmte Energieträger ergänzt. Die übrigen 23 Kantone bewegen zusammen weniger als
-        einen Eintrag je 1'000 Gebäude und Woche. Verglichen sind zehn Wochen-Snapshots des GWR;
-        <a href="reports/zeitreihe.html">alle Werte je Kanton</a>.</figcaption>
+    <figure class="diagramm treffer-kopf">
+      <h2>Wie oft ein Verdacht zutrifft</h2>
+      <p class="einheit">Anteil der Öleinträge, zu denen der Kanton Zug keinen Öltank mehr in
+        Betrieb führt, Registerstand 14.09.2026</p>
+  <div class="balken" role="img"
+       aria-label="Anteil zutreffender Verdachtsfälle: 80,8 Prozent, wenn der Beleg jünger ist als der Eintrag; 13,3 Prozent, wenn er älter ist; Grundrate über alle prüfbaren Öleinträge in Zug 8,8 Prozent.">
+    <div class="name">Beleg jünger als der Eintrag<small>63 von 78 Fällen</small></div>
+    <div class="spur"><div class="strich treffer" style="width:80.8%"></div><span class="wert">80,8 %</span></div>
+    <div class="name">Beleg älter als der Eintrag<small>4 von 30 Fällen</small></div>
+    <div class="spur"><div class="strich" style="width:13.3%"></div><span class="wert">13,3 %</span></div>
+    <div class="name">Grundrate<small>alle prüfbaren Öleinträge in Zug</small></div>
+    <div class="spur"><div class="strich" style="width:8.8%"></div><span class="wert">8,8 %</span></div>
+  </div>
+      <figcaption>Entscheidend ist die Reihenfolge: Ein Beleg, der jünger ist als der
+        Registereintrag, trifft sechsmal so oft zu wie einer, der älter ist.
+        <a href="#reihenfolge">Warum das so ist</a>.</figcaption>
     </figure>
   </div>
 </header>
@@ -39,6 +46,15 @@
     Verdacht stimmt, wird zweimal gemessen: an den Katastern von Zug und Genf, die laufende
     Ölheizungen verzeichnen, und an den Korrekturen, die das Register in den folgenden
     Wochen selbst vornimmt.</p>
+  <p>Ergebnis der Pipeline ist eine Verdachtsliste: Gebäude, die fossil eingetragen sind und
+    für die ein Beleg auf einen Heizungswechsel hindeutet, je mit Beleg und Vorschlag für den
+    neuen Eintrag. Eine Zeile sieht so aus (Beispiel erfunden):</p>
+  <pre class="beispiel">EGID 1234567, Baujahr 1951, Stufe: Reihenfolge belegt
+Im GWR:     Heizöl, Volkszählung 2000, Stand 29.11.2001
+Beleg:      Erdwärmesonde, Bohrung 2019, 6 m vom Gebäude
+Vorschlag:  Erdwärmesonde, Quelle kantonale Daten</pre>
+  <p>Gebäudegenaue Listen werden nicht veröffentlicht; die Website zeigt nur Zahlen je
+    Kanton und Gemeinde.</p>
   <p>Vor der Auswertung waren zwei Abbruchkriterien festgelegt: Die Studie endet, wenn
     Baugesuche zu über 80 % schon nachgeführt sind oder wenn es pro Gemeinde nur eine
     Handvoll davon gibt. Das erste Kriterium wurde nicht ausgelöst, das zweite schon. Deshalb
@@ -94,17 +110,9 @@
     der Beleg nach der letzten Änderung des Registereintrags, hat seither niemand mehr
     nachgeschaut. Entstand er davor, wurde der Eintrag nach der Bohrung bearbeitet und die
     Ölheizung trotzdem bestätigt.</p>
-  <div class="balken" role="img"
-       aria-label="Anteil zutreffender Verdachtsfälle: 80,8 Prozent, wenn der Beleg jünger ist als der Eintrag; 13,3 Prozent, wenn er älter ist; Grundrate über alle prüfbaren Öleinträge in Zug 8,8 Prozent.">
-    <div class="name">Beleg jünger als der Eintrag<small>63 von 78 Fällen</small></div>
-    <div class="spur"><div class="strich treffer" style="width:80.8%"></div><span class="wert">80,8 %</span></div>
-    <div class="name">Beleg älter als der Eintrag<small>4 von 30 Fällen</small></div>
-    <div class="spur"><div class="strich" style="width:13.3%"></div><span class="wert">13,3 %</span></div>
-    <div class="name">Grundrate<small>alle prüfbaren Öleinträge in Zug</small></div>
-    <div class="spur"><div class="strich" style="width:8.8%"></div><span class="wert">8,8 %</span></div>
-  </div>
-  <p>Zutreffend heisst hier: Der Zuger Tankkataster führt für das Gebäude keinen Öltank in
-    Betrieb mehr. Die Reihenfolge trennt stärker als die Art des Belegs. Dieselbe Regel
+  <p>Gemessen ist das am Zuger Tankkataster (Balken oben): Zutreffend heisst, der Kataster
+    führt für das Gebäude keinen Öltank in Betrieb mehr. Die Reihenfolge trennt stärker als die
+    Art des Belegs. Dieselbe Regel
     erklärt, warum die Quelle "Volkszählung 2000" allein nichts aussagt, zusammen mit einem
     jüngeren Beleg aber das trennschärfste Merkmal ist.
     <a href="reports/belegwirkung.html">Die Messung im Einzelnen</a>.</p>
@@ -115,7 +123,16 @@
   <p>Ein einzelner Snapshot des Registers zeigt nur seinen heutigen Zustand. Aufschlussreicher
     ist die Bewegung, und die lässt sich nachträglich nicht beschaffen. Die Pipeline legt
     deshalb jede Woche einen Snapshot aller 26 Kantone ab und vergleicht ihn mit dem
-    vorherigen.</p>
+    vorherigen. Das Ergebnis: Das Register wird in Wellen nachgeführt.</p>
+    <figure class="diagramm breit">
+      {{ZEITREIHE}}
+      <figcaption>Zürich, Aargau und Basel-Landschaft änderten im Herbst 2026 in einzelnen
+        Wochen mehrere tausend Energieträger. In Zürich stellten diese Wellen in neun Wochen
+        2'720 Wohngebäude von fossil auf nicht fossil um; im Aargau wurden vor allem bisher
+        unbestimmte Energieträger ergänzt. Die übrigen 23 Kantone bewegen zusammen weniger als
+        einen Eintrag je 1'000 Gebäude und Woche. Verglichen sind zehn Wochen-Snapshots des GWR;
+        <a href="reports/zeitreihe.html">alle Werte je Kanton</a>.</figcaption>
+    </figure>
   <p>In neun Wochen stellte der Kanton Zürich 2'720 Wohngebäude von fossil auf nicht fossil
     um, Gemeinde für Gemeinde, nach seinem eigenen Leitfaden. 650 davon standen auf der Liste
     dieser Studie, also 24 %. Die übrigen drei Viertel erreicht sie nicht: Der Kanton kennt
@@ -181,7 +198,7 @@
     <li><b>22</b>SQL-Schritte in fester Reihenfolge</li>
     <li><b>85</b>Prüfungen auf den echten Daten</li>
   </ul>
-  <p>Die Qualität sichern drei Ebenen. Automatische Tests führen die zentralen SQL-Schritte
+  <p>Abgesichert ist die Pipeline auf drei Ebenen. Automatische Tests führen die zentralen SQL-Schritte
     (Silver und Gold, Zuordnung der Anlagen, Verdachtsliste) unverändert
     über ein erfundenes Register aus, in dem sich jede erwartete Zahl von Hand nachzählen
     lässt. 85 Prüfungen laufen nach jedem Pipelinelauf über die echten Daten: Schlüssel,

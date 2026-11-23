@@ -143,3 +143,16 @@ def test_keine_schriften_oder_skripte_von_fremden_servern(website):
     css = (ziel / "fonten.css").read_text(encoding="utf-8")
     for datei in re.findall(r'url\("([^"]+)"\)', css):
         assert (ziel / datei).is_file(), datei
+
+
+def test_tabellen_tragen_den_namen_ihres_abschnitts(website):
+    ziel, _ = website
+    text = (ziel / "reports" / "zeitreihe.html").read_text(encoding="utf-8")
+    namen = re.findall(r'role="region" aria-label="([^"]+)"', text)
+    assert namen and "Tabelle" not in namen
+    assert len(namen) == len(set(namen))
+
+
+def test_gerade_anfuehrungszeichen_werden_guillemets(bau):
+    html = bau.typografie('<p>Quelle "Volkszählung 2000" und &quot;neu&quot;</p><code>"x"</code>')
+    assert "«Volkszählung 2000»" in html and "«neu»" in html and '<code>"x"</code>' in html
